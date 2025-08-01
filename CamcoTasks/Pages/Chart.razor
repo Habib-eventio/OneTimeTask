@@ -22,7 +22,7 @@
 
     <div class="flex-1 h-px outline outline-1 outline-[#ECEBE9] outline-offset-[-0.5px] w-full my-3"></div>
 
-    <div id="spentChart" style="width:100%;min-height:300px;">
+    <div id="spentChart" style="width:100%;min-height:400px;">
         @if (!chartReady)
         {
             <div class="text-center py-10 text-gray-500">Loading chart...</div>
@@ -66,6 +66,17 @@
     {
         var tasks = (await TasksService.GetAllTasks()).ToList();
 
+        StatusItems = Enum.GetValues<StatusType>()
+            .Select(status => new StatusItemDto
+            {
+                Status = status,
+                StatusName = GetEnumDisplayName(status),
+                Count = tasks.Count(t =>
+                    (t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default) == status)
+            })
+            .ToList();
+
+        TotalInProgress = StatusItems.First(s => s.Status == StatusType.InProgress).Count;
         StatusItems = tasks
             .GroupBy(t => t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default)
             .Select(g => new StatusItemDto
@@ -122,6 +133,13 @@
 
     private string GetColorForStatus(StatusType status) => status switch
     {
+        StatusType.InProgress => "#007bff",
+        StatusType.Pending => "#dc3434",
+        StatusType.WaitingForReview => "#7ec2f3",
+        StatusType.Tabled => "#ff1493",
+        StatusType.TemporaryTabled => "#d2b045",
+        StatusType.Done => "#28a745",
+        _ => "#206d62"
         StatusType.InProgress => "#81B29A",
         StatusType.Pending => "#E07A5F",
         StatusType.WaitingForReview => "#F2CC8F",

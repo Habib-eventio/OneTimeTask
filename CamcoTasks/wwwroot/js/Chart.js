@@ -38,7 +38,7 @@
     const textPos = { left: 'center', top: 'center' };
     const seriesPos = {
         center: ['50%', '50%'],
-        radius: hasData ? ['30%', '60%'] : ['40%', '70%']
+        radius: hasData ? ['40%', '75%'] : ['50%', '80%']
     };
 
     const options = {
