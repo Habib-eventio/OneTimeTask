@@ -1,4 +1,4 @@
-﻿@page "/budget-chart"
+﻿@page "/TaskChart"
 @inject IJSRuntime JS
  
 <div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
@@ -150,9 +150,10 @@
     }
     private string GetColorForCategory(string? name) => name switch
     {
-        "Invitations & Stationary" =>     "#FFD088",
-        "Decor & Design" =>               "#C1DEFC",
-        "Food & Beverage" =>              "#C3B6FC",
+        "Invitations & Stationary": "img/Respond.png",
+        "Decor & Design": "img/ViewEmail.svg",
+        "Food & Beverage": "img/Note1.png",
+
         _ => "#CCCCCC" // Default color for unknown categories
     };
 }
