@@ -11,6 +11,11 @@
         <div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
             Budget Expense
         </div>
+            <img class="img" src="img/budget-menu-icon.svg" />
+        </div>
+        <div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
+            Budget Expense
+        </div>
     </div>
     <button class="btn btn-primary btn-sm" @onclick="AddNewTask">ADD NEW TASK</button>
 </div>
@@ -36,6 +41,8 @@
         public decimal ActualAmount { get; set; }
     }
  
+ 
+    bool showAddTaskFormPopup = false;
     private List<BudgetItemDto> BudgetItems { get; set; } = new()
     {
         new BudgetItemDto { CategoryName = "Invitations & Stationary", ActualAmount = 500 },
@@ -52,7 +59,7 @@
     private bool _hasInitialized;
     protected override async Task OnParametersSetAsync()
     {
-        if (isClientReady) // If already interactive
+        if (isClientReady)
         {
             await LoadChartDataAsync();
  
@@ -170,6 +177,9 @@
         "Invitations & Stationary" => "#81B29A",
         "Decor & Design" => "#E07A5F",
         "Food & Beverage" => "#F2CC8F",
+        "Invitations & Stationary" => "img/Respond.png",
+        "Decor & Design" => "img/ViewEmail.svg",
+        "Food & Beverage" => "img/Note1.png",
 
         _ => "#CCCCCC" // Default color for unknown categories
     };
