@@ -4,15 +4,15 @@
 <div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
      style="background: white; outline: 1px #ECEBE9 solid; outline-offset: -1px;">
 <div class="flex justify-between w-full">
-<div class="flex flex-1 items-start gap-2 py-1">
-<div class="relative w-6 h-6 overflow-visible">
-<img class="img" src="img/budget-menu-icon.svg" />
-</div>
-<div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
-                Budget Expense
-</div>
- 
+    <div class="flex flex-1 items-start gap-2 py-1">
+        <div class="relative w-6 h-6 overflow-visible">
+            <img class="img" src="img/budget-menu-icon.svg" />
         </div>
+        <div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
+            Budget Expense
+        </div>
+    </div>
+    <button class="btn btn-primary btn-sm" @onclick="AddNewTask">ADD NEW TASK</button>
 </div>
  
     <div class="flex-1 h-px outline outline-1 outline-[#ECEBE9] outline-offset-[-0.5px] w-full my-3"></div>
@@ -146,6 +146,35 @@
         catch (JSException ex)
         {
             Console.WriteLine("JS error: " + ex.Message);
+        }
+    }
+
+    private int nextTaskId = 1;
+
+    private async Task AddNewTask()
+    {
+        BudgetItems.Add(new BudgetItemDto
+        {
+            CategoryName = $"Task {nextTaskId}",
+            ActualAmount = 0
+        });
+        nextTaskId++;
+        await RefreshChartAsync();
+    }
+
+    private async Task RefreshChartAsync()
+    {
+        TotalSpent = BudgetItems.Sum(b => b.ActualAmount);
+        ChartData = BudgetItems.Select(item => new
+        {
+            categoryName = item.CategoryName,
+            actualAmount = item.ActualAmount,
+            color = GetColorForCategory(item.CategoryName)
+        }).ToList<object>();
+        chartReady = true;
+        if (isClientReady)
+        {
+            await RenderChartAsync();
         }
     }
     private string GetColorForCategory(string? name) => name switch
