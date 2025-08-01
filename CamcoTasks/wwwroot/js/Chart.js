@@ -1,6 +1,11 @@
 ﻿window.renderSpentChart = function (budgetItems, totalSpent) {
+    console.log("Initializing chart...");
+
     const chartDom = document.getElementById('spentChart');
-    if (!chartDom) return;
+    if (!chartDom) {
+        console.warn('Chart container not found!');
+        return;
+    }
 
     const myChart = echarts.init(chartDom);
 
@@ -10,12 +15,14 @@
         "Food & Beverage": 'triangle'
     };
 
+    // Ensure correct casing for JS property access
     const data = (budgetItems || []).map(item => ({
-        value: item.actualAmount,
-        name: item.categoryName,
-        itemStyle: { color: item.color },
-        icon: categoryIcons[item.categoryName] || 'circle'
+        value: item.actualAmount ?? item.ActualAmount,
+        name: item.categoryName ?? item.CategoryName,
+        itemStyle: { color: item.color ?? item.Color },
+        icon: categoryIcons[item.categoryName ?? item.CategoryName] || 'circle'
     }));
+
     const hasData = data.length > 0;
 
     function getCenterText(amount) {
@@ -28,141 +35,118 @@
         ].join('\n');
     }
 
-    // Always use mobile layout positions
-    function getTextPosition(hasData) {
-        return {
+    const textPos = { left: 'center', top: 'center' };
+    const seriesPos = {
+        center: ['50%', '50%'],
+        radius: hasData ? ['30%', '60%'] : ['40%', '70%']
+    };
+
+    const options = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: '#F5F5F4',
+            borderColor: '#ECEBE9',
+            borderWidth: 1,
+            borderRadius: 4,
+            padding: [2, 6, 2, 6],
+            textStyle: { color: '#000' },
+            formatter: function (params) {
+                return `
+                    <div style="text-align:left;font-weight:500;font-size:12px;line-height:16px;margin-bottom:6px;">
+                        ${params.name}
+                    </div>
+                    <div style="text-align:left;font-size:12px;line-height:16px;">
+                        $${params.value}
+                    </div>`;
+            }
+        },
+        legend: {
+            show: hasData,
+            orient: 'horizontal',
             left: 'center',
-            top: 'center'
-        };
-    }
-
-    // Always use mobile layout positions
-    function getSeriesPosition(hasData) {
-        return {
-            center: ['50%', '50%'],
-            radius: hasData ? ['30%', '60%'] : ['40%', '70%']
-        };
-    }
-
-    function getOptions(currentTotal) {
-        const textPos = getTextPosition(hasData);
-        const seriesPos = getSeriesPosition(hasData);
-
-        return {
-            tooltip: {
-                trigger: 'item',
-                backgroundColor: '#F5F5F4',
-                borderColor: '#ECEBE9',
-                borderWidth: 1,
-                borderRadius: 4,
-                padding: [2, 6, 2, 6],
-                textStyle: { color: '#000' },
-                formatter: function (params) {
-                    return (
-                        '<div style="text-align: left; font-weight: 500; font-size: 12px; line-height: 16px; margin-bottom: 6px;">' +
-                        params.name +
-                        '</div>' +
-                        '<div style="text-align: left; font-size: 12px; line-height: 16px;">' +
-                        '$' + params.value +
-                        '</div>'
-                    );
+            bottom: 0,
+            itemWidth: 16,
+            itemHeight: 16,
+            textStyle: {
+                fontSize: 12,
+                color: '#2E2E2E',
+                rich: {
+                    text: {
+                        align: 'right',
+                        verticalAlign: 'middle',
+                        fontSize: 12,
+                        fontWeight: '600',
+                        color: '#44403C',
+                        fontFamily: 'Roboto, sans-serif',
+                        padding: [0, 0, 0, 8]
+                    }
                 }
             },
-            legend: {
-                show: hasData,
-                orient: 'horizontal',
-                left: 'center',
-                bottom: '0',
-                itemWidth: 16,
-                itemHeight: 16,
-                textStyle: {
-                    fontSize: 12,
-                    color: '#2E2E2E',
-                    rich: {
-                        text: {
-                            align: 'right',
-                            verticalAlign: 'middle',
-                            fontSize: 12,
-                            fontWeight: '600',
-                            color: '#44403C',
-                            fontFamily: 'Roboto, sans-serif',
-                            padding: [0, 0, 0, 8]
-                        }
-                    }
-                },
-                formatter: function (name) {
-                    return `{text|${name}}`;
-                },
-                data: data.map(item => ({
-                    name: item.name,
-                    icon: item.icon,
-                })),
-            },
-            graphic: {
-                elements: [
-                    {
-                        type: 'text',
-                        left: textPos.left,
-                        top: textPos.top,
-                        style: {
-                            text: getCenterText(currentTotal),
-                            textAlign: 'center',
-                            textVerticalAlign: 'middle',
-                            fontSize: 24,
-                            fontWeight: 500,
-                            lineHeight: 32,
-                            fill: '#1A1A1A',
-                            fontFamily: 'Roboto',
-                            rich: {
-                                spent: {
-                                    fontFamily: 'Inter',
-                                    fontWeight: 500,
-                                    fontSize: 12,
-                                    lineHeight: 16,
-                                    letterSpacing: '4%',
-                                    textAlign: 'center',
-                                    textTransform: 'uppercase',
-                                    fill: '#44403C',
-                                    fontFamily: 'Roboto'
-                                },
-                                amount: {
-                                    fontFamily: 'Roboto',
-                                    fontWeight: 500,
-                                    fontSize: 24,
-                                    lineHeight: 32,
-                                    fill: '#171412'
-                                }
+            formatter: name => `{text|${name}}`,
+            data: data.map(item => ({
+                name: item.name,
+                icon: item.icon
+            }))
+        },
+        graphic: {
+            elements: [
+                {
+                    type: 'text',
+                    left: textPos.left,
+                    top: textPos.top,
+                    style: {
+                        text: getCenterText(totalSpent),
+                        textAlign: 'center',
+                        textVerticalAlign: 'middle',
+                        fontSize: 24,
+                        fontWeight: 500,
+                        lineHeight: 32,
+                        fill: '#1A1A1A',
+                        fontFamily: 'Roboto',
+                        rich: {
+                            spent: {
+                                fontFamily: 'Roboto',
+                                fontWeight: 500,
+                                fontSize: 12,
+                                lineHeight: 16,
+                                letterSpacing: '4%',
+                                textAlign: 'center',
+                                textTransform: 'uppercase',
+                                fill: '#44403C'
+                            },
+                            amount: {
+                                fontFamily: 'Roboto',
+                                fontWeight: 500,
+                                fontSize: 24,
+                                lineHeight: 32,
+                                fill: '#171412'
                             }
                         }
                     }
-                ]
-            },
-            series: [
-                {
-                    name: 'Spent',
-                    type: 'pie',
-                    radius: seriesPos.radius,
-                    center: seriesPos.center,
-                    avoidLabelOverlap: false,
-                    itemStyle: {
-                        borderRadius: 4,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    },
-                    label: { show: false },
-                    data: hasData ? data : [],
-                    animation: true,
-                    animationDuration: 300
                 }
             ]
-        };
-    }
+        },
+        series: [
+            {
+                name: 'Spent',
+                type: 'pie',
+                radius: seriesPos.radius,
+                center: seriesPos.center,
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 4,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: { show: false },
+                data: hasData ? data : [],
+                animation: true,
+                animationDuration: 300
+            }
+        ]
+    };
 
-    function renderChart(currentTotal) {
-        myChart.setOption(getOptions(currentTotal), true);
-    }
-
-    renderChart(totalSpent);
+    myChart.setOption(options, true);
 
     function debounce(func, wait) {
         let timeout;
@@ -172,10 +156,7 @@
         };
     }
 
-    const debouncedResize = debounce(() => {
-        myChart.resize();
-    }, 200);
-
+    const debouncedResize = debounce(() => myChart.resize(), 200);
     window.addEventListener('resize', debouncedResize);
 
     myChart.on('legendselectchanged', function (event) {
@@ -186,8 +167,6 @@
                 newTotal += item.value;
             }
         });
-
-        const textPos = getTextPosition(hasData);
 
         myChart.setOption({
             graphic: {
@@ -200,9 +179,9 @@
                             text: getCenterText(newTotal),
                             textAlign: 'center',
                             textVerticalAlign: 'middle',
-                            fontSize: 16,
-                            fontWeight: 600,
-                            lineHeight: 24,
+                            fontSize: 24,
+                            fontWeight: 500,
+                            lineHeight: 32,
                             fill: '#1A1A1A',
                             fontFamily: 'Roboto'
                         }
