@@ -1,232 +1,219 @@
-﻿//window.renderSpentChart = function (budgetItems, totalSpent) {
-//    const chartDom = document.getElementById('spentChart');
-//    if (!chartDom) return;
+﻿window.renderSpentChart = function (budgetItems, totalSpent) {
+    const chartDom = document.getElementById('spentChart');
+    if (!chartDom) return;
 
-//    const myChart = echarts.init(chartDom);
+    const myChart = echarts.init(chartDom);
 
-//    const categoryIcons = {
-//        "Invitations & Stationary": "img/invite.svg",
-//        "Decor & Design": "img/decor.svg",
-//        "Food & Beverage": "img/food.svg",
-//        "Venue & Rentals": "img/venue.svg",
-//        "Entertainment & Activities": "img/entertainment.svg",
-//        "Photography & Videography": "img/photography.svg",
-//        "Transportation & Logistics": "img/transportation.svg",
-//        "Planning & Coordination": "img/planning.svg",
-//        "Attire & Beauty": "img/attire.svg",
-//        "Stationery & Printing": "img/stationary.svg",
-//        "Gifts & Favors": "img/gifts.svg",
-//        "Staffing & Labor": "img/staffing.svg",
-//        "Permits, Insurance & Legal": "img/permits.svg",
-//        "Technology & Software": "img/technology.svg",
-//        "Marketing & Promotion": "img/marketing.svg",
-//        "Miscellaneous & Contingency": "img/miscellaneous.svg"
-//    }
+    const categoryIcons = {
+        "Invitations & Stationary": "img/Respond.png",
+        "Decor & Design": "img/ViewEmail.svg",
+        "Food & Beverage": "img/Note1.png",
+    }
 
-//    const data = (budgetItems || []).map(item => ({
-//        value: item.actualAmount,
-//        name: item.categoryName,
-//        itemStyle: { color: item.color },
-//        icon: categoryIcons[item.categoryName] ? 'image://' + categoryIcons[item.categoryName] : 'image://img/miscellaneous.svg'
-//    }));
-//    const hasData = data.length > 0;
+    const data = (budgetItems || []).map(item => ({
+        value: item.actualAmount,
+        name: item.categoryName,
+        itemStyle: { color: item.color },
+        icon: categoryIcons[item.categoryName] ? 'image://' + categoryIcons[item.categoryName] : 'image://img/miscellaneous.svg'
+    }));
+    const hasData = data.length > 0;
 
-//    function getCenterText(amount) {
-//        return [
-//            '{spent|SPENT}',
-//            `$${amount.toLocaleString(undefined, {
-//                minimumFractionDigits: 0,
-//                maximumFractionDigits: 0
-//            })}`
-//        ].join('\n');
-//    }
+    function getCenterText(amount) {
+        return [
+            '{spent|SPENT}',
+            `$${amount.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            })}`
+        ].join('\n');
+    }
 
-//    // Always use mobile layout positions
-//    function getTextPosition(hasData) {
-//        return {
-//            left: 'center',
-//            top: 'center'
-//        };
-//    }
+    // Always use mobile layout positions
+    function getTextPosition(hasData) {
+        return {
+            left: 'center',
+            top: 'center'
+        };
+    }
 
-//    // Always use mobile layout positions
-//    function getSeriesPosition(hasData) {
-//        return {
-//            center: ['50%', '50%'],
-//            radius: hasData ? ['30%', '60%'] : ['40%', '70%']
-//        };
-//    }
+    // Always use mobile layout positions
+    function getSeriesPosition(hasData) {
+        return {
+            center: ['50%', '50%'],
+            radius: hasData ? ['30%', '60%'] : ['40%', '70%']
+        };
+    }
 
-//    function getOptions(currentTotal) {
-//        const textPos = getTextPosition(hasData);
-//        const seriesPos = getSeriesPosition(hasData);
+    function getOptions(currentTotal) {
+        const textPos = getTextPosition(hasData);
+        const seriesPos = getSeriesPosition(hasData);
 
-//        return {
-//            tooltip: {
-//                trigger: 'item',
-//                backgroundColor: '#F5F5F4',
-//                borderColor: '#ECEBE9',
-//                borderWidth: 1,
-//                borderRadius: 4,
-//                padding: [2, 6, 2, 6],
-//                textStyle: { color: '#000' },
-//                formatter: function (params) {
-//                    return (
-//                        '<div style="text-align: left; font-weight: 500; font-size: 12px; line-height: 16px; margin-bottom: 6px;">' +
-//                        params.name +
-//                        '</div>' +
-//                        '<div style="text-align: left; font-size: 12px; line-height: 16px;">' +
-//                        '$' + params.value +
-//                        '</div>'
-//                    );
-//                }
-//            },
-//            legend: {
-//                show: hasData,
-//                orient: 'horizontal',
-//                left: 'center',
-//                bottom: '0',
-//                itemWidth: 16,
-//                itemHeight: 16,
-//                textStyle: {
-//                    fontSize: 12,
-//                    color: '#2E2E2E',
-//                    rich: {
-//                        text: {
-//                            align: 'right',
-//                            verticalAlign: 'middle',
-//                            fontSize: 12,
-//                            fontWeight: '600',
-//                            color: '#44403C',
-//                            fontFamily: 'Roboto, sans-serif',
-//                            padding: [0, 0, 0, 8]
-//                        }
-//                    }
-//                },
-//                formatter: function (name) {
-//                    return `{text|${name}}`;
-//                },
-//                data: data.map(item => ({
-//                    name: item.name,
-//                    icon: item.icon,
-//                })),
-//            },
-//            graphic: {
-//                elements: [
-//                    {
-//                        type: 'text',
-//                        left: textPos.left,
-//                        top: textPos.top,
-//                        style: {
-//                            text: getCenterText(currentTotal),
-//                            textAlign: 'center',
-//                            textVerticalAlign: 'middle',
-//                            fontSize: 24,
-//                            fontWeight: 500,
-//                            lineHeight: 32,
-//                            fill: '#1A1A1A',
-//                            fontFamily: 'Roboto',
-//                            rich: {
-//                                spent: {
-//                                    fontFamily: 'Inter',
-//                                    fontWeight: 500,
-//                                    fontSize: 12,
-//                                    lineHeight: 16,
-//                                    letterSpacing: '4%',
-//                                    textAlign: 'center',
-//                                    textTransform: 'uppercase',
-//                                    fill: '#44403C',
-//                                    fontFamily: 'Roboto'
-//                                },
-//                                amount: {
-//                                    fontFamily: 'Roboto',
-//                                    fontWeight: 500,
-//                                    fontSize: 24,
-//                                    lineHeight: 32,
-//                                    fill: '#171412'
-//                                }
-//                            }
-//                        }
-//                    }
-//                ]
-//            },
-//            series: [
-//                {
-//                    name: 'Spent',
-//                    type: 'pie',
-//                    radius: seriesPos.radius,
-//                    center: seriesPos.center,
-//                    avoidLabelOverlap: false,
-//                    itemStyle: {
-//                        borderRadius: 4,
-//                        borderColor: '#fff',
-//                        borderWidth: 2
-//                    },
-//                    label: { show: false },
-//                    data: hasData ? data : [],
-//                    animation: true,
-//                    animationDuration: 300
-//                }
-//            ]
-//        };
-//    }
+        return {
+            tooltip: {
+                trigger: 'item',
+                backgroundColor: '#F5F5F4',
+                borderColor: '#ECEBE9',
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: [2, 6, 2, 6],
+                textStyle: { color: '#000' },
+                formatter: function (params) {
+                    return (
+                        '<div style="text-align: left; font-weight: 500; font-size: 12px; line-height: 16px; margin-bottom: 6px;">' +
+                        params.name +
+                        '</div>' +
+                        '<div style="text-align: left; font-size: 12px; line-height: 16px;">' +
+                        '$' + params.value +
+                        '</div>'
+                    );
+                }
+            },
+            legend: {
+                show: hasData,
+                orient: 'horizontal',
+                left: 'center',
+                bottom: '0',
+                itemWidth: 16,
+                itemHeight: 16,
+                textStyle: {
+                    fontSize: 12,
+                    color: '#2E2E2E',
+                    rich: {
+                        text: {
+                            align: 'right',
+                            verticalAlign: 'middle',
+                            fontSize: 12,
+                            fontWeight: '600',
+                            color: '#44403C',
+                            fontFamily: 'Roboto, sans-serif',
+                            padding: [0, 0, 0, 8]
+                        }
+                    }
+                },
+                formatter: function (name) {
+                    return `{text|${name}}`;
+                },
+                data: data.map(item => ({
+                    name: item.name,
+                    icon: item.icon,
+                })),
+            },
+            graphic: {
+                elements: [
+                    {
+                        type: 'text',
+                        left: textPos.left,
+                        top: textPos.top,
+                        style: {
+                            text: getCenterText(currentTotal),
+                            textAlign: 'center',
+                            textVerticalAlign: 'middle',
+                            fontSize: 24,
+                            fontWeight: 500,
+                            lineHeight: 32,
+                            fill: '#1A1A1A',
+                            fontFamily: 'Roboto',
+                            rich: {
+                                spent: {
+                                    fontFamily: 'Inter',
+                                    fontWeight: 500,
+                                    fontSize: 12,
+                                    lineHeight: 16,
+                                    letterSpacing: '4%',
+                                    textAlign: 'center',
+                                    textTransform: 'uppercase',
+                                    fill: '#44403C',
+                                    fontFamily: 'Roboto'
+                                },
+                                amount: {
+                                    fontFamily: 'Roboto',
+                                    fontWeight: 500,
+                                    fontSize: 24,
+                                    lineHeight: 32,
+                                    fill: '#171412'
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            series: [
+                {
+                    name: 'Spent',
+                    type: 'pie',
+                    radius: seriesPos.radius,
+                    center: seriesPos.center,
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 4,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: { show: false },
+                    data: hasData ? data : [],
+                    animation: true,
+                    animationDuration: 300
+                }
+            ]
+        };
+    }
 
-//    function renderChart(currentTotal) {
-//        myChart.setOption(getOptions(currentTotal), true);
-//    }
+    function renderChart(currentTotal) {
+        myChart.setOption(getOptions(currentTotal), true);
+    }
 
-//    renderChart(totalSpent);
+    renderChart(totalSpent);
 
-//    function debounce(func, wait) {
-//        let timeout;
-//        return function () {
-//            clearTimeout(timeout);
-//            timeout = setTimeout(func, wait);
-//        };
-//    }
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(func, wait);
+        };
+    }
 
-//    const debouncedResize = debounce(() => {
-//        myChart.resize();
-//    }, 200);
+    const debouncedResize = debounce(() => {
+        myChart.resize();
+    }, 200);
 
-//    window.addEventListener('resize', debouncedResize);
+    window.addEventListener('resize', debouncedResize);
 
-//    myChart.on('legendselectchanged', function (event) {
-//        let selected = event.selected;
-//        let newTotal = 0;
-//        data.forEach(item => {
-//            if (selected[item.name] !== false) {
-//                newTotal += item.value;
-//            }
-//        });
+    myChart.on('legendselectchanged', function (event) {
+        let selected = event.selected;
+        let newTotal = 0;
+        data.forEach(item => {
+            if (selected[item.name] !== false) {
+                newTotal += item.value;
+            }
+        });
 
-//        const textPos = getTextPosition(hasData);
+        const textPos = getTextPosition(hasData);
 
-//        myChart.setOption({
-//            graphic: {
-//                elements: [
-//                    {
-//                        type: 'text',
-//                        left: textPos.left,
-//                        top: textPos.top,
-//                        style: {
-//                            text: getCenterText(newTotal),
-//                            textAlign: 'center',
-//                            textVerticalAlign: 'middle',
-//                            fontSize: 16,
-//                            fontWeight: 600,
-//                            lineHeight: 24,
-//                            fill: '#1A1A1A',
-//                            fontFamily: 'Roboto'
-//                        }
-//                    }
-//                ]
-//            }
-//        });
-//    });
+        myChart.setOption({
+            graphic: {
+                elements: [
+                    {
+                        type: 'text',
+                        left: textPos.left,
+                        top: textPos.top,
+                        style: {
+                            text: getCenterText(newTotal),
+                            textAlign: 'center',
+                            textVerticalAlign: 'middle',
+                            fontSize: 16,
+                            fontWeight: 600,
+                            lineHeight: 24,
+                            fill: '#1A1A1A',
+                            fontFamily: 'Roboto'
+                        }
+                    }
+                ]
+            }
+        });
+    });
 
-//    return function () {
-//        window.removeEventListener('resize', debouncedResize);
-//        myChart.dispose();
-//    };
-//};
+    return function () {
+        window.removeEventListener('resize', debouncedResize);
+        myChart.dispose();
+    };
+};
