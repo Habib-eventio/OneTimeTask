@@ -77,6 +77,17 @@
             .ToList();
 
         TotalInProgress = StatusItems.First(s => s.Status == StatusType.InProgress).Count;
+        StatusItems = tasks
+            .GroupBy(t => t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default)
+            .Select(g => new StatusItemDto
+            {
+                Status = g.Key,
+                StatusName = GetEnumDisplayName(g.Key),
+                Count = g.Count()
+            })
+            .ToList();
+
+        TotalInProgress = StatusItems.FirstOrDefault(s => s.Status == StatusType.InProgress)?.Count ?? 0;
 
         ChartData = StatusItems.Select(item => new Dictionary<string, object>
         {
@@ -129,6 +140,13 @@
         StatusType.TemporaryTabled => "#d2b045",
         StatusType.Done => "#28a745",
         _ => "#206d62"
+        StatusType.InProgress => "#81B29A",
+        StatusType.Pending => "#E07A5F",
+        StatusType.WaitingForReview => "#F2CC8F",
+        StatusType.Tabled => "#6D597A",
+        StatusType.TemporaryTabled => "#B56576",
+        StatusType.Done => "#355070",
+        _ => "#CCCCCC"
     };
 
     private static string GetEnumDisplayName(StatusType status)
