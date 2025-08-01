@@ -31,6 +31,9 @@
 </div>
  
  
+</div>
+ 
+ 
 @code {
     public class BudgetItemDto
     {
@@ -80,15 +83,6 @@
         {
             throw;
         }
-    }
-    void ShowAddTaskFormPopup()
-    {
-        showAddTaskFormPopup = true;
-    }
-    private async Task RefreshTasksDataAsync()
-    {
-        await LoadChartDataAsync();
-        showAddTaskFormPopup = false;
     }
     public async Task LoadChartDataAsync()
     {
@@ -180,6 +174,9 @@
     }
     private string GetColorForCategory(string? name) => name switch
     {
+        "Invitations & Stationary" => "#81B29A",
+        "Decor & Design" => "#E07A5F",
+        "Food & Beverage" => "#F2CC8F",
         "Invitations & Stationary" => "img/Respond.png",
         "Decor & Design" => "img/ViewEmail.svg",
         "Food & Beverage" => "img/Note1.png",
