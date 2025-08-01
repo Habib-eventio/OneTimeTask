@@ -4,15 +4,15 @@
 <div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
      style="background: white; outline: 1px #ECEBE9 solid; outline-offset: -1px;">
 <div class="flex justify-between w-full">
-<div class="flex flex-1 items-start gap-2 py-1">
-<div class="relative w-6 h-6 overflow-visible">
-<img class="img" src="img/budget-menu-icon.svg" />
-</div>
-<div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
-                Budget Expense
-</div>
- 
+    <div class="flex flex-1 items-start gap-2 py-1">
+        <div class="relative w-6 h-6 overflow-visible">
+            <!-- Icon placeholder -->
         </div>
+        <div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
+            Budget Expense
+        </div>
+    </div>
+    <button class="btn btn-primary btn-sm" @onclick="AddNewTask">ADD NEW TASK</button>
 </div>
  
     <div class="flex-1 h-px outline outline-1 outline-[#ECEBE9] outline-offset-[-0.5px] w-full my-3"></div>
@@ -28,9 +28,6 @@
  
 </div>
  
-<GenericPopupComponent IsVisible="showAddTaskFormPopup" OnClose="()=>showAddTaskFormPopup=false" MaxWidth="440px">
-<BudgetItemComponent Eventid="@Eventid" OnClose="()=>showAddTaskFormPopup=false" BudgetItemUpdated="@RefreshTasksDataAsync"></BudgetItemComponent>
-</GenericPopupComponent>
  
 @code {
     public class BudgetItemDto
@@ -39,11 +36,12 @@
         public decimal ActualAmount { get; set; }
     }
  
-    [Parameter]
-    public int Eventid { get; set; }
- 
-    bool showAddTaskFormPopup = false;
-    private List<BudgetItemDto> BudgetItems { get; set; } = new();
+    private List<BudgetItemDto> BudgetItems { get; set; } = new()
+    {
+        new BudgetItemDto { CategoryName = "Invitations & Stationary", ActualAmount = 500 },
+        new BudgetItemDto { CategoryName = "Decor & Design", ActualAmount = 300 },
+        new BudgetItemDto { CategoryName = "Food & Beverage", ActualAmount = 400 }
+    };
     private List<object> ChartData { get; set; } = new();
     private bool chartReady = false;
  
@@ -79,31 +77,21 @@
             throw;
         }
     }
-    void ShowAddTaskFormPopup()
-    {
-        showAddTaskFormPopup = true;
-    }
-    private async Task RefreshTasksDataAsync()
-    {
-        await LoadChartDataAsync();
-        showAddTaskFormPopup = false;
-    }
     public async Task LoadChartDataAsync()
     {
  
-        // var result = await budgetService.GetBudgetItemsAsync(Eventid);
-        // var items = result?.Value;
- 
+        var items = BudgetItems;
+
         if (items != null && items.Any())
         {
             BudgetItems = items
                 .Where(item => !string.IsNullOrEmpty(item.CategoryName))
                 .GroupBy(item => item.CategoryName!)
                 .Select(group => new BudgetItemDto
-                    {
-                        CategoryName = group.Key,
-                        ActualAmount = group.Sum(i => i.ActualAmount)
-                    })
+                {
+                    CategoryName = group.Key,
+                    ActualAmount = group.Sum(i => i.ActualAmount)
+                })
                 .ToList();
         }
         else
@@ -148,11 +136,40 @@
             Console.WriteLine("JS error: " + ex.Message);
         }
     }
+
+    private int nextTaskId = 1;
+
+    private async Task AddNewTask()
+    {
+        BudgetItems.Add(new BudgetItemDto
+        {
+            CategoryName = $"Task {nextTaskId}",
+            ActualAmount = 0
+        });
+        nextTaskId++;
+        await RefreshChartAsync();
+    }
+
+    private async Task RefreshChartAsync()
+    {
+        TotalSpent = BudgetItems.Sum(b => b.ActualAmount);
+        ChartData = BudgetItems.Select(item => new
+        {
+            categoryName = item.CategoryName,
+            actualAmount = item.ActualAmount,
+            color = GetColorForCategory(item.CategoryName)
+        }).ToList<object>();
+        chartReady = true;
+        if (isClientReady)
+        {
+            await RenderChartAsync();
+        }
+    }
     private string GetColorForCategory(string? name) => name switch
     {
-        "Invitations & Stationary": "img/Respond.png",
-        "Decor & Design": "img/ViewEmail.svg",
-        "Food & Beverage": "img/Note1.png",
+        "Invitations & Stationary" => "#81B29A",
+        "Decor & Design" => "#E07A5F",
+        "Food & Beverage" => "#F2CC8F",
 
         _ => "#CCCCCC" // Default color for unknown categories
     };
