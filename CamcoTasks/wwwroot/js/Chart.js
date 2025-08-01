@@ -9,26 +9,18 @@
 
     const myChart = echarts.init(chartDom);
 
-    const categoryIcons = {
-        "Invitations & Stationary": 'circle',
-        "Decor & Design": 'rect',
-        "Food & Beverage": 'triangle'
-    };
-
-    // Ensure correct casing for JS property access
     const data = (budgetItems || []).map(item => ({
         value: item.actualAmount ?? item.ActualAmount,
         name: item.categoryName ?? item.CategoryName,
-        itemStyle: { color: item.color ?? item.Color },
-        icon: categoryIcons[item.categoryName ?? item.CategoryName] || 'circle'
+        itemStyle: { color: item.color ?? item.Color }
     }));
 
     const hasData = data.length > 0;
 
     function getCenterText(amount) {
         return [
-            '{spent|SPENT}',
-            `$${amount.toLocaleString(undefined, {
+            '{spent|TASKS IN PROGRESS}',
+            `${amount.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             })}`
@@ -38,7 +30,7 @@
     const textPos = { left: 'center', top: 'center' };
     const seriesPos = {
         center: ['50%', '50%'],
-        radius: hasData ? ['30%', '60%'] : ['40%', '70%']
+        radius: hasData ? ['40%', '75%'] : ['50%', '80%']
     };
 
     const options = {
@@ -56,7 +48,7 @@
                         ${params.name}
                     </div>
                     <div style="text-align:left;font-size:12px;line-height:16px;">
-                        $${params.value}
+                        ${params.value}
                     </div>`;
             }
         },
@@ -83,10 +75,7 @@
                 }
             },
             formatter: name => `{text|${name}}`,
-            data: data.map(item => ({
-                name: item.name,
-                icon: item.icon
-            }))
+            data: data.map(item => item.name)
         },
         graphic: {
             elements: [
@@ -159,15 +148,7 @@
     const debouncedResize = debounce(() => myChart.resize(), 200);
     window.addEventListener('resize', debouncedResize);
 
-    myChart.on('legendselectchanged', function (event) {
-        let selected = event.selected;
-        let newTotal = 0;
-        data.forEach(item => {
-            if (selected[item.name] !== false) {
-                newTotal += item.value;
-            }
-        });
-
+    myChart.on('legendselectchanged', function () {
         myChart.setOption({
             graphic: {
                 elements: [
@@ -176,7 +157,7 @@
                         left: textPos.left,
                         top: textPos.top,
                         style: {
-                            text: getCenterText(newTotal),
+                            text: getCenterText(totalSpent),
                             textAlign: 'center',
                             textVerticalAlign: 'middle',
                             fontSize: 24,
