@@ -27,8 +27,8 @@
 
     function getCenterText(amount) {
         return [
-            '{spent|SPENT}',
-            `$${amount.toLocaleString(undefined, {
+            '{spent|TASKS IN PROGRESS}',
+            `${amount.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             })}`
@@ -56,7 +56,7 @@
                         ${params.name}
                     </div>
                     <div style="text-align:left;font-size:12px;line-height:16px;">
-                        $${params.value}
+                        ${params.value}
                     </div>`;
             }
         },
@@ -159,15 +159,7 @@
     const debouncedResize = debounce(() => myChart.resize(), 200);
     window.addEventListener('resize', debouncedResize);
 
-    myChart.on('legendselectchanged', function (event) {
-        let selected = event.selected;
-        let newTotal = 0;
-        data.forEach(item => {
-            if (selected[item.name] !== false) {
-                newTotal += item.value;
-            }
-        });
-
+    myChart.on('legendselectchanged', function () {
         myChart.setOption({
             graphic: {
                 elements: [
@@ -176,7 +168,7 @@
                         left: textPos.left,
                         top: textPos.top,
                         style: {
-                            text: getCenterText(newTotal),
+                            text: getCenterText(totalSpent),
                             textAlign: 'center',
                             textVerticalAlign: 'middle',
                             fontSize: 24,
