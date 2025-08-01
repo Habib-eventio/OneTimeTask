@@ -31,12 +31,6 @@
 </div>
  
  
-</div>
- 
-<GenericPopupComponent IsVisible="showAddTaskFormPopup" OnClose="()=>showAddTaskFormPopup=false" MaxWidth="440px">
-<BudgetItemComponent Eventid="@Eventid" OnClose="()=>showAddTaskFormPopup=false" BudgetItemUpdated="@RefreshTasksDataAsync"></BudgetItemComponent>
-</GenericPopupComponent>
- 
 @code {
     public class BudgetItemDto
     {
@@ -44,8 +38,6 @@
         public decimal ActualAmount { get; set; }
     }
  
-    [Parameter]
-    public int Eventid { get; set; }
  
     bool showAddTaskFormPopup = false;
     private List<BudgetItemDto> BudgetItems { get; set; } = new()
@@ -64,7 +56,7 @@
     private bool _hasInitialized;
     protected override async Task OnParametersSetAsync()
     {
-        if (isClientReady) // If already interactive
+        if (isClientReady)
         {
             await LoadChartDataAsync();
  
@@ -100,9 +92,6 @@
     }
     public async Task LoadChartDataAsync()
     {
- 
-        // var result = await budgetService.GetBudgetItemsAsync(Eventid);
-        // var items = result?.Value;
  
         var items = BudgetItems;
 
