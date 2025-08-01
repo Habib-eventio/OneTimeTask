@@ -22,12 +22,12 @@ public class DepartmentAndManager
     [Column("DepartmentAbbreviation", TypeName = "varchar(2)")]
     [StringLength(2)]
     [MaxLength(2)]
-    public string DepartmentAbbreviation { get; set; }
+    public string? DepartmentAbbreviation { get; set; }
 
     [Column("DepartmentImage", TypeName = "nvarchar(255)")]
     [StringLength(255)]
     [MaxLength(255)]
-    public string DepartmentImage { get; set; }
+    public string? DepartmentImage { get; set; }
 
     [Browsable(false)]
     [Column("PrimaryManagerId", TypeName = "bigint")]
