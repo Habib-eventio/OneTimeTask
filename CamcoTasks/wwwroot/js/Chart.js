@@ -5,16 +5,16 @@
     const myChart = echarts.init(chartDom);
 
     const categoryIcons = {
-        "Invitations & Stationary": "img/Respond.png",
-        "Decor & Design": "img/ViewEmail.svg",
-        "Food & Beverage": "img/Note1.png",
-    }
+        "Invitations & Stationary": 'circle',
+        "Decor & Design": 'rect',
+        "Food & Beverage": 'triangle'
+    };
 
     const data = (budgetItems || []).map(item => ({
         value: item.actualAmount,
         name: item.categoryName,
         itemStyle: { color: item.color },
-        icon: categoryIcons[item.categoryName] ? 'image://' + categoryIcons[item.categoryName] : 'image://img/miscellaneous.svg'
+        icon: categoryIcons[item.categoryName] || 'circle'
     }));
     const hasData = data.length > 0;
 
