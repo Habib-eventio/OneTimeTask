@@ -1,0 +1,394 @@
+﻿
+.viewSkinButtonStyle {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	background: #eddec0;
+	color: black;
+	font-weight:bold;
+}
+
+.e-grid .e-altrow {
+	background-color: lightgray;
+}
+
+.e-grid .e-detailindentcell {
+	background-color: #4FC3A1;
+}
+
+.e-grid .e-columnheader .e-headercell {
+	background-color: #421c4a !important;
+	color: #ffffff !important;
+}
+.e-grid .e-rowcell {
+	text-transform: uppercase;
+}
+.e-grid .e-detailindentcell {
+	background-color: #EB711D;
+}
+
+.e-grid .e-detailrowexpand {
+	background-color: #EB711D;
+}
+
+.e-grid .e-headercelldiv {
+	font-size: 16px !important;
+	padding: 0px 1px 0px 5px !important;
+	padding-left:0px !important;
+	margin: 0px !important;
+}
+.e-grid .e-rowcell {
+	font-size: 16px !important;
+	color: black;
+	font-family: "Franklin Gothic";
+}
+.e-grid .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop) {
+	color: #ffffff;
+}
+
+.e-filtered {
+	background-color: red;
+}
+
+.e-input-group input.e-input, .e-input-group.e-control-wrapper input.e-input, .e-float-input input, .e-float-input.e-control-wrapper input, .e-input-group textarea.e-input, .e-input-group.e-control-wrapper textarea.e-input, .e-float-input textarea, .e-float-input.e-control-wrapper textarea, .e-input-group .e-input[disabled], .e-input-group.e-control-wrapper .e-input[disabled], .e-input-group.e-disabled input.e-input, .e-input-group.e-control-wrapper.e-disabled input.e-input, .e-input-group.e-disabled textarea.e-input, .e-input-group.e-control-wrapper.e-disabled textarea.e-input {
+	background: #fdff8f;
+	color: inherit;
+}
+.standardAlternativeRowColor {
+	background-color: #D3D3D3;
+}
+
+.standardFontSize{
+	font-size:20px;
+}
+.standardHeaderFontSize{
+	font-size:30px;
+}
+.standardHeaderStyle {
+	background-color: black;
+	color: white;
+	font-weight: bold;
+	font-family: 'Franklin Gothic';
+	font-size: 30px;
+	text-align: center;
+}
+.standardTableHeaderStyle {
+	background-color: #5d3118;
+	color: white;
+	font-weight: bold;
+	font-family: 'Franklin Gothic';
+	font-size: 22px;
+}
+.standardBorder{
+	border:4px solid Black;
+}
+.screenLabelStyle {
+	background-color: #666666 !important;
+	color: white !important;
+	height: 22px !important;
+	margin-top: 70px !important;
+	z-index:999;
+}
+
+/*===============================================
+               Tabbed Styles
+================================================*/
+
+.tabbed {
+	width: 100%;
+	margin: 0 auto;
+	border-bottom: 4px solid #000;
+	overflow: hidden;
+	transition: border 250ms ease;
+}
+
+	.tabbed ul {
+		margin: 0px;
+		padding: 0px;
+		overflow: hidden;
+		list-style-type: none;
+	}
+
+		.tabbed ul * {
+			margin: 0px;
+			padding: 0px;
+		}
+
+		.tabbed ul li {
+			width:250px;
+			text-align:center;
+			display: block;
+			float: left;
+			padding: 10px 24px 8px;
+			background-color: #FFF;
+			z-index: 2;
+			position: relative;
+			cursor: pointer;
+			text-transform: uppercase;
+			font: 600 13px/20px roboto, "Open Sans", Helvetica, sans-serif;
+			transition: all 250ms ease;
+			font-size: 27px;
+		}
+
+			.tabbed ul li:before,
+			.tabbed ul li:after {
+				display: block;
+				content: " ";
+				position: absolute;
+				top: 0;
+				height: 100%;
+				width: 44px;
+				background-color: #FFF;
+				transition: all 250ms ease;
+			}
+
+			.tabbed ul li:before {
+				right: -24px;
+				transform: skew(30deg, 0deg);
+				box-shadow: rgba(0,0,0,.1) 3px 2px 5px, inset rgba(255,255,255,.09) -1px 0;
+			}
+
+			.tabbed ul li:after {
+				left: -24px;
+				transform: skew(-30deg, 0deg);
+				box-shadow: rgba(0,0,0,.1) -3px 2px 5px, inset rgba(255,255,255,.09) 1px 0;
+			}
+
+			.tabbed ul li:hover,
+			.tabbed ul li:hover:before,
+			.tabbed ul li:hover:after {
+				background-color: #F4F7F9;
+				color: #444;
+			}
+
+			.tabbed ul li.active {
+				z-index: 3;
+			}
+
+				.tabbed ul li.active,
+				.tabbed ul li.active:before,
+				.tabbed ul li.active:after {
+					background-color: #000;
+					color: #fff ;
+				}
+
+			.tabbed ul li.yellowBg,
+			.tabbed ul li.yellowBg:before,
+			.tabbed ul li.yellowBg:after {
+				background-color: #ffff8b;
+			}
+
+			.tabbed ul li.orangeBg,
+			.tabbed ul li.orangeBg:before,
+			.tabbed ul li.orangeBg:after {
+				background-color: orange;
+			}
+
+			.tabbed ul li.lightOrangeBg,
+			.tabbed ul li.lightOrangeBg:before,
+			.tabbed ul li.lightOrangeBg:after {
+				background-color: #FFD580;
+			}
+
+			.tabbed ul li.redBg,
+			.tabbed ul li.redBg:before,
+			.tabbed ul li.redBg:after {
+				background-color: red;
+			}
+
+			.tabbed ul li.lightSkyBlueBg,
+			.tabbed ul li.lightSkyBlueBg:before,
+			.tabbed ul li.lightSkyBlueBg:after {
+				background-color: lightskyblue;
+			}
+
+			.tabbed ul li.darksalmonBg,
+			.tabbed ul li.darksalmonBg:before,
+			.tabbed ul li.darksalmonBg:after {
+				background-color: darksalmon;
+			}
+
+			.tabbed ul li.lawngreenBg,
+			.tabbed ul li.lawngreenBg:before,
+			.tabbed ul li.lawngreenBg:after {
+				background-color: lawngreen;
+			}
+			.tabbed ul li.lightGreenBg,
+			.tabbed ul li.lightGreenBg:before,
+			.tabbed ul li.lightGreenBg:after {
+				background-color: #90ee90;
+			}
+
+			.tabbed ul li.lightsteelblueBg,
+			.tabbed ul li.lightsteelblueBg:before,
+			.tabbed ul li.lightsteelblueBg:after {
+				background-color: lightsteelblue;
+			}
+
+			.tabbed ul li.goldBg,
+			.tabbed ul li.goldBg:before,
+			.tabbed ul li.goldBg:after {
+				background-color: gold;
+			}
+
+			.tabbed ul li.palevioletredBg,
+			.tabbed ul li.palevioletredBg:before,
+			.tabbed ul li.palevioletredBg:after {
+				background-color: palevioletred;
+			}
+
+			.tabbed ul li.hotpinkBg,
+			.tabbed ul li.hotpinkBg:before,
+			.tabbed ul li.hotpinkBg:after {
+				background-color: hotpink;
+			}
+
+			.tabbed ul li.purpleBg,
+			.tabbed ul li.purpleBg:before,
+			.tabbed ul li.purpleBg:after {
+				background-color: #CBC3E3;
+			}
+
+			.tabbed ul li.peachBg,
+			.tabbed ul li.peachBg:before,
+			.tabbed ul li.peachBg:after {
+				background-color: peachpuff;
+			}
+
+			.tabbed ul li.aquaBg,
+			.tabbed ul li.aquaBg:before,
+			.tabbed ul li.aquaBg:after {
+				background-color: #00FFFF;
+			}
+			.tabbed ul li.lightPinkBg,
+			.tabbed ul li.lightPinkBg:before,
+			.tabbed ul li.lightPinkBg:after {
+				background-color: #FEA3AA;
+			}
+
+
+	/*----- Round Tabs -----*/
+	.tabbed.round ul li {
+		border-radius: 8px 8px 0 0;
+	}
+
+		.tabbed.round ul li:before {
+			border-radius: 0 8px 0 0;
+		}
+
+		.tabbed.round ul li:after {
+			border-radius: 8px 0 0 0;
+		}
+
+.activeStyle {
+	font-size:35px !important;
+}
+
+div.container4 {
+	position: relative
+}
+
+	div.container4 p {
+		margin: 0;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-right: -50%;
+		transform: translate(-50%, -50%)
+	}
+
+.dotBlack {
+	height: 28px;
+	width: 32px;
+	font-size: 14px;
+	background-color: black;
+	color: white;
+	font-weight: bold;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 2px;
+}
+.camcoStandardFontSize{
+	font-size:20px;
+}
+.loader {
+	position: relative;
+	width: 200px;
+	height: 200px;
+	border: 4px solid #240229;
+	overflow: hidden;
+	border-radius: 50%;
+	box-shadow: -5px -5px 5px rgba(78, 37, 122, 0.1), 10px 10px 10px rgba(89, 44, 140, 0.4), inset -5px -5px 5px rgba(78, 37, 122, 0.2), inset 10px 10px 10px rgba(89, 44, 140, 0.4);
+}
+
+	.loader:before {
+		content: "";
+		position: absolute;
+		top: 25px;
+		left: 25px;
+		right: 25px;
+		bottom: 25px;
+		z-index: 10;
+		background: #FFFFFF;
+		border-radius: 50%;
+		border: 2px solid #240229;
+		box-shadow: inset -2px -2px 5px rgba(78, 37, 122, 0.2), inset 3px 3px 5px rgba(89, 44, 140, 0.5);
+	}
+
+	.loader span {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+		background-image: linear-gradient( -225deg, #401E79 0%, #7338B4 50%, #CE1AD2 100% );
+		filter: blur(20px);
+		z-index: -1;
+		animation: animate 0.5s linear infinite;
+	}
+
+@keyframes animate {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.BackgroundCustom {
+	color: black !important;
+	background-color: #FFFF64 !important;
+}
+
+.BackgroundCustomWhite {
+	color: black !important;
+	background-color: white !important;
+}
+
+.BackgroundCustomMultiLine {
+	color: black !important;
+	background-color: #FFFF64 !important;
+	height: 100px;
+}
+
+.table td, .table th {
+	border-bottom: 1px solid #dee2e6;
+	border-top: none;
+}
+
+.custom-top {
+	font-weight: bold;
+	text-align: center;
+	background: #f6f6f6;
+	color: #000;
+	border-bottom: solid 3px #e3e3e3;
+}
+
+.custom-border {
+	border: 1px solid #CED4DA !important;
+}
+
+.blazored-toast-container {
+	z-index: 9999 !important;
+	opacity: 1;
+}

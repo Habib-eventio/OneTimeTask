@@ -1,0 +1,183 @@
+﻿@* @inherits StockroomComponentModel *@
+
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Inputs
+
+@using CamcoTasks.Data.Services
+@using ERP.Data.CustomModels.Other
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / St</span></div>
+</div>
+@* 
+<div class="mx-3 pl-3">
+    <div class="standardBorder row">
+        <div class="col-md-12 m-0 p-1">
+            <div class="row col-12 m-0 p-0 standardHeaderStyle">
+                <div class="col-md-3 m-0 p-0"> </div>
+                <div class="col-md-6 text-center m-0 p-0">
+                    <label class="mt-1 m-0 p-0">DAYS PACKED AHEAD</label>
+                </div>
+
+                @if (!IsLoadingDPA)
+                {
+                    <div class="col-md-3 p-1" style="text-align:right">
+                        <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                           role="button" data-placement="top" title="" data-original-title="Edit"
+                           data-toggle="modal" data-target="#DaysModal"
+                        @onclick="@RefreshDataModalDPA">VIEW DAYS PACKED AHEAD DATA </a>
+                    </div>
+                }
+
+            </div>
+
+            @if (IsLoadingDPA)
+            {
+                <br />
+                <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">LOADING...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div>
+
+                    <SfChart UseGroupingSeparator="true" Height="350">
+                        <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                        <ChartPrimaryXAxis Interval="1" LabelIntersectAction="LabelIntersectAction.Rotate45"
+                                           RangePadding="ChartRangePadding.None"
+                                           IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows"
+                                       RowIndex="1" Name="YRightAxis">
+                                <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+
+                            </ChartAxis>
+                            <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows"
+                                       RowIndex="1" Name="YleftAxis">
+                                <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                            </ChartAxis>
+                        </ChartAxes>
+
+                        <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                        <ChartSeriesCollection>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="DAYS PACKED AHEAD" DataSource="@DaysPackedMetricsHistories" Width="2"
+                                         XName="Date" YName="DaysPackedAhead" Type="ChartSeriesType.Line">
+                            </ChartSeries>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="6 DAYS AVERAGE" Width="2"
+                                         DataSource="@DaysPackedMetricsHistories" XName="Date" YName="SixDaysPackedAhead"
+                                         Type="ChartSeriesType.Spline">
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartLegendSettings ShapeHeight="20" ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="3">
+                            <ChartLegendTextStyle Size="12px" FontWeight="Bold" />
+                        </ChartLegendSettings>
+                    </SfChart>
+                </div>
+
+
+            }
+
+
+            <div class="modal fade" id="DaysModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header text-center align-content-center row m-0 p-1">
+                            <div class="col-2  m-0 p-0">
+                            </div>
+                            <div class="text-center col-8 m-0 p-0 align-content-center">
+                                <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">DAYS PACKED AHEAD DATA</p>
+                            </div>
+                            <div class="text-right col-2 m-0 p-0">
+                                <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container">
+                                <SfGrid @ref="DPARefGrid" DataSource="@ModalDaysPackedMetricsHistories" AllowTextWrap="true" AllowSorting="true"
+                                        Height="400" RowHeight="10">
+                                    <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row">
+                                    </GridSelectionSettings>
+                                    <GridEditSettings AllowAdding="false"
+                                                      AllowEditing="false"
+                                                      AllowEditOnDblClick="false"
+                                                      AllowDeleting="false"></GridEditSettings>
+                                    <GridColumns>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.ActualDate)
+                                                    HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.DaysPackedAhead)
+                                                    HeaderText="DAYS PACKED AHEAD"></GridColumn>
+
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.SixDaysPackedAhead)
+                                                    HeaderText="SIX DAYS AVERAGE">
+                                        </GridColumn>
+                                    </GridColumns>
+                                </SfGrid>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="pt-2">
+        <div class="row standardBorder">
+            <div class="col-md-12 m-0 p-1">
+                <div class="col-12 m-0 p-0 standardHeaderStyle text-center ">
+                    <label class="mt-1 m-0 p-0">OVERWEIGHT BOXES > 3%</label>
+                </div>
+
+                @if (IsLoadingOW)
+                {
+                    <br />
+                    <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">LOADING...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-12 m-0 p-0">
+                        <SfGrid DataSource="@OverweightBoxes" EnableHover="false" AllowSorting="true" EnableVirtualization="false" AllowTextWrap="true" AllowMultiSorting="true"
+                                Width="100%" Height="200" RowHeight="10" AllowFiltering="true" AllowPaging="false">
+                            <GridPageSettings PageSizes="@(new List<string>() { "All", "200", "100", "50", "25", "10" })" PageSize="50"></GridPageSettings>
+                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                            <GridGroupSettings ShowDropArea="false"></GridGroupSettings>
+                            <GridSortSettings>
+                                <GridSortColumns>
+                                    <GridSortColumn Field="TransactionDate" Direction="SortDirection.Descending"></GridSortColumn>
+                                </GridSortColumns>
+                            </GridSortSettings>
+                            <GridColumns>
+                                <GridColumn Width="90" HeaderText="SHIPMENT DATE" Format="d" Field=@nameof(TempOverweightBoxModel.ShipmentClosedDate) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="100" HeaderText="CUSTOMER" Field=@nameof(TempOverweightBoxModel.Customer) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="120" HeaderText="PART NUMBER" Field=@nameof(TempOverweightBoxModel.PartNumber) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="PERCENT OFF" Format="P2" Field=@nameof(TempOverweightBoxModel.PercentOff) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="CO NUMBER" Field=@nameof(TempOverweightBoxModel.CustomerOrderNumber) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="120" HeaderText="PACKED BY" Field=@nameof(TempOverweightBoxModel.WhoPacked) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="QTY PACKED" Field=@nameof(TempOverweightBoxModel.PackQty) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="PART WEIGHT" Field=@nameof(TempOverweightBoxModel.PartWeight) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="BOX WEIGHT" Field=@nameof(TempOverweightBoxModel.BoxWeight) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="EXPECTED WEIGHT" Format="N3" Field=@nameof(TempOverweightBoxModel.ExpectedWeight) TextAlign="TextAlign.Center"></GridColumn>
+                                <GridColumn Width="80" HeaderText="ACTUAL WEIGHT" Field=@nameof(TempOverweightBoxModel.ActualWeight) TextAlign="TextAlign.Center"></GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+</div> *@
+    

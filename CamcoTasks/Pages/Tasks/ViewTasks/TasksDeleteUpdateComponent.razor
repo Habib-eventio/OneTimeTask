@@ -1,0 +1,42 @@
+﻿<!--Task update delete Modal -->
+<div class="modal fade" id="deleteModal" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+     style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">DELETE UPDATE</h5>
+                <button type="button" class="close" @onclick="CloseComponent" aria-label="Close">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>DO YOU WANT TO DELETE THIS UPDATE ?</h4>
+                <table class="table table-danger">
+                    <tr>
+                        <td>ID:</td>
+                        <td>@DeleteViewModelUpdate.UpdateId</td>
+                    </tr>
+                    <tr>
+                        <td>UPDATE DATE:</td>
+                        <td>@DeleteViewModelUpdate.UpdateDate</td>
+                    </tr>
+                    <tr>
+                        <td>UPDATE:</td>
+                        <td>@DeleteViewModelUpdate.Update</td>
+                    </tr>
+                    <tr>
+                        <td>TASK ID:</td>
+                        <td>@DeleteViewModelUpdate.TaskID</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" @onclick="CloseComponent"><i class="flaticon-cancel-12"></i> NO</button>
+                <button type="button" class="btn btn-success"
+                        @onclick="(async () => await DeleteUpdate(DeleteViewModelUpdate))">
+                    YES
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

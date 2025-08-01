@@ -1,0 +1,279 @@
+﻿@page
+@model SetupApp.Web.Pages.Account.RegisterModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+<div class="register-wrapper">
+    <div class="register-form-container">
+        <div class="form-header">
+            <div class="icon-circle">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2>Create Account</h2>
+            <p>Get started with your free account</p>
+        </div>
+
+        @if (ViewData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center mb-3">
+                @ViewData["SuccessMessage"]
+            </div>
+        }
+
+        <form method="post" class="register-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="form-columns">
+                <div class="input-group">
+                    <input asp-for="Input.UserName" id="username" tabindex="1" placeholder=" " />
+                    <label for="username"><i class="fas fa-user"></i> User Name</label>
+                    <span class="text-danger" asp-validation-for="Input.UserName"></span>
+                </div>
+
+                <div class="input-group">
+                    <input asp-for="Input.Email" id="email" type="email" placeholder=" " tabindex="2" />
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <span class="text-danger" asp-validation-for="Input.Email"></span>
+                </div>
+
+                <div class="input-group">
+                    <input asp-for="Input.PhoneNumber" id="phoneNumber" tabindex="3" type="tel" placeholder=" " />
+                    <label for="phoneNumber"><i class="fas fa-phone"></i> Phone Number (Optional)</label>
+                    <span class="text-danger" asp-validation-for="Input.PhoneNumber"></span>
+                </div>
+
+                <div class="input-group password-group">
+                    <input asp-for="Input.Password" id="password" type="password" tabindex="4" placeholder=" " />
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <span class="toggle-password" onclick="togglePassword('password')">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                    <span class="text-danger" asp-validation-for="Input.Password"></span>
+                </div>
+
+                <div class="input-group password-group">
+                    <input asp-for="Input.ConfirmPassword" id="confirmPassword" type="password" tabindex="5" placeholder=" " />
+                    <label for="confirmPassword"><i class="fas fa-lock"></i> Confirm Password</label>
+                    <span class="toggle-password" onclick="togglePassword('confirmPassword')">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                    <span class="text-danger" asp-validation-for="Input.ConfirmPassword"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" tabindex="6">
+                <i class="fas fa-user-plus"></i> Register Now
+            </button>
+        </form>
+
+        <div class="form-footer">
+            Already have an account? <a href="/Account/Login">Sign in here</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+        background: #f8f8f8;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #2d3436;
+    }
+
+    .register-wrapper {
+        width: 100%;
+        max-width: 900px;
+        padding: 20px;
+    }
+
+    .register-form-container {
+        background: #e0e0e0;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        padding: 25px 30px;
+        color: #2d3436;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 10px;
+        background: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5f27cd;
+        font-size: 24px;
+    }
+
+    .form-header h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+    }
+
+    .form-header p {
+        margin: 6px 0 0;
+        font-size: 14px;
+    }
+
+    .register-form {
+        width: 100%;
+    }
+
+    .form-columns {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .input-group {
+        flex: 1 1 100%;
+        position: relative;
+        margin-bottom: 34px;
+        padding: 0 10px;
+    }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 40px 14px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #555;
+            font-size: 15px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+        }
+
+            .input-group input:focus {
+                outline: none;
+                border-bottom-color: #341f97;
+            }
+
+        .input-group label {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            font-size: 15px;
+            color: #555;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+            .input-group label i {
+                margin-right: 8px;
+                width: 16px;
+                text-align: center;
+            }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: -10px;
+            left: 0;
+            font-size: 12px;
+            color: #341f97;
+        }
+
+    .toggle-password {
+        position: absolute;
+        right: 16px;
+        top: 14px;
+        cursor: pointer;
+        color: #555;
+        z-index: 2;
+    }
+
+        .toggle-password:hover {
+            color: #341f97;
+        }
+
+    .text-danger {
+        font-size: 13px;
+        color: #ff6b6b;
+        margin-top: 4px;
+        display: block;
+        padding-left: 4px;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: #5f27cd;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+        .submit-btn:hover {
+            background: #341f97;
+            transform: translateY(-1px);
+        }
+
+        .submit-btn i {
+            margin-right: 8px;
+        }
+
+    .form-footer {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+        color: #2d3436;
+    }
+
+        .form-footer a {
+            color: #341f97;
+            text-decoration: underline;
+        }
+
+            .form-footer a:hover {
+                text-decoration: none;
+            }
+
+    @@media (min-width: 769px) {
+        .form-columns
+
+    {
+        flex-direction: row;
+    }
+
+    .input-group {
+        flex: 1 1 45%;
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .form-columns
+
+    {
+        flex-direction: column;
+    }
+
+    .input-group {
+        flex: 1 1 100%;
+    }
+
+    }
+</style>
+
+ 

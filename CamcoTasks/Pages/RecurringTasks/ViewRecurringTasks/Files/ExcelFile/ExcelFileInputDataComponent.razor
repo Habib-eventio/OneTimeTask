@@ -1,0 +1,59 @@
+﻿﻿<!--Excel file input modal-->
+<div class="modal fade" id="ExcelFileInputComponentId" tabindex="-1" data-backdrop="static" data-keyboard="false" style="overflow-y: scroll; padding-right: 0px !important;" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content" style="width: 100%;">
+            <div class="modal-header" style="padding-bottom: 0px;">
+                <h5 class="modal-title" id="exampleModalLabel">@Title</h5>
+                <div class="col-md-4 text-right">
+                    <a href="javascript:void(0);" type="button" data-dismiss="modal" aria-label="Close"
+                       class="btn btn-danger btn-lg m-2" @onclick="CloseComponent">
+                        Close
+                    </a>
+                    @if (IsDoingTask)
+                    {
+                        <div class="spinner-border text-success ml-3" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="javascript:void(0);" type="button" class="btn btn-success btn-lg m-2" @onclick="SetData">
+                            Set
+                        </a>
+                    }
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-6 m-auto">
+                    <div class="form-group row m-2">
+                        <div class="col-sm-4">
+                            <label for="DeptName">Enter your data:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="name" @bind="InputData" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6 m-auto">
+                    <div class="form-group row m-2">
+                        <div class="col-sm-3">
+                        </div>
+                        <div class="col-sm-9">
+                            @if (Error != null)
+                            {
+                                <p class="text-danger">*@Error</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

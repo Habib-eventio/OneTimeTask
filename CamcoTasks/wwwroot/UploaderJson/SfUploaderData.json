@@ -1,0 +1,28 @@
+{
+	"en-US": {
+		"uploader": {
+			"Browse": "Select an Image",
+			"Clear": "Clear",
+			"Upload": "Upload",
+			"dropFilesHint": "or Click Here then Ctrl + V for Paste",
+			"invalidMaxFileSize": "File size is too large",
+			"invalidMinFileSize": "File size is too small",
+			"invalidFileType": "File type is not allowed",
+			"uploadFailedMessage": "File failed to upload",
+			"uploadSuccessMessage": "File uploaded successfully",
+			"removedSuccessMessage": "File removed successfully",
+			"removedFailedMessage": "Unable to remove file",
+			"inProgress": "Uploading",
+			"readyToUploadMessage": "Ready to upload",
+			"abort": "Abort",
+			"remove": "Remove",
+			"cancel": "Cancel",
+			"delete": "Delete file",
+			"pauseUpload": "File upload paused",
+			"pause": "Pause",
+			"resume": "Resume",
+			"retry": "Retry",
+			"fileUploadCancel": "File upload canceled"
+		}
+	}
+}

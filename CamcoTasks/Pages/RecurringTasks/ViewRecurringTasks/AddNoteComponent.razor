@@ -1,0 +1,62 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+
+
+<!--add update note modal-->
+<div class="modal fade" id="AddUpdateNote" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true"
+     style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">ADD UPDATE NOTE</h5>
+                <a href="javascript:void(0);" type="button" class="close" @onclick="CloseComponent">
+                    <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon" />
+                </a>
+                <div class="text-right text-light">
+                    <button type="button" class="btn btn-success"
+                            @onclick="(async () => await AddNewUpdateNote())">
+                        SEND EMAIL
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>NOTE DATE</label>
+                                <SfDatePicker ID="NoteDate" Enabled="false" ShowTodayButton="true"
+                                              @bind-Value="@updateNotesViewModel.NoteDate">
+                                </SfDatePicker>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>NOTE</label>
+                                <SfTextBox CssClass="BackgroundCustom" Multiline="true" ID="Notes"
+                                           HtmlAttributes="@htmlAttribute" Placeholder="Enter Update Note"
+                                           @bind-Value="updateNotesViewModel.Notes">
+                                </SfTextBox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Popups
+
+
+<SfDialog CssClass="col-6" Target="#target" IsModal="true" ShowCloseIcon="true" @bind-Visible="IsVisibility">
+    <DialogEvents Closed="@Close"></DialogEvents>
+    <DialogTemplates>
+        <Content>
+            <div>
+                @if (!IsLoading)
+                {
+                    <div>
+                        <h1 class="text-center mt-3 mb-0" style="color:black;">
+                            END TASK
+                        </h1>
+                        <h2 class="text-center">TASK RESPONSIBLE: @EmployeeName</h2>
+                        <h2 class="text-center">@CalculatedTime.ToString("HH:mm:ss")</h2>
+                        <div class="row mt-5">
+                            <div class="col-1"></div>
+                            <div class="col-10">
+                                <label class="p-0 m-0" style="font-size:20px;color:black;">
+                                    ARE YOU SURE YOU WOULD LIKE TO END THIS TASK?
+                                    IF SO, YOUR TIME WILL BE TRACKED AS IDLE TIME UNTIL
+                                    YOU CHOOSE ANOTHER TASK.
+                                </label>
+                            </div>
+                            <div class="col-1"></div>
+                        </div>
+                        <div class="row mt-3 mb-5">
+                            <div class="col-12 text-center mt-3 mb-3">
+                                <button class="btn btn-success mr-1" @onclick="() => Save(false, true)">COMPLETE MISC</button>
+                                <button class="btn btn-danger" @onclick="() => Save(true, false)">CANCEL MISC</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="spinner-border m-auto" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </Content>
+    </DialogTemplates>
+    <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+</SfDialog>

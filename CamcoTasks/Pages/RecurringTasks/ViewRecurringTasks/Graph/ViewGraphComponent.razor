@@ -1,0 +1,48 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Graph
+@using CamcoTasks.Data.ModelsViewModel;
+
+@namespace CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+
+
+<!--graph modal-->
+<div class="modal fade bd-example-modal-l" id="GraphModel" data-backdrop="static"
+     data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document">
+        <div class="modal-content" style="height: 75vh">
+            @if (IsLoading)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h5 class="modal-title" id="GraphtitleId">UPDATES GRAPH</h5>
+                    <h5 style="margin-left:25px;" class="modal-title">Task Id:@RecTaskForGraphComponent.Id</h5>
+                    <button type="button" data-dismiss="modal" class="btn btn-danger" @onclick="CloseComponent">CLOSE</button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-md-2">
+                        <a href="javascript:void(0);" class="btn btn-primary btn-block btn-sm"
+                           role="button" data-placement="top" title="" data-original-title="Print"
+                        @onclick="PrintChart">PRINT</a>
+                    </div>
+
+                    <GraphComponent @ref="GraphComponentRef" RecurringTask="@RecTaskForGraphComponent" />
+                </div>
+            }
+
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

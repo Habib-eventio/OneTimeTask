@@ -1,0 +1,674 @@
+﻿@inherits CamcoTasks.Pages.Tasks.Reports.ViewTaskByEmployeePopupModel
+
+@using CamcoTasks.ViewModels.TasksTaskUpdatesDTO;
+@using CamcoTasks.ViewModels.TasksTasksDTO;
+@using CamcoTasks.ViewModels.TasksTasksTaskTypeDTO;
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.DropDowns
+
+<div>
+    @*@foreach (var Item in ActivatedTasks)
+    {
+        <button class="btn btn-success text-white m-1 mt-1 mr-1 btn-sm">
+            @Item.Key<span class="badge badge-dark text-white text-center ml-2">
+                @Item.Count()
+            </span>
+        </button>
+    }*@
+    @if(IsRunning)
+    {
+        <div class="col-12 row mt-3">
+            <div>
+                <label class="mr-1">Select TaskType</label>
+                <SfDropDownList PopupHeight="230px" Width="240px" TValue="int?" TItem="TasksTasksTaskTypeViewModel" DataSource="@TaskEnum">
+                    <DropDownListFieldSettings Value="Id" Text="TaskType"></DropDownListFieldSettings>
+                    <DropDownListEvents TItem="TasksTasksTaskTypeViewModel" TValue="int?" OnValueSelect="LoadEmployeeData"></DropDownListEvents>
+                </SfDropDownList> <br /><br />
+            </div>
+            <div>
+                <a href="javascript:void(0);" class="ml-2 btn btn-dark btn-block btn-sm"
+               role="button" data-placement="top" title="" data-original-title="Add"
+               data-toggle="modal" data-target="#AddEditOneTimeTaskModal" @onclick="StartNewTask">ADD NEW TASK</a>
+            </div>
+        </div>
+
+        <SfGrid @ref="TaskGrid" Toolbar="@(new List<object>() { "Print","ExcelExport" ,"PdfExport","CsvExport","Search" })"
+            TValue="TasksTasksViewModel" AllowSelection="false" AllowPaging="false" DataSource="@SelectedTaskTypeList"
+            AllowFiltering="true" Width="100%" AllowTextWrap="true" Height="300" RowHeight="38">
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+            <GridSelectionSettings CheckboxOnly="true" PersistSelection="true" Type="SelectionType.Multiple"></GridSelectionSettings>
+            <GridColumns>
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left" AllowFiltering="false"
+                        Field=@nameof(TasksTasksViewModel.Id) HeaderText="ID" IsPrimaryKey="true" Width="40" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left" EditType="EditType.NumericEdit"
+                        Field=@nameof(TasksTasksViewModel.Priority) HeaderText="PRIORITY" Width="40" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                        Field=@nameof(TasksTasksViewModel.Initiator) HeaderText="Initiator" Width="120"
+                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                        Field=@nameof(TasksTasksViewModel.TaskType) HeaderText="TASK TYPE" Width="120"
+                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                        Field=@nameof(TasksTasksViewModel.Description) Width="380" HeaderText="DESCRIPTION" AllowFiltering="false" />
+                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" HeaderText="REVIEWED" Width="105"
+                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                        Field=@nameof(TasksTasksViewModel.DateAdded) HeaderText="DATE ADDED" Width="105" Format="MM/dd/yyyy" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                        Field=@nameof(TasksTasksViewModel.LatestUpdate) HeaderText="LATEST UPDATE" Width="105" Format="MM/dd/yyyy" />
+                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left" Field=@nameof(TasksTasksViewModel.DateCompleted)
+                        HeaderText="DATE COMPLETED" Format="MM/dd/yyyy" Width="105" ClipMode="ClipMode.EllipsisWithTooltip" />
+                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" HeaderText="ACTION" Width="120">
+                    <Template>
+                        @{
+                            var hw = (context as TasksTasksViewModel);
+                            <a href="javascript:void(0);" type="button"
+                       style="font-size: 12px; min-width: 45px; margin-bottom: 3px; "
+                       title="" data-original-title="Edit" data-toggle="modal" data-target="#AddEditOneTimeTaskModal"
+                           @onclick="(e => StartEditTask(hw))">
+                                <img src="/Icons/Finalized/Edit Button/Power User/Png Files/E2 30x30.png" class="icon" />
+                            </a>
+
+                            <a href="javascript:void(0);" class="btn-sm"
+                       style="font-size: 12px; min-width: 130px; margin-bottom: 3px;"
+                       type="button" data-placement="top" title="Task Updates"
+                       data-original-title="Task Updates" data-toggle="modal" data-target="#TaskUpdatesPopup"
+                           @onclick="(e => ViewTaskUpdates((context as TasksTasksViewModel)))">
+                                <img src="/Icons/ViewUpdates.png" style="width:140px;" />
+                            </a>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12 m-auto text-center">
+                <div class="spinner-border"></div>
+            </div>
+        </div>
+    }
+
+
+</div>
+<div>
+    <div class="modal fade" id="AddEditOneTimeTaskModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@TaskTitle ONE-TIME TASK</h5>
+                    <div class="col-md-4 text-right">
+                        <a href="javascript:void(0);" type="button" @onclick="CleaneTaskFiles">
+                            <img src="/Icons/Finalized/Close Button/Non-Power User/Png Files/Close.png" />
+                        </a>
+                        @if (IsDoingTask)
+                        {
+                            <div class="spinner-border text-success ml-3" role="status">
+                                <span class="sr-only"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <a href="javascript:void(0);" type="button" @onclick="(async () => await TryHandlingTask())">
+                                <img src="/Icons/Finalized/Save Button/Non-Power User/Png Files/save.png" />
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@SelectedTask">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                            <div class="" style="margin-bottom:20px;text-align:center">
+                                <div class="col-md-12">
+                                    <label style="float: left; font-weight: bold; margin-bottom: 0px !important;">DESCRIPTION</label><br />
+                                    <Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustom" HtmlAttributes="@htmlAttributeBig" Multiline="true" ID="DescriptionId" OnChange="CheckDescription" @bind-Value="SelectedTask.Description" />
+                                </div>
+                                <div class="col-md-12 row">
+                                    <div class="col-sm col-md-6">
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important;">TASK TYPE</label>
+                                            <SfComboBox ID="TaskTypeId" CssClass="BackgroundCustom" TItem="string" TValue="string"
+                                                @ref="TaskeTypeCombo" DataSource="@TaskTypesAll" Autofill="true" AllowFiltering="true"
+                                                @bind-Value="SelectedTask.TaskType"
+                                                FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                                <ComboBoxEvents TValue="string" TItem="string" ValueChange="CheckTaskType"></ComboBoxEvents>
+                                            </SfComboBox>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important;">INITIATOR</label>
+                                            <SfComboBox CssClass="BackgroundCustom" TItem="string" TValue="string"
+                                                ID="InitiatorId" Autofill="true" AllowFiltering="true" DataSource="@Employees"
+                                                @bind-Value="SelectedTask.Initiator"
+                                                FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                                <ComboBoxEvents TItem="string" TValue="string" ValueChange="CheckInitiator" />
+                                            </SfComboBox>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important; ">PRIORITY</label><br />
+                                            <InputNumber style="width:100%;" id="priority" @bind-Value="SelectedTask.Priority" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important;">DATE ADDED</label><br />
+                                            <Syncfusion.Blazor.Calendars.SfDatePicker ID="DateId" CssClass="BackgroundCustom" @bind-Value="SelectedTask.DateAdded">
+                                                <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime?" ValueChange="CheckDateAdded"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                            </Syncfusion.Blazor.Calendars.SfDatePicker>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important;">DATE COMPLETED</label><br />
+                                            <Syncfusion.Blazor.Calendars.SfDatePicker @bind-Value="SelectedTask.DateCompleted">
+                                            </Syncfusion.Blazor.Calendars.SfDatePicker>
+                                        </div>
+
+                                    <div class="form-group" style="position:relative;">
+                                        <Syncfusion.Blazor.Inputs.SfUploader AllowMultiple="true" AllowedExtensions=".pdf,.txt,.pptx,.zip,.rar,.pdf,.pptx,.docx,.doc,.xlsx,.xlsb,.csv,.jpg,.png,.gif,.jpeg,.bmp,.svg,.jfif,.apng,.ico" ID="tasksUploadFiles" AutoUpload="true" Multiple="true" @ref="TaskUploadRef">
+                                            <Syncfusion.Blazor.Inputs.UploaderEvents BeforeUpload="BeforeUploadImage" ValueChange="SelectTaskImages" BeforeRemove="RemoveTaskPreImage" />
+                                        </Syncfusion.Blazor.Inputs.SfUploader>
+
+                                         @if(RecentTaskImagesCount > 0 && RecentTaskFilesCount == 0)
+                                        {
+                                            <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#PreImageModal" @onclick="TaskPreViewImage"> VIEW TASK IMAGES</a>
+                                        }
+                                        else if(RecentTaskFilesCount > 0 && RecentTaskImagesCount == 0)
+                                        {
+                                            <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#PreFileModal" @onclick="TaskPreViewFiles"> VIEW TASK FILES</a>
+                                        }
+                                        else if(RecentTaskImagesCount > 0 && RecentTaskFilesCount > 0)
+                                        {
+                                            <div class="row">
+                                                <div class="col-6">
+                                                     <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#PreImageModal" @onclick="TaskPreViewImage"> VIEW TASK IMAGES</a>
+                                                </div>
+                                                <div class="col-6">
+                                                     <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#PreFileModal" @onclick="TaskPreViewFiles"> VIEW TASK Files</a>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @if(UpdatesTask.ImagesCount > 0 && UpdatesTask.FilesCount == 0)
+                                        {
+                                            <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1 btn-primary" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#MultiImagesModal" @onclick="(() => LoadTaskImages(SelectedTask))">SAVE TASK IMAGES VIEW</a>
+                                        }
+                                        else if(UpdatesTask.FilesCount > 0 && UpdatesTask.ImagesCount == 0)
+                                        {
+                                            <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1 btn-primary" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#MultiFilesModal" @onclick="(() => LoadTaskFiles(SelectedTask))">SAVE TASK Files VIEW</a>
+                                        }
+                                        else if(UpdatesTask.FilesCount > 0 && UpdatesTask.ImagesCount > 0)
+                                        {
+                                            <div class="row">
+                                                <div class="col-6">
+                                                     <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1 btn-primary" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#MultiImagesModal" @onclick="(() => LoadTaskImages(SelectedTask))">SAVE TASK IMAGES VIEW</a>
+                                                </div>
+                                                <div class="col-6">
+                                                     <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block mt-1 btn-primary" style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View" data-toggle="modal" data-target="#MultiFilesModal" @onclick="(() => LoadTaskFiles(SelectedTask))">SAVE TASK Files VIEW</a>
+                                                </div>
+                                            </div>
+                                        }
+                                        
+
+                                    </div>
+                                </div>
+                                <div class="col-sm col-md-6">
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; margin-bottom: 0px !important; ">DEPARTMENT</label>
+                                            
+                                            <SfDropDownList TItem="string" TValue="string" 
+                                                DataSource="@DepartmentsViewModel" @bind-Value="SelectedTask.Department">
+                                            </SfDropDownList>
+                                        </div>
+
+                                        <table class="table table-bordered" style="width:100%; line-height:0.8;">
+                                            <thead>
+                                                <tr><td style="text-align: left; font-weight: bold; font-size:15px">EMAIL DISTRIBUTION LIST UPON TASK COMPLETION</td></tr>
+                                            </thead>
+                                            <tbody style="overflow-y: scroll; max-height: 230px; display: block; padding-left: 150px ">
+                                                @foreach (var item in employeeEmails)
+                                                {
+                                                    <tr>
+                                                        <td style="text-align: left; margin-bottom: 2px; padding-bottom: 0px; padding-top: 0px; font-size: 12px;">
+                                                            @{
+                                                                if (item.IsSelected)
+                                                                {
+                                                                    <input id="NewChk1" type="checkbox"
+                                                           @onchange="(e => MarkCompleteCheck(e, item))" checked />
+                                                                    <label for="NewChk1">@item.FullName</label>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input id="NewChk2" type="checkbox"
+                                                           @onchange="(e => MarkCompleteCheck(e, item))" />
+                                                                    <label for="NewChk2">@item.FullName</label>
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+
+                                        <div class=""> 
+                                            <a href="javascript:void(0);" class="btn btn-success btn-block btn-sm btn-round" role="button" data-placement="top" 
+                                            title="" data-original-title="Add" data-toggle="modal" data-target="#AddTypeDialogOneTimeTask">ADD NEW TASK TYPE</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    
+                                </div>
+                            </div>
+                        </EditForm>
+
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div class="modal large-modal fade" id="TaskUpdatesPopup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 100%; width:90%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel" style="font-weight:bold;">VIEW ONE-TIME TASK UPDATES</h5>
+                    <button class="btn btn-danger" @onclick="(() => CloseOTTUpdateModal())"><i class="flaticon-cancel-12"></i>CLOSE</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" style="margin-bottom:20px;text-align:center">
+                        <div class="col-md-12" style="margin-bottom:10px;">
+                            <span style="font-size: 18px;font-weight: 600;">
+                                @UpdatesTask.Description
+                            </span>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a id="btn1" href="javascript:void(0);" class="btn btn-primary btn-sm btn-block"
+                               role="button" data-placement="top" title="" data-toggle="modal" data-target="#AddTaskUpdateModal"
+                               data-original-title="Add" @onclick="@(e => RefreshUpdateModal(true))">
+                                ADD UPDATE
+                            </a>
+                        </div>
+                        @if (UpdatesTask.ImagesCount > 0)
+                        {
+                            <div class="col-md-2">
+                                <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block btn-block"
+                               style="margin-left:5px"
+                               role="button" data-placement="top" title="" data-original-title="View"
+                               data-toggle="modal" data-target="#MultiImagesModal"
+                               @onclick="(() => LoadTaskImages(UpdatesTask))">
+                                    VIEW TASK IMAGES
+                                </a>
+                            </div>
+                        }
+
+                        @if (UpdatesTask.FilesCount > 0)
+                        {
+                            <div class="col-md-2">
+                                <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block btn-block"
+                               style="margin-left:5px"
+                               role="button" data-placement="top" title="" data-original-title="View"
+                               data-toggle="modal" data-target="#MultiFilesModal"
+                               @*@onclick="(() => LoadTaskFiles(UpdatesTask))" *@>
+                                    VIEW TASK FILES
+                                </a>
+                            </div>
+                        }
+
+                        <div class="col-md-12">
+                            <SfGrid @ref="UpdateGrid" DataSource="@UpdatesTask.TasksTaskUpdates" ID="Detailscontainer"
+                                    AllowSelection="true" AllowSorting="true" AllowPaging="false" AllowResizing="true"
+                                    AllowTextWrap="true" EnableHover="true" RowHeight="38">
+
+                                <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                <GridColumns>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                Format="MM/dd/yyyy" DefaultValue="@DateTime.Today"
+                                                Field=@nameof(TasksTaskUpdatesViewModel.UpdateDate)
+                                                HeaderText="UPDATE DATE" Width="150"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center"
+                                                Field=@nameof(TasksTaskUpdatesViewModel.Update) HeaderText="UPDATE" Width="700"
+                                                ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="220"
+                                                AllowFiltering="false" AutoFit="true" HeaderText="ACTION">
+                                        <Template Context="EditDeleteContext">
+                                            @if (!string.IsNullOrEmpty((EditDeleteContext as TasksTaskUpdatesViewModel).PictureLink))
+                                            {
+                                                <a id="btn1" href="javascript:void(0);"
+                                               type="button" data-placement="top" title="" data-original-title="Delete"
+                                               data-toggle="modal" data-target="#ImagePopup"
+                                               @onclick="(() => ViewUpdateImage(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                    <img src="/Icons/ViewImage.png" class="icon" />
+                                                </a>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+     <div class="modal fade" id="AddTypeDialogOneTimeTask" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">ADD TASK TYPE</h5>
+                    <button type="button" class="close" @onclick="(() => CloseAddTaskTypeModal())" >
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>TASK TYPE: </label><br />
+                                <Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustom"
+                                                                    ID="AddTaskTypeId" OnChange="CheckAddTaskType" @bind-Value="NewTaskType.TaskType">
+                                </Syncfusion.Blazor.Inputs.SfTextBox>
+                            </div>
+                            <div class="form-group">
+                                <label>EMAIL:</label><br />
+                                <Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustom"
+                                                                    ID="FirstEmailId" OnChange="CheckAddTaskTypeFirstEmail" @bind-Value="NewTaskType.Email">
+                                </Syncfusion.Blazor.Inputs.SfTextBox>
+                            </div>
+                            <div class="form-group WhiteText">
+                                <label>SECOND EMAIL:</label><br />
+                                <Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustomWhite" @bind-Value="NewTaskType.Email2">
+                                </Syncfusion.Blazor.Inputs.SfTextBox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger"  @onclick="(() => CloseAddTaskTypeModal())"><i class="flaticon-cancel-12"></i>CANCEL</button>
+                    <button type="button" class="btn btn-success"
+                            @onclick="(async () => await HandleValidAddType())">
+                        SAVE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="AddTaskUpdateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+         style="background-color: rgba(0, 0, 0, 0.80);">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">ADD TASK UPDATE</h5>
+                    <div class="text-light text-right">
+                        <a class="btn btn-danger" @onclick="(()=>CloseOTTAddTaskUpdate())">CANCEL</a>
+                        <a type="button" class="btn btn-success" @onclick="(async () => await AddNewUpdate(false))">SAVE</a>
+                        <a type="button" class="btn btn-primary" @onclick="(async () => await AddNewUpdate(true))">SAVE & CLOSE</a>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>UPDATE DATE</label>
+                                    <Syncfusion.Blazor.Calendars.SfDatePicker ShowTodayButton="true"
+                                                                              ID="OneTimeUpdDate" @bind-Value="@tasksTaskUpdate.UpdateDate">
+                                        <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime" ValueChange="CheckOneTimeUpdDate"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                    </Syncfusion.Blazor.Calendars.SfDatePicker>
+                                    <div class="text-danger">@ErrorDateMessage</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label style="font-weight:bold; font-size:14px;">IS TASK COMPLETED?</label><br />
+                                    <Syncfusion.Blazor.Buttons.SfCheckBox Label="" TChecked="bool" @bind-Checked="@IsTaskDone">
+                                    </Syncfusion.Blazor.Buttons.SfCheckBox>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <Syncfusion.Blazor.Inputs.SfUploader AllowedExtensions=".pdf,.txt,.pptx,.zip,.rar,.pdf,.pptx,.docx,.doc,.xlsx,.xlsb,.csv,.jpg,.png,.gif,.jpeg,.bmp,.svg,.jfif,.apng,.ico"
+                                                                         ID="UploadFiles" AutoUpload="true" Multiple="false" @ref="UploadObj">
+                                        <Syncfusion.Blazor.Inputs.UploaderEvents ValueChange="SelectImage" />
+                                    </Syncfusion.Blazor.Inputs.SfUploader>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>UPDATE</label>
+                                    <Syncfusion.Blazor.Inputs.SfTextBox CssClass="customvalidate" HtmlAttributes="@htmlAttributeBig" Multiline="true" Placeholder="Enter Update"
+                                                                        ID="OneTUpdNoteId" OnChange="CheckOneTimeNote" @bind-Value="@tasksTaskUpdate.Update">
+                                    </Syncfusion.Blazor.Inputs.SfTextBox>
+                                    <div class="text-danger">@ErrorUpdateMessage</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--<div class="modal fade" id="EditUpdateDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+         style="background-color: rgba(0, 0, 0, 0.80);">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">EDIT TASK UPDATE</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <EditForm Model="@UpdateEditContext" OnValidSubmit="HandleUpdateModel">
+                            <div class="container">
+                                <div class="row">-->
+    @*<DataAnnotationsValidator />
+    <ValidationSummary />*@
+    <!--<div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>DATE: </label><br />
+                                            <Syncfusion.Blazor.Calendars.SfDatePicker ID="OneTEditDateId" @bind-Value="UpdateEditContext.UpdateDate">
+                                                <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime" ValueChange="CheckOneTEditDate"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                            </Syncfusion.Blazor.Calendars.SfDatePicker>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>UPDATE: </label><br />
+                                            <Syncfusion.Blazor.Inputs.SfTextBox CssClass="viewTasksTextBox-height e-outline" Multiline="true"
+                                                                                ID="OneTEditDescId" OnChange="CheckOneTEditDesc" @bind-Value="UpdateEditContext.Update">
+                                            </Syncfusion.Blazor.Inputs.SfTextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-success" style="margin-top:20px;align-items:center; margin-left:10px; float: right;" type="submit">SUBMIT</button>
+                            <button class="btn btn-danger" style="margin-top:20px;align-items:center; float: right;"
+                                    data-type="button" data-dismiss="modal">
+                                CANCEL
+                            </button>
+                        </EditForm>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>-->
+    @*<div class="modal fade" id="deleteTask" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+    <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">DELETE TASK</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    </div>
+    <div class="modal-body">
+    <h4>DO YOU WANT TO DELETE THIS TASK ?</h4>
+    <table class="table table-danger">
+    <tr>
+    <td>ID:</td>
+    <td>@SelectedTask.Id</td>
+    </tr>
+    <tr>
+    <td>TASK TYPE:</td>
+    <td>@SelectedTask.TaskType</td>
+    </tr>
+    <tr>
+    <td>DESCRIPTION:</td>
+    <td>@SelectedTask.Description</td>
+    </tr>
+    <tr>
+    <td>PRIORITY:</td>
+    <td>@SelectedTask.Priority</td>
+    </tr>
+    </table>
+    </div>
+    <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal"><i class="flaticon-cancel-12"></i> NO</button>
+    <button type="button" data-dismiss="modal" class="btn btn-success"
+    @onclick="(async () => await ConfirmDelete())">
+    YES
+    </button>
+    </div>
+    </div>
+    </div>
+    </div>*@
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+         style="background-color: rgba(0, 0, 0, 0.80);">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">DELETE UPDATE</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h4>DO YOU WANT TO DELETE THIS UPDATE ?</h4>
+                    <table class="table table-danger">
+                        <tr>
+                            <td>ID:</td>
+                            <td>@DeleteViewModelUpdate.UpdateId</td>
+                        </tr>
+                        <tr>
+                            <td>UPDATE DATE:</td>
+                            <td>@DeleteViewModelUpdate.UpdateDate</td>
+                        </tr>
+                        <tr>
+                            <td>UPDATE:</td>
+                            <td>@DeleteViewModelUpdate.Update</td>
+                        </tr>
+                        <tr>
+                            <td>TASK ID:</td>
+                            <td>@DeleteViewModelUpdate.TaskID</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal"><i class="flaticon-cancel-12"></i> NO</button>
+                    <button type="button" data-dismiss="modal" class="btn btn-success"
+                            @onclick="(async () => await DeleteUpdate(DeleteViewModelUpdate))">
+                        YES
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade bd-example-modal-xl" id="ImagePopup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">VIEW IMAGE</h5>
+                    <button type="button" style="margin-left: 10px; width:100px;" @onclick="@(()=> PrintingImage(TaskImage))" class="btn btn-primary btn-sm">Print</button>
+                    <button type="button" class="close" @onclick="(() => CloseImageModal())" aria-label="Close">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(TaskImage))
+                    {
+                        <div class="form-group">
+                            <img class="d-block w-100" src=@TaskImage alt="RECURRING Task Image">
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .e-grid .e-altrow {
+        background-color: #EBEBEB;
+    }
+
+    .e-grid .e-headercell {
+        background-color: #24202C;
+    }
+
+    .e-headercell {
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        width: 300px;
+    }
+
+    .e-grid .e-headercell, .e-grid .e-detailheadercell {
+        background-color: #24202C;
+        border-color: #24202C;
+    }
+
+    .e-grid .e-rowcell {
+        font-size: 12px;
+    }
+
+
+    .customvalidate {
+        background-color: #F7EA02 !important;
+    }
+
+    .icon {
+        width: 45px;
+    }
+
+    .e-grid .e-headercell, .e-grid .e-detailheadercell {
+        background-color: #24202C;
+        border-color: #24202C;
+    }
+
+    .e-grid .e-filtered::before {
+        color: #ff0000;
+        font-size: 18px;
+    }
+
+    .e-grid .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop) {
+        color: #ffffff;
+    }
+
+    .e-grid .e-headertext {
+        font-size: 13px;
+    }
+</style>

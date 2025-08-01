@@ -1,0 +1,125 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+
+
+<!--Sample image modal-->
+<div class="modal fade" id="AddSampleImageModal" tabindex="-1" @onkeydown="CloseComponent" data-backdrop="static" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="width:82%;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">PICTURE (OR IMAGE) INFO</h5>
+                <div class="text-right text-light">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" @onclick="(() => SetImageViewModel(RecTaskForSampleImage,true))">
+                        SAVE
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group text-center">
+                                <label style="font-weight:bold; font-size:17px;"><i style="font-style: italic;"> An image will be required to be uploaded every-time that an update is submitted</i></label><br />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        @if (RecTaskForSampleImage.UpdateImageType == 0)
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success" style="width:180px;" @onclick="(() => SetUpdateImageType(0))">
+                                    Picture
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-dark" style="width:180px;" @onclick="(() => SetUpdateImageType(0))">
+                                    Picture
+                                </button>
+                            </div>
+                        }
+
+                        @if (RecTaskForSampleImage.UpdateImageType == 1)
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success" style="width:180px;" @onclick="(() => SetUpdateImageType(1))">
+                                    Image of Graph
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-dark" style="width:180px;" @onclick="(() => SetUpdateImageType(1))">
+                                    Image of Graph
+                                </button>
+                            </div>
+                        }
+
+                        @if (RecTaskForSampleImage.UpdateImageType == 2)
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success" style="width:186px;" @onclick="(() => SetUpdateImageType(2))">
+                                    Image of Table Result
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-dark" style="width:186px;" @onclick="(() => SetUpdateImageType(2))">
+                                    Image of Table Result
+                                </button>
+                            </div>
+                        }
+
+                        <div class="col-md-12">
+                            <label style="font-weight: bold; margin-bottom: 0px;">Sample Image To Provide</label><br />
+                            <Syncfusion.Blazor.Inputs.SfUploader AllowMultiple="false" AllowedExtensions=".jpg,.png,.gif, .jpeg, .bmp,.svg, .jfif, .apng, .ico" ID="SampleUploadFiles" AutoUpload="true" Multiple="true" @ref="SampleUploadObj">
+                                <Syncfusion.Blazor.Inputs.UploaderEvents ValueChange="SelectSampleImage" BeforeRemove="RemoveSamplePreImage" />
+                            </Syncfusion.Blazor.Inputs.SfUploader>
+                            @if (SampleuploadFiles.Count > 0)
+                            {
+                                var firstImg = SampleuploadFiles.FirstOrDefault(x => x.FileInfo != null);
+                                @if (firstImg != null)
+                                {
+                                    if (fileManagerService.IsImage(firstImg.FileInfo.Name.ToLower()))
+                                    {
+                                        <a href="javascript:void(0);" style=" position: absolute; top: 0; right: 0; margin-top: 25px; margin-right: 20px;" type="button" data-placement="top" data-original-title="View" data-toggle="modal" data-target="#ImageModal" @onclick="SampleImageView">
+                                            <img src="/Icons/Finalized/View Button/Power User/Png Files/V5_LightY 30x30.png" width="40" />
+                                        </a>
+                                    }
+                                }
+                            }
+                        </div>
+
+                        <div class="col-md-12" spellcheck="true">
+                            <label style="font-weight: bold; margin-bottom: 0px;">Give a brief description of what image to be uploaded</label><br />
+                            <SfTextBox CssClass="BackgroundCustom" Multiline="true" HtmlAttributes="@htmlAttribute" @bind-Value="RecTaskForSampleImage.UpdateImageDescription" />
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

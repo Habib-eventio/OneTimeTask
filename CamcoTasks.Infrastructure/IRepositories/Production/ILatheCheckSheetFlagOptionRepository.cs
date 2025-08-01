@@ -1,0 +1,14 @@
+﻿//// This File Needs to be reviewed Still. Don't Remove this comment.
+
+//using ERP.Data.Entities.Production;
+//using ERP.Repository.UnitOfWork;
+
+//namespace ERP.Repository.IRepository.Production;
+
+//public interface ILatheCheckSheetFlagOptionRepository : IRepository<LatheCheckSheetFlagOption>
+//{
+//    /// <summary>
+//    /// Caution: This Method is being used in Quality Project
+//    /// </summary>
+//    Task<string> GetFieldValueByFlaggedFieldAndCharacteristicId(string flaggedField, int characteristicId);
+//}

@@ -1,0 +1,19 @@
+﻿@page "/viewrecurringtasks/pdfFileView/{FileId}"
+
+@using Syncfusion.Blazor.PdfViewerServer
+
+
+<div>
+    @if (IsLoading)
+    {
+        <div class="text-center m-2">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <SfPdfViewerServer DocumentPath="@Data" Width="2450px" Height="1200px"></SfPdfViewerServer>
+    }
+</div>

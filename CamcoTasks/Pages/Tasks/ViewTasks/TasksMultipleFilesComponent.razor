@@ -1,0 +1,139 @@
+﻿@using CamcoTasks.Library
+
+<!-- Multiple files Modal -->
+<div class="modal fade bd-example-modal-xl" id="MultFilesModal" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">MULTIPLE FILES AND IAMGES VIEW</h5>
+                <div>
+                    @if (TaskViewModel.PictureLink != null)
+                    {
+                        <button type="button" class="btn btn-primary" @onclick="(() => ViewFiles(TaskViewModel))">
+                            ODL IMAGE
+                        </button>
+                    }
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="CloseComponent">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                @if (!IsRenderingImages)
+                {
+                    if (TaskFiles == null || !TaskFiles.Any())
+                    {
+                        <div class="row">
+                            <div class="m-auto">
+                                <label class="text-center">NO IMAGES UPLOADED YET</label>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-12" style="height:500px; overflow-y:scroll;">
+                            <div class="row" style="margin-bottom:30px;">
+                                @foreach (var file in TaskFiles)
+                                {
+                                    <div class="col-md-4" style="margin-bottom:10px;">
+                                        <div class="card text-center cardhover">
+                                            <div class="card-body" style="padding:0 !important">
+                                                <div class="form-group" style="margin-bottom:5px;">
+                                                    @if (fileManagerService.IsImage(file.PictureLink))
+                                                    {
+                                                        <img class="d-block w-100" src=@ConvertImagetoBase64(file.PictureLink) style="height: 200px;" alt="IMAGE VIEW" @onclick="(() => ViewFiles(file))">
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="@FileLogo.ReturnFileLogo(file.PictureLink) p-4 m-5"></i>
+                                                        <p class="card-text" style="color:black">@file.FileName</p>
+                                                    }
+
+                                                </div>
+                                                @if (fileManagerService.IsImage(file.PictureLink))
+                                                {
+                                                    @if (string.IsNullOrEmpty(file.ImageNote))
+                                                    {
+                                                        <p class="card-text" style="color:black"> Click To View Image</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="card-text" style="color:black"> @file.ImageNote.ToUpper() </p>
+                                                    }
+                                                }
+                                            </div>
+                                            <div class="card-footer" style="background-color:white">
+                                                @if (fileManagerService.IsImage(file.PictureLink))
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick="(() => StartModifyingImageNote(file))">
+                                                        Change Note
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick="(() => PrintingImage(ConvertImagetoBase64(file.PictureLink)))">
+                                                        PRINT IMAGE
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger m-1" @onclick="(() => StartDeleteTaskFile(file))">
+                                                        DELETE IMAGE
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <a class="btn btn-info btn-sm text-white btn-block" style="margin-left:5px;" @onclick="(() => StartDownloadFile(file.PictureLink))" role="button" data-placement="top" title="" data-original-title="Download">
+                                                        DOWNLOAD FILE
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger m-1" @onclick="(() => StartDeleteTaskFile(file))">
+                                                        DELETE File
+                                                    </button>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="spinner-border m-auto" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-danger" @onclick="CloseComponent">CLOSE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--image view component-->
+@if (isActiveImageViewComponent)
+{
+    <TasksImageViewComponent TaskImagePath="@TaskImage" IsCloseImageViewComponent="@SuccessMessageFromImageViewComponent" />
+}
+
+<!--image note component-->
+@if (isActiveImageNoteComponent)
+{
+    <TasksImageNoteComponent ImageNoteModel="@SelectedImageNote" ImageNoteComponentSuccessMessage="@SuccessMessageFromImageNoteComponent" />
+}
+
+<!--delete file component-->
+@if (isActiveDeleteFileComponent)
+{
+    <DeleteFileComponent SelectImageModel="@SelectedTMV" FilePath="@TaskFile"
+                     DeleteSuccessModal="@SuccessMessageFromDeleteFileComponent" />
+}
+

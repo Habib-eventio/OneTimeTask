@@ -1,0 +1,1472 @@
+﻿@page "/viewtasks"
+
+@inherits CamcoTasks.Pages.Tasks.ViewTasks.ViewTasksModel
+
+@using CamcoTasks.Infrastructure.EnumHelper.Enums.Task
+@using CamcoTasks.Library
+@using CamcoTasks.ViewModels.EmployeeDTO
+@using CamcoTasks.ViewModels.TasksTasksDTO;
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
+@using CamcoTasks.ViewModels.Department
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.RichTextEditor;
+@using CamcoTasks.Helpers;
+
+
+
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle" style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / OnTiTa</span></div>
+</div>
+<SfDialog @ref="LoginDialog" CssClass="col-lg-4 col-md-8 col-sm-10" Target="#target2" IsModal="true" ShowCloseIcon="false" CloseOnEscape="false" @bind-Visible="IsLoginDialogVisible">
+    <DialogTemplates>
+        <Content>
+
+            <div class="container-fluid row p-3 ml-0">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <div class="col-12 mt-1">
+                        <h3 style="color:black;" class="text-center font-weight-bold">ENTER USER NAME</h3>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="control_wrapper">
+                            <SfComboBox @ref="@SelectEmployeeDropDown" TValue="string" TItem="EmployeeViewModel"
+                                        DataSource="@Employees"
+                                        PopupHeight="400px"
+                                        @bind-Value="SelectedEmployeeName"
+                                        Autofill="false"
+                                        AllowFiltering="true"
+                                        AllowCustom="false"
+                                        FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                <ComboBoxFieldSettings Text="FullName" Value="FullName"></ComboBoxFieldSettings>
+                            </SfComboBox>
+                        </div>
+                        <div class="col-12 mt-4 text-center" style="display: flex; flex-direction: column; align-items: center;">
+                            <button type="submit" class="btn btn-primary w-30 p-1 mb-2" style="font-size:20px;" @onclick="@OnLoginClick">LOG IN</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </Content>
+    </DialogTemplates>
+    <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+</SfDialog>
+@if (IsLoadData)
+{
+    <div class="text-center m-2">
+        <div class="spinner-border text-success" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class=" col-12 row m-0 p-0" style="margin-top: -20px;">
+        <div class="col-12 m-0 p-0 text-center">
+            <h3 class="m-0 p-0" style="font-weight:bold; padding-top: 90px !important;">
+                @SelectedTaskType
+                <button class="btn btn-light dropdown-toggle border-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"
+                        @onclick="() => OnSelectedTaskTypeClicked(SelectedTaskType)">
+                </button>
+            </h3>
+        </div>
+    </div>
+
+    @if (Tasks != null && Tasks.Any())
+    {
+        <div class="col-12 position-relative mb-5 p-0 pb-5" style="height: 79vh;">
+            <div style=" position: absolute;top: 6.5%;left: 1%;z-index: @Zindex;">
+                <Syncfusion.Blazor.Buttons.SfButton @onclick="Toggle" class="pin-button pin-button-col-12">
+                    <i class="fa-solid fa-angle-right" style="color: #9fa6b2;"></i>
+                </Syncfusion.Blazor.Buttons.SfButton>
+            </div>
+            <div class="justify-content-end m-0 p-0 row">
+                <div class="main-container @Dnone  col-2 m-0 p-0 position-relative resizable-sidebar">
+                    <SfSidebar class="sidebar-scroll draggable-sidebar" Type="SidebarType.Over" @ref="@sidebarObj" @bind-IsOpen="SidebarToggle" EnableDock="false"
+                               CssClass="draggable-sidebar" MediaQuery="" Width="100%" style="background-color: #FFFFFF;">
+                        <ChildContent>
+                            <div class="text-content">
+                                <h3 style="font-size: 24px; color: black; margin-bottom:2.5rem;margin-top:-4rem; font-weight:bolder;">TUESDAY.COM (@TaskCount)</h3>
+                                <h4 style="font-size: 24px; color: black; margin-bottom:2.5rem;margin-top:-1rem;">Task Types</h4>
+                            </div>
+                            <div class="p-3" style="position: relative;top: 8.5%;left: 0%; text-align: center; padding-right:25px;">
+                                <SfTextBox Input="SearchTaskType" Placeholder="SEARCH" CssClass="small-search-box"></SfTextBox>
+                                <span class="e-search-icon e-icons" style="position: absolute; top: 15px; left: 160px;"></span>
+
+                                <button @onclick="ShowModalSidebar" class="plus-btn" style="position: absolute; top: 12px; right: 10px; margin-left: 10px; background-color: #92979d; border: none; color: white; padding: 10px 13px; border-radius: 5px;">
+                                    <i class="fa-solid fa-plus" style="color: #fff;"></i>
+                                </button>
+                            </div>
+                            <div style="position: relative;top: 10%;left: 10%;text-align: left;">
+                                @{
+                                    <div class="row col-md-8 pt-2 text-bar">
+                                        <a class="task-bar-item" style="margin-left:17px;" tabindex="0" @onclick="@((() => OnTaskTypeClicked("")))">
+                                            ALL
+                                        </a>
+                                    </div>
+                                    foreach (var item in TaskTypes)
+                                    {
+                                        <div class="row col-md-8 pt-2 text-bar">
+                                            <a class="task-bar-item d-flex align-items-center p-2 w-100" tabindex="0" @onclick="(() => OnTaskTypeClicked(item))">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512" class="icon-spacing-sidebar">
+                                                    <path d="M64 256l0-96 160 0 0 96L64 256zm0 64l160 0 0 96L64 416l0-96zm224 96l0-96 160 0 0 96-160 0zM448 256l-160 0 0-96 160 0 0 96zM64
+                                                                                        32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32z" />
+                                                </svg>
+                                                <span class="task-text">@item</span>
+                                            </a>
+                                        </div>
+                                    }
+                                }
+
+                            </div>
+                            <div class="hover-container" style="position: absolute; top:8.5%; right: 10px;">
+                                <Syncfusion.Blazor.Buttons.SfButton @onclick="Toggle" class="pin-button hover-button">
+                                    <i class="fa-solid fa-angle-left @pinClass" style="color: #9fa6b2;"></i>
+                                </Syncfusion.Blazor.Buttons.SfButton>
+                            </div>
+                            <div class="folder-tree">
+                                @foreach (var folder in Folders)
+                                {
+                                    <div class="folder-item">
+                                        @if (folder.IsEditing)
+                                        {
+                                            <input type="text" @bind="folder.Name" @onkeydown="@(e => RenameFolder(e, folder))" class="form-control" />
+                                        }
+                                        else
+                                        {
+                                            <span @ondblclick="(() => EditFolder(folder))" class="folder-name">
+                                                <i class="fa-solid fa-folder"></i> @folder.Name
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </ChildContent>
+                    </SfSidebar>
+                </div>
+                <div class="responsive-container grid-container @ResponsiveClass @padding m-0" style="padding-top: 10px !important;">
+                    <Syncfusion.Blazor.Grids.SfGrid DataSource="@Tasks" ID="containerGrid" Height="1050px" Width="100%" @ref="TaskGrid" AllowPaging="true"
+                                                    AllowSelection="true" AllowExcelExport="true" AllowPdfExport="true" AllowSorting="true"
+                                                    AllowTextWrap="true" EnableHover="false" RowHeight="38" AllowResizing="true" AllowRowDragAndDrop="true"
+                                                    SelectionSettings="@SelectionSettings" RowSelected="OnRowSelected" RowDeselected="OnRowDeselected"
+                                                    RowDropped="OnRowDropped">
+                        <GridSelectionSettings CheckboxOnly="true" PersistSelection="true"></GridSelectionSettings>
+                        <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Batch" ShowConfirmDialog="false"></GridEditSettings>
+                        <Syncfusion.Blazor.Grids.GridEvents DetailDataBound="DetailDataBoundHandler" OnActionComplete="StartFilteringGrid"
+                                                            TValue="TasksTasksViewModel">
+                        </Syncfusion.Blazor.Grids.GridEvents>
+                        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                        <GridPageSettings PageSize="100"></GridPageSettings>
+                        <SfToolbar>
+                            <ToolbarItems>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-success btn-lg p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" title="" data-original-title="Add" @onclick="(() => StartOneTimeTask(null))">
+                                                ADD NEW TASK
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <button class="sort-button" @onclick="ToggleSortPopup">
+                                                <span class="sort-text">
+                                                    <i class="fa-solid fa-arrow-up fa-fw icon-spacing" style="color: black;"></i>
+                                                    <i class="fa-solid fa-arrow-down fa-fw icon-spacing" style="color: black;"></i>
+                                                    <span class="sort-label">Sort</span>
+                                                </span>
+                                            </button>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="" class="custom-filter-button btn btn-light d-flex align-items-center px-3 py-2 m-0 font-weight-bold"
+                                               role="button" data-toggle="modal" data-target="#filterModal" data-placement="top" data-original-title="Filter">
+                                                <i class="e-icons e-filter mr-2"></i>
+                                                <span class="filter-text">Filter</span>
+                                                <span class="ml-auto"><i class="e-icons e-chevron-down"></i></span>
+                                            </a>
+                                        }
+                                    </Template>
+
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        <div class="search-container">
+                                            <div class="search-box">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-left" viewBox="0 0 24 24" fill="#8c8c8c" width="20px" height="20px">
+                                                    <path d="M10 2C5.589 2 2 5.589 2 10s3.589 8 8 8c1.768 0 3.401-.574 4.732-1.542l5.659 5.659 1.414-1.414-5.659-5.659C17.426 13.401 18 11.768 18 10c0-4.411-3.589-8-8-8zm0 2c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
+                                                </svg>
+                                                <input type="text" @bind="SearchText" @oninput="OnSearchTextChanged" placeholder="Search" />
+
+                                            </div>
+                                        </div>
+                                    </Template>
+                                </ToolbarItem>
+
+                                <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print" PrefixIcon="e-print" Id="Print" OnClick="ToolbarClickHandler"></ToolbarItem>
+                                <ToolbarItem Type="ItemType.Button" Text="Excel Export" TooltipText="Print" PrefixIcon="e-export-excel" Id="Excel" OnClick="ToolbarClickHandler"></ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="/ReAssignTasks" class="btn btn-warning btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="REASSIGN TASKS">
+                                                REASSIGN TASKS
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-secondary btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="ADD NEW TASK TYPE" @onclick="TaskType">
+                                                ADD NEW TASK TYPE
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-secondary btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="ADD NEW TASK TYPE" @onclick="AddNewTaskType">
+                                                ADD NEW TASK ROW
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-info btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="VIEW TASK TYPES" @onclick="ViewTypes">
+                                                VIEW TASK TYPES
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <SfDropDownList TItem="DDData" TValue="string" PopupHeight="230px" Width="240px" DataSource="@DLData"
+                                                            @bind-Value="TaskTypeValue">
+                                                <DropDownListEvents TItem="DDData" TValue="string" ValueChange="ChangeData"></DropDownListEvents>
+                                                <DropDownListFieldSettings Text="Text" Value="Value"></DropDownListFieldSettings>
+                                            </SfDropDownList>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <div>
+                                                <a href="javascript:void(0);" class="btn btn-info btn-block p-1 m-0 font-weight-bold base-22"
+                                                   role="button" data-placement="top" data-original-title="IMPORT TASKS" @onclick="ShowImportPopup">
+                                                    IMPORT TASKS
+                                                </a>
+                                                @if (ImportFilePopup)
+                                                {
+                                                    <div class="popup-overlay">
+                                                        <div class="popup-content">
+                                                            <h4>IMPORT DATA FROM EXCEL TO ONE-TIME TASK</h4>
+                                                            <p>MOVE DATA FROM AN EXCEL SPREADSHEET INTO AN EXISTING ONE-TIME TASK GRID.</p>
+                                                            <div class="upload-box">
+                                                                <InputFile OnChange="HandleFileSelected" class="form-control" />
+                                                                <p class="small-text">MAKE SURE IT'S A CSV, XLS, or XLSX FILE.</p>
+                                                            </div>
+                                                            <div class="popup-footer">
+                                                                <button class="btn btn-primary mt-2" @onclick="ImportTasks">UPLOAD</button>
+                                                                <button class="btn btn-secondary mt-2" @onclick="CloseImportFilePopup">CANCEL</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-secondary btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="ADD NEW TASK TYPE" @onclick="ExportToExcel">
+                                                Export Tasks Report
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                                <ToolbarItem Type="ItemType.Input">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-success btn-block p-1 m-0 font-weight-bold base-22"
+                                               role="button" data-placement="top" data-original-title="ADD NEW TASK TYPE" @onclick="ShowPersonDialog">
+                                                Persons
+                                            </a>
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                            </ToolbarItems>
+                        </SfToolbar>
+                        <GridColumns>
+                            <GridColumn IsPrimaryKey="true" Visible="false" Field="@nameof(TasksTasksViewModel.Id)"></GridColumn>
+                            <GridColumn Field=@nameof(TasksTasksViewModel.IsSelected) Type="ColumnType.CheckBox" Width="30">
+                                <Template>
+                                    @{
+                                        var task = (context as TasksTasksViewModel);
+                                        <SfCheckBox @bind-Checked="@task.IsSelected" @onchange="(() => OnValueChecked(task.Id, task.IsSelected))">
+                                        </SfCheckBox>
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Left"
+                                        HeaderTextAlign="TextAlign.Center"
+                                        HeaderText="TASK DESCRIPTION"
+                                        Width="250"
+                                        AllowEditing="true"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })">
+                                <Template>
+                                    @{
+                                        var taskContext = context as TasksTasksViewModel;
+                                        var description = taskContext?.Description;
+                                        var TaskId = taskContext?.Id ?? 0;
+                                    }
+                                    <div class="task-column-content description-content bordered-column">
+                                        @if (isEditing && editingTaskId == TaskId)
+                                        {
+                                            <input type="text"
+                                                   class="form-control"
+                                                   @bind="description "
+                                                   @oninput="@(e => UpdateTaskDescription(e.Value?.ToString() ?? string.Empty, taskContext))"
+                                                   @onblur="() => SaveTaskDescription(new TasksTasksViewModel { Id = TaskId, Description = description })" />
+                                        }
+                                        else
+                                        {
+                                            <span class="task-text"
+                                                  title="@description "
+                                                  @onclick="() => EnableEditing(TaskId)">
+                                                @description
+                                            </span>
+                                            <a href="javascript:void(0);"
+                                               class="inline-button align-right"
+                                               @onclick="() => ViewTaskUpdates(taskContext)">
+                                                <button class="custom-button">
+                                                    <i class="fa-solid fa-comment custom-icon"></i>
+                                                </button>
+                                            </a>
+                                        }
+                                    </div>
+                                </Template>
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.PersonResponsible) Width="60" HeaderText="PERSON RESPONSIBLE" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })">
+                                <Template>
+                                    @{
+                                        var personResponsible = (TasksTasksViewModel)@context;
+                                        var initials = GetInitials(personResponsible.PersonResponsible);
+                                    }
+                                    <SfTooltip Content="@personResponsible.PersonResponsible" Position="Syncfusion.Blazor.Popups.Position.BottomCenter" Width="auto" Height="auto">
+                                        <div class="bordered-column">
+                                            <span style="cursor: pointer;" @onclick="(() => OnCommandClicked(personResponsible))">
+                                                <span class="initials-circle">@initials</span>
+                                            </span>
+                                        </div>
+                                    </SfTooltip>
+                                </Template>
+                            </GridColumn>
+
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.Initiator) Width="60" HeaderText="MANAGER"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu})">
+                                <Template>
+                                    @{
+                                        var manager = (TasksTasksViewModel)@context;
+                                        var initials = GetInitials(manager.Initiator);
+                                    }
+                                    <SfTooltip Content="@manager.Initiator" Position="Syncfusion.Blazor.Popups.Position.BottomCenter" Width="auto" Height="auto">
+                                        <div class="bordered-column">
+                                            <span style="cursor: pointer; color: #007bff;" @onclick="(() => OnCommandClickedManager(manager))">
+                                                <span class="initials-circle">@initials</span>
+                                            </span>
+                                        </div>
+                                    </SfTooltip>
+                                </Template>
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.DueDate) HeaderText="Due/Reminder Date" Width="80" Format="MM/dd/yyyy"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })"
+                                        ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                            <GridColumn CustomAttributes="@(new Dictionary<string, object> { { "style", "padding: 0px !important;" } })" TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.TaskStatusDisplay) Width="90" HeaderText="Status"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu})">
+                                <Template>
+                                    @{
+                                        var taskContext = (context as TasksTasksViewModel);
+                                        var taskStatus = taskContext?.TaskStatusDisplay ?? "Default";
+                                        var statusClass = GetTaskStatusClass(taskStatus);
+                                    }
+                                    <div class="status-cell">
+                                        <button class="status-button @statusClass" @onclick="() => OnCommandStatusType(taskContext)">
+                                            @taskStatus
+                                        </button>
+                                    </div>
+                                </Template>
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Left"
+                                        HeaderTextAlign="TextAlign.Left"
+                                        Field=@nameof(TasksTasksViewModel.CostingCode)
+                                        HeaderText="Costing Code"
+                                        Width="70"
+                                        AllowEditing="true">
+                                <Template>
+                                    @{
+                                        var taskcontext = context as TasksTasksViewModel;
+                                        var taskCostingCode = taskcontext?.CostingCode;
+                                        var taskId = taskcontext?.Id ?? 0;
+                                    }
+                                    <div class="bordered-column">
+                                        <div class="task-column-content description-content bordered-column">
+                                            @if (isEditing && editingTaskId == taskId)
+                                            {
+                                                <input type="text"
+                                                       class="form-control"
+                                                       style="width:100%"
+                                                       @bind="editCostingValue"
+                                                       @oninput="@(e => UpdateCostingValue(e.Value.ToString(), taskcontext))"
+                                                       @onblur="() => SaveCostingCode(taskcontext)"
+                                                       autofocus />
+                                            }
+                                            else
+                                            {
+                                                <span class="task-text"
+                                                      @onclick="() => BeginCostingEdit(taskId, taskcontext.CostingCode)">
+                                                    @(taskcontext.CostingCode.HasValue && taskcontext.CostingCode > 0
+                                                                                            ? $"P{taskcontext.CostingCode.Value:D4}"
+                                                                                            : "")
+                                    </span>
+                                                                        }
+                                        </div>
+                                    </div>
+                                </Template>
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" AllowFiltering="false"
+                                        Field=@nameof(TasksTasksViewModel.Id) HeaderText="ID" Visible="true" IsPrimaryKey=" false"
+                                        Width="55">
+                            </GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" HeaderText="SUMMARY" Width="120"
+                                        AllowEditing="true" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })">
+                                <Template>
+                                    @{
+                                        var task = context as TasksTasksViewModel;
+                                        var taskSummary = task?.Summary;
+                                        var taskId = task?.Id ?? 0;
+                                    }
+                                    <div class="task-column-content description-content bordered-column">
+                                        @if (isEditing && editingTaskId == taskId)
+                                        {
+                                            <input type="text"
+                                                   class="form-control"
+                                                   @bind="taskSummary"
+                                                   @oninput="@(e => UpdateTaskSummary(e.Value.ToString(), task))"
+                                                   @onblur="() => SaveTaskSummary(new TasksTasksViewModel { Id = taskId, Summary = taskSummary })" />
+                                        }
+                                        else
+                                        {
+                                            <span class="task-text"
+                                                  @onclick="() => EnableEditing(taskId)">
+                                                @taskSummary
+                                            </span>
+                                        }
+                                    </div>
+                                </Template>
+                            </GridColumn>
+
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.LastUpdate) HeaderText="LAST UPDATE" Width="80" Format="MM/dd/yyyy"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })"
+                                        ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TasksTasksViewModel.DateAdded) HeaderText="DATE ADDED" Width="80" Format="MM/dd/yyyy"
+                                        FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })"
+                                        ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Left" Visible="@(StatusDropdownVal == "3")"
+                                        Field=@nameof(TasksTasksViewModel.DateCompleted)
+                                        HeaderText="DATE COMPLETED" Format="MM/dd/yyyy" Width="100" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })" ClipMode="ClipMode.EllipsisWithTooltip">
+                            </GridColumn>
+                        </GridColumns>
+                    </Syncfusion.Blazor.Grids.SfGrid>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade @modalClass" style="display:@personModalDisplay" data-bs-backdrop="static" id="myModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-custom" style="margin-top:400px; margin-right:42%;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@selectedTaskId, @personModalTitle</h5>
+                    </div>
+                    <div class="modal-class">
+                        <div class="mb-3">
+                            <label for="searchInput" class="form-label custom-label">Search</label>
+                            <SfTextBox ValueChange="SearchValueChangeResponsiblePerson" Placeholder="SEARCH"></SfTextBox>
+                        </div>
+                        @{
+                            foreach (var item in ResponsiblePerson)
+                            {
+                                <div class="row col-md-8 ml-3 pt-2 text-bar">
+                                    <a class="task-bar-item @(item == selectedPerson ? "selected" : "")"
+                                       tabindex="0" @onclick="(() => SelectPerson(item))">
+                                        @item
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="@ModalClosePerson">Close</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="@SaveChanges">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade @modalClass" style="display:@managerModalDisplay" data-bs-backdrop="static" id="myModal">
+            <div class="modal-dialog" style="margin-top:400px; margin-right:34.5%;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@selectedManagerId, @managerModalTitle</h5>
+                    </div>
+                    <div class="modal-class">
+                        <div class="mb-3">
+                            <label for="searchInput" class="form-label custom-label">Search</label>
+                            <SfTextBox ValueChange="SearchValueChangeManager" Placeholder="SEARCH"></SfTextBox>
+                        </div>
+                        @{
+                            foreach (var manager in Initiator)
+                            {
+                                <div class="row col-md-8 ml-3 pt-2 text-bar ">
+                                    <a class="task-bar-item @(manager == selectedManager ? "selected" : "")"
+                                       tabindex="0" @onclick="(() => SelectManger(manager))">
+                                        @manager
+                                    </a>
+
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="@ModalCloseManager">Close</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="@SaveChangesManager">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        if (sideBarModalPopUpOpen)
+        {
+            <div class="sidebar-modal-overlay" @onclick="ClosePlusModal">
+                <div class="sidebar-modal" @onclick:stopPropagation>
+                    <h3 class="modal-title"><i class="fa-solid fa-plus" style="color: white;"></i> Add New</h3>
+                    <ul class="menu-list">
+                        <li @onclick="TaskType"><i class="fa-solid fa-file" style="color: white;"></i> Task Type</li>
+                        <li @onclick="ShowEditor"><i class="fa-solid fa-file" style="color: white;"></i> Doc</li>
+                        <li @onclick="CreateFolder">
+                            <i class="fa-solid fa-folder" style="color: white; cursor: pointer;"></i> Folder
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <div class="modalStatus @(modalClass) modal fade" style="display:@statusModalDisplay;" @onmousedown="HandleBackdropClick">
+            <div class="modal-dialog" style="margin:0px;" @onmousedown:stopPropagation="true">
+                <div class="modal-content" style="background-color: white; border-radius: 8px;  padding: 20px;  width: 300px;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-left:26rem;">
+                    <div class="modal-class">
+                        <p>Task ID: <strong>@CurrentTask?.Id</strong></p>
+                        <div class="status-options">
+
+                            @foreach (var status in Enum.GetValues<StatusType>())
+                            {
+                                var statusName = GetEnumValue(status);
+                                <a class="status-button @(GetStatusColor(status))"
+                                   tabindex="0" @onclick="(() => ChangeStatus(statusName))">
+                                    @(status.ToString().Replace("WaitingForReview", "Waiting For Review"))
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="model-content-filter">
+                    <div class="modal-header d-flex justify-content-between align-items-center">
+                        <h5 class="modal-title" id="filterModalLabel">Advanced Filters</h5>
+                        <div class="d-flex">
+                            <button class="btn  btn-black btn-link mr-3" @onclick="ClearAllFilters">Clear All</button>
+                            <button type="button" class="btn btn-black btn-sm mr-2" data-dismiss="modal" @onclick="ApplyFilters">Save to this view</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="font-weight-bold">Where</label>
+                        </div>
+                        @foreach (var filter in Filters)
+                        {
+                            <div class="form-row align-items-center mb-2">
+                                <div class="col">
+                                    <select class="form-control" @onchange="(e) => OnColumnChanged(e, filter)">
+                                        <option disabled selected>Select Option</option>
+                                        @foreach (var column in AvailableColumns)
+                                        {
+                                            <option value="@column">@column</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <select class="form-control" value="@filter.Condition" @onchange="(e) => OnConditionChanged(e, filter)">
+                                        <option disabled selected>Select Condition</option>
+                                        @foreach (var condition in AvailableConditions)
+                                        {
+                                            <option value="@condition">@condition</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <input list="valueList-@filter.Column" class="form-control" placeholder="Enter Value" @bind="filter.Value" @oninput="(e) => OnValueChanged(e, filter)" />
+                                    <datalist id="valueList-@filter.Column">
+                                        @foreach (var value in filter.AvailableValues)
+                                        {
+                                            <option value="@value"></option>
+                                        }
+                                    </datalist>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveFilter(filter)">Remove</button>
+                                </div>
+                            </div>
+                        }
+                        <div class="d-flex">
+                            <button class="btn btn-black btn-md mr-2" @onclick="AddNewFilter">+ New Filter</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            @if (IsSortPopupVisible)
+            {
+                <div class="sidebar-modal-overlay" @onmousedown="@CloseSortPopup">
+                    <div class="sidebar-modal-sort sort-popup" style="max-width: 90%; width: 39%;" @onmousedown:stopPropagation="true">
+                        <button class="btn btn-black btn-sm mr-2" data-dismiss="modal" @onclick="CloseSortPopup" style="margin-bottom: 10px;">Save to this View</button>
+
+                        <div class="dynamic-content">
+                            @foreach (var column in SortingColumns)
+                            {
+                                <div class="sort-pair" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                    <SfDropDownList TItem="DropdownsOption" TValue="string" Placeholder="Select a column" PopupHeight="auto"
+                                                    DataSource="@DropdownOptions" @bind-Value="column.Field">
+                                        <DropDownListFieldSettings Text="DisplayText" Value="Direction"></DropDownListFieldSettings>
+                                        <DropDownListEvents TValue="string" TItem="DropdownsOption" ValueChange="@(async (value) => await ChangeSortingField(value.Value, column))"></DropDownListEvents>
+                                    </SfDropDownList>
+                                    <SfDropDownList TItem="SortDirectionOption" TValue="SortDirection" Placeholder="Sort Order" PopupHeight="auto"
+                                                    DataSource="@SortingDirections" @bind-Value="column.Direction">
+                                        <DropDownListFieldSettings Text="DisplayText" Value="Direction"></DropDownListFieldSettings>
+                                        <DropDownListEvents TItem="SortDirectionOption" TValue="SortDirection" ValueChange="@(async (value) => await ChangeSortingDirection(value.Value, column))"></DropDownListEvents>
+                                    </SfDropDownList>
+                                    <button class="remove-btn" @onclick="() => RemoveSortingColumn(column)"
+                                            style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px;">
+                                        Remove
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                        <button @onclick="@AddSortingColumn" class="btn btn-black btn-sm mr-2" style="padding: 7px;" disabled="@(SortingColumns.Count >= maxSortingColumns)">+ New sort</button>
+
+                    </div>
+                </div>
+            }
+        </div>
+        @if (IsSelectedTaskModalVisible)
+        {
+            <div class="modal-task-selected fade show d-block" tabindex="-1" @onmousedown:stopPropagation="true" @onmousedown="HandleBackdropClick">
+                <div class="-selected-task modal-dialog-centered">
+                    <div class="modal-content" style="left:62rem !important; margin-right:134rem !important; top: -50rem !important;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                @(SelectedTasks.Count == 1
+                                                    ? $"Actions, Task ID: {SelectedTasks[0].Id}"
+                                                    : SelectedTasks.Count > 1
+                                                    ? $"Tasks Selected: {string.Join(", ", SelectedTasks.Select(t => t.Id))}"
+                                                    : "No Tasks Selected")
+                </h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-3">
+
+                                <a type="button" class="btn btn-warning mx-2"
+                                   title="Send Email" data-toggle="tooltip"
+                                   @onclick="(() => SendEmail(SelectedTask, true))"
+                                   disabled="@(SelectedTask == null)">
+                                    Nudge <span class="fw-bold">(@(SelectedTask?.NudgeCount ?? 0))</span>
+                                </a>
+
+                                <a type="button" class="btn btn-primary mx-2"
+                                   title="Email Task" data-toggle="tooltip"
+                                   @onclick="(() => StartEmail(SelectedTask))"
+                                   disabled="@(SelectedTask == null)">
+                                    Send Email <span class="fw-bold">(@(SelectedTask?.EmailCount ?? 0))</span>
+                                </a>
+
+                    @if (SelectedTasks.Count == 1)
+                                {
+                                    <a href="javascript:void(0);" class="btn btn-info mx-2"
+                                       title="Edit" data-original-title="Edit"
+                                       @onclick="async () => StartOneTimeTask(SelectedTask)">
+                                        <img src="/Icons/Finalized/Edit Button/Non-Power User/Png Files/EdS2 40x125.png" />
+                                    </a>
+                                }
+
+                                <a href="javascript:void(0);" class="btn btn-danger mx-2"
+                                   title="Delete" data-original-title="Delete"
+                                   @onclick="DeleteSelectedTask"
+                                   disabled="@(SelectedTasks == null || !SelectedTasks.Any())">
+                                    <img src="/Icons/Finalized/Delete Button/Non-Power User/Png Files/DltS5 - 40x125.png" />
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseSelectedModal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="modal fade" id="taskTypeModal" tabindex="-1" aria-labelledby="taskTypeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered custom-modal-position">
+                <div class="modal-content p-3">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">@SelectedTaskType</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Email:</strong> @(string.IsNullOrWhiteSpace(SelectedTaskDetail.Email) ? "N/A" : SelectedTaskDetail.Email)</p>
+                        <p><strong>Created At:</strong> @(SelectedTaskDetail.CreatedAt?.ToString("MMM dd, yyyy") ?? "N/A")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <SfDialog Width="500px" @bind-visible="IsPersonDialogVisible" IsModal=true ShowCloseIcon="true" Header="Persons" CssClass="margin-person-modal">
+            <DialogTemplates>
+                <Content>
+                    <div class="d-flex align-items-center mb-2">
+                        <input type="text" class="form-control"
+                               @bind="Value"
+                               placeholder="Search for a person"
+                               @oninput="OnSearchInput" />
+                        <button class="btn btn-sm btn-outline-secondary ms-2"
+                                @onclick="ClearPersonFilter">
+                            Clear
+                        </button>
+                    </div>
+                    @if (Person.Any())
+                    {
+                        <ul class="list-group mt-2">
+                            @foreach (var personName in Person)
+                            {
+                                <li class="list-group-item"
+                                    style="cursor: pointer;"
+                                    @onclick="() => OnPersonSelected(personName)">
+                                    @personName
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="mt-2">No persons found.</p>
+                    }
+                </Content>
+            </DialogTemplates>
+        </SfDialog>
+
+        <!--tasks create component-->
+        @if (IsActiveTasksCreateComponent)
+        {
+            <TasksCreateComponent OneTimeTask="@TasksCreateComponent"
+                                  CallBackMessageTasksCreateComponent="@CallbackMessageFromTasksCerateComponent"
+                                  ReloadParentComponent="@RefreshComponent" />
+        }
+
+        <!--tasks delete component-->
+        @if (IsActiveTaskDeleteComponent)
+        {
+            <TaskDeleteComponent TaskViewModel="@TaskForDeleteComponent" SuccessMessageDelete="@CallbackMessageFromTaskDeleteComponent"
+                                 RefreshParentComponent="@RefreshComponent" />
+        }
+
+        <!--tasks simple email component-->
+        @if (IsActiveTasksSimpleEmailComponent)
+        {
+            <TasksSimpleEmailComponent EmailTask="@TaskForSimpleEmailComponent"
+                                       CallbackMessageTasksSimpleEmail="@CallbackMessageFromTasksSimpleEmailComponent" />
+        }
+
+        <!--tasks update view component-->
+        @if (IsActiveTasksUpdateViewComponent)
+        {
+            <TasksUpdateViewComponent OneTimeTask="@TaskForUpdateViewComponent"
+                                      RefreshTasksViewTasksComponent="@RefreshComponent"
+                                      CallbackMessageTasksUpdateViewComponent="@CallbackMessageFromTasksUpdateViewComponent" />
+        }
+
+        <!--view task types component-->
+        @if (IsActiveViewTaskTypesComponent)
+        {
+            <ViewTaskTypeComponent Tasks="@TaskForViewTaskTypesComponent"
+                                   CallbackViewTaskTypesComponent="@CallbackFromViewTaskTypesComponent" />
+        }
+
+        <!--type dialog component-->
+        @if (IsActiveTypeDialogComponent)
+        {
+            <TypeDialogComponent CallbackMessageTypeDialogComponent="@CallbackMessageFromTypeDialogComponent" />
+        }
+    }
+    else
+    {
+        <div class="col-12 position-relative mb-5 p-0 pb-5" style="height: 79vh;">
+            <div style="position: absolute; top: 6.5%; left: 1%; z-index: @Zindex;">
+                <Syncfusion.Blazor.Buttons.SfButton @onclick="Toggle" class="pin-button pin-button-col-12">
+                    <i class="fa-solid fa-angle-right" style="color: #9fa6b2;"></i>
+                </Syncfusion.Blazor.Buttons.SfButton>
+            </div>
+
+            <div class="justify-content-end m-0 p-0 row">
+                <div class="main-container @Dnone col-2 m-0 p-0 position-relative">
+                    <SfSidebar class="sidebar-scroll draggable-sidebar" @ref="@sidebarObj" @bind-IsOpen="SidebarToggle" EnableDock="false" CssClass="draggable-sidebar" MediaQuery="" Width="100%" style="background-color: #FFFFFF;">
+                        <ChildContent>
+                            <div class="text-content">
+                                <h4 style="font-size: 24px; color: black; margin-bottom: 2.5rem; margin-top: -1rem;">Task Types</h4>
+                            </div>
+                            <div class="p-3" style="position: relative; top: 8.5%; left: 0%; text-align: center; padding-right: 25px;">
+                                <SfTextBox Input="SearchTaskType" Placeholder="SEARCH" CssClass="small-search-box"></SfTextBox>
+                                <span class="e-search-icon e-icons" style="position: absolute; top: 15px; left: 160px;"></span>
+                                <button @onclick="ShowModalSidebar" class="plus-btn" style="position: absolute; top: 12px; right: 10px; background-color: #92979d; border: none; color: white; padding: 10px 13px; border-radius: 5px;">
+                                    <i class="fa-solid fa-plus" style="color: #fff;"></i>
+                                </button>
+                            </div>
+
+                            <div class="sidebar-list" style="margin-top: 125px;">
+
+                                @foreach (var taskType in TaskTypes)
+                                {
+                                    <div class="row col-md-8 pt-2 text-bar">
+                                        <a class="task-bar-item" tabindex="0" @onclick="(() => OnTaskTypeClicked(taskType))">
+                                            @taskType
+                                        </a>
+                                    </div>
+                                }
+
+
+                            </div>
+                        </ChildContent>
+                    </SfSidebar>
+                </div>
+
+                <div class="responsive-container grid-container @ResponsiveClass @padding m-0" style="padding-top: 10px !important;">
+                    <SfToolbar>
+                        <ToolbarItems>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <a href="javascript:void(0);" class="btn btn-success btn-lg p-1 m-0 font-weight-bold base-22"
+                                           role="button" data-placement="top" title="" data-original-title="Add" @onclick="(() => StartOneTimeTask(null))">
+                                            ADD NEW TASK
+                                        </a>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <button class="sort-button" @onclick="ToggleSortPopup">
+                                            <span class="sort-text">
+                                                <i class="fa-solid fa-arrow-up fa-fw icon-spacing" style="color: black;"></i>
+                                                <i class="fa-solid fa-arrow-down fa-fw icon-spacing" style="color: black;"></i>
+                                                <span class="sort-label">Sort</span>
+                                            </span>
+                                        </button>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <a href="" class="custom-filter-button btn btn-light d-flex align-items-center px-3 py-2 m-0 font-weight-bold"
+                                           role="button" data-toggle="modal" data-target="#filterModal" data-placement="top" data-original-title="Filter">
+                                            <i class="e-icons e-filter mr-2"></i>
+                                            <span class="filter-text">Filter</span>
+                                            <span class="ml-auto"><i class="e-icons e-chevron-down"></i></span>
+                                        </a>
+                                    }
+                                </Template>
+
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    <div class="search-container">
+                                        <div class="search-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-left" viewBox="0 0 24 24" fill="#8c8c8c" width="20px" height="20px">
+                                                <path d="M10 2C5.589 2 2 5.589 2 10s3.589 8 8 8c1.768 0 3.401-.574 4.732-1.542l5.659 5.659 1.414-1.414-5.659-5.659C17.426 13.401 18 11.768 18 10c0-4.411-3.589-8-8-8zm0 2c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
+                                            </svg>
+                                            <input type="text" @bind="SearchText" @oninput="OnSearchTextChanged" placeholder="Search" />
+
+                                        </div>
+                                    </div>
+                                </Template>
+                            </ToolbarItem>
+
+                            <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print" PrefixIcon="e-print" Id="Print" OnClick="ToolbarClickHandler"></ToolbarItem>
+                            <ToolbarItem Type="ItemType.Button" Text="Excel Export" TooltipText="Print" PrefixIcon="e-export-excel" Id="Excel" OnClick="ToolbarClickHandler"></ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <a href="/ReAssignTasks" class="btn btn-warning btn-block p-1 m-0 font-weight-bold base-22"
+                                           role="button" data-placement="top" data-original-title="REASSIGN TASKS">
+                                            REASSIGN TASKS
+                                        </a>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <a href="javascript:void(0);" class="btn btn-secondary btn-block p-1 m-0 font-weight-bold base-22"
+                                           role="button" data-placement="top" data-original-title="ADD NEW TASK TYPE" @onclick="TaskType">
+                                            ADD NEW TASK TYPE
+                                        </a>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <a href="javascript:void(0);" class="btn btn-info btn-block p-1 m-0 font-weight-bold base-22"
+                                           role="button" data-placement="top" data-original-title="VIEW TASK TYPES" @onclick="ViewTypes">
+                                            VIEW TASK TYPES
+                                        </a>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input">
+                                <Template>
+                                    @{
+                                        <SfDropDownList TItem="DDData" TValue="string" PopupHeight="230px" Width="240px" DataSource="@DLData"
+                                                        @bind-Value="TaskTypeValue">
+                                            <DropDownListEvents TItem="DDData" TValue="string" ValueChange="ChangeData"></DropDownListEvents>
+                                            <DropDownListFieldSettings Text="Text" Value="Value"></DropDownListFieldSettings>
+                                        </SfDropDownList>
+                                    }
+                                </Template>
+                            </ToolbarItem>
+                        </ToolbarItems>
+                    </SfToolbar>
+                </div>
+            </div>
+        </div>
+
+
+
+    }
+}
+<style>
+    .main > div {
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
+    }
+
+    .inline-button {
+        font-size: 14px;
+        margin-left: 0;
+        margin-right: 1px;
+        width: 122px !important;
+        margin-bottom: 3px;
+    }
+
+    .border-btn {
+        border: 2px solid grey;
+        border-radius: 1px;
+        box-shadow: 0px 2px 8px #888888;
+    }
+
+    .e-toolbar .e-toolbar-items {
+        margin: 0;
+    }
+
+        .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
+            background-color: deepskyblue;
+        }
+
+        .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text {
+            color: white;
+        }
+
+    .e-tbar-btn-text, .e-toolbar-item a {
+        font-size: 10px !important;
+    }
+
+    .viewTasksTextBox-height {
+        height: 350px;
+        background-color: #FFFF64;
+    }
+
+    .modal-dialog-selected-task {
+        max-width: 500px;
+        margin: -49.25rem auto;
+        position: fixed;
+        left: 45%;
+        left: 45%;
+    }
+
+    .modal-dialog {
+        max-width: 500px;
+        margin: 11.75rem auto;
+    }
+
+    .FullWidth {
+        width: 100%
+    }
+
+    .e-sidebar.e-left.e-open {
+        transform: translateX(0%);
+        transition: transform .5s ease;
+        visibility: visible;
+        max-width: 17%;
+        padding: 13px;
+        overflow-x: hidden;
+    }
+
+    .large-modal .modal-dialog {
+        height: 90%;
+    }
+
+    .large-modal .modal-content {
+        height: 100%;
+    }
+
+    .base-22 {
+        line-height: 22px;
+        vertical-align: middle;
+    }
+
+    .customvalidate {
+        background-color: #F7EA02 !important;
+    }
+
+    a, a:hover, .highcontrast #dialog a, .highcontrast #dialog a:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .fabric #target .e-dialog {
+        height: 306px;
+    }
+
+    .material #target .e-dialog {
+        height: 270px;
+    }
+
+    .bootstrap4 #target .e-dialog {
+        height: 305px;
+    }
+
+    .label {
+        margin-bottom: 0px !important;
+    }
+
+    #target .e-dialog {
+        height: 270px;
+    }
+
+    #target {
+        height: 500px;
+    }
+
+    .e-grid .e-detailindentcell {
+        background-color: #EB711D;
+    }
+
+    .e-grid e-detailrowexpand {
+        background-color: #EB711D;
+    }
+
+    .e-grid .e-filtered::before {
+        color: gray;
+        font-size: 18px;
+    }
+
+    .e-grid .e-icon-filter::before, .e-grid-menu .e-icon-filter::before {
+        content: "";
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-grid .e-filtered::before {
+        content: "";
+        background-image: url('Icons/filter-gray.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-grid .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop):not(.e-icon-reorderuparrow):not(.e-icon-reorderdownarrow) {
+        color: white;
+    }
+
+    .fade {
+        transition: opacity 0.01s linear;
+    }
+
+    .YellowText .e-input-group input.e-input, .e-float-input input,
+    .e-float-input.e-control-wrapper input, .e-input-group textarea.e-input, .e-input-group.e-control-wrapper textarea.e-input,
+    .e-float-input textarea, .e-float-input.e-control-wrapper textarea, .e-input-group .e-input[disabled],
+    .e-input-group.e-control-wrapper .e-input[disabled], .e-input-group.e-disabled input.e-input,
+    .e-input-group.e-control-wrapper.e-disabled input.e-input, .e-input-group.e-disabled textarea.e-input,
+    .e-input-group.e-control-wrapper.e-disabled textarea.e-input {
+        background-color: #FFFF64;
+        color: inherit;
+    }
+
+    .e-gridheader {
+        max-height: 40px;
+    }
+
+    .Textarea {
+        height: 40px;
+    }
+
+    .e-grid .e-ftrchk {
+        padding-bottom: 2px;
+        padding-top: 2px;
+    }
+
+    .e-grid .e-altrow {
+        /*background-color: #C4C4C4;*/
+        background-color: #EBEBEB;
+    }
+
+    .e-grid .e-rowcell {
+        text-transform: uppercase;
+        font-size: 11px;
+    }
+
+    .e-grid .e-headercell {
+        background-color: #24202C;
+    }
+
+    .e-headercell {
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        width: 300px;
+    }
+
+    .e-grid .e-headercell, .e-grid .e-detailheadercell {
+        background-color: #24202C;
+        border-color: #24202C;
+    }
+
+    .e-close {
+        transform: translateX(0%) !important;
+        transition: transform .5s ease !important;
+        visibility: visible !important;
+        max-width: 17% !important;
+        padding: 13px !important;
+        overflow-x: hidden !important;
+    }
+
+    .e-grid .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop) {
+        color: #ffffff;
+    }
+
+    .WhiteBackGround {
+        background-color: #fff !important;
+    }
+
+    .icon {
+        width: 45px;
+    }
+
+    .e-grid .e-headercelldiv {
+        font-size: 10px !important;
+    }
+
+    .btn-lg {
+        padding: 0.5rem 2rem !important;
+        font-size: 1.25rem !important;
+    }
+
+    .search-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .search-box {
+        display: grid;
+        grid-template-columns: auto 1fr auto; /* Icon - Input - Icon */
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 400px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        background-color: white;
+    }
+
+
+        .search-box input[type="text"] {
+            border: none;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+            color: #333;
+            background-color: transparent;
+        }
+
+
+    .search-icon-left {
+        justify-self: center;
+        cursor: pointer;
+    }
+
+    .search-icon-right {
+        justify-self: center;
+        cursor: pointer;
+    }
+
+    .e-checkbox-wrapper .e-frame.e-check::before,
+    .e-css.e-checkbox-wrapper .e-frame.e-check::before {
+        font-size: 18px !important; /* Make check mark larger */
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    .e-grid .e-icons:not(.e-btn-icon) {
+        color: #6c757d;
+    }
+
+    .e-grid .e-icons:not(.e-btn-icon) {
+        color: #f6f6f6;
+    }
+
+    .e-checkbox-wrapper .e-frame,
+    .e-css.e-checkbox-wrapper .e-frame {
+        width: 25px !important;
+        height: 25px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+        .e-checkbox-wrapper:hover .e-frame.e-check::before,
+        .e-checkbox-wrapper .e-frame.e-check::before {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+    .custom-dialog {
+        position: relative !important;
+        left: 5rem !important;
+        top: 38rem !important;
+        transform: none !important;
+    }
+
+    .task-label {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .custom-dialog {
+        position: relative !important;
+        bottom: 50px;
+        top: 90%;
+        transform: translateX(-50%);
+        width: 600px !important;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+    }
+
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .resizable-sidebar {
+        position: relative;
+        min-width: 200px;
+        max-width: 600px;
+        width: 300px;
+    }
+
+    .resize-handle {
+        width: 5px;
+        cursor: ew-resize;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: #ccc;
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+
+    .popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 52.938rem;
+        height: 24.25rem;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding-top: 3.875rem;
+    }
+
+    .upload-box {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        margin: 10px 0;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .small-text {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .popup-footer {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .e-grid .e-pager {
+        padding-bottom: 33px !important;
+    }
+
+    .icon-spacing-sidebar {
+        margin-right: 8px;
+    }
+
+    .task-bar-item {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        padding: 8px;
+        border-radius: 4px;
+    }
+
+        .task-bar-item:hover {
+            background-color: #f5f5f5;
+        }
+
+    .task-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        max-width: 72rem;
+    }
+
+    .custom-modal-position {
+        margin-top: -25.5rem;
+    }
+
+    .margin-person-modal {
+        max-height: 500px !important;
+        z-index: 4001 !important;
+        width: 500px !important;
+        left: 62.5rem !important;
+        top: -15rem !important;
+        margin-bottom: 1rem !important;
+        position: relative !important;
+    }
+
+    input.form-control {
+        width: 25rem;
+        display: inline-block;
+    }
+
+    .folder-tree {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .e-grid th.e-headercell[aria-sort="ascending"] .e-headertext,
+    .e-grid th.e-headercell[aria-sort="descending"] .e-headertext,
+    .e-grid th.e-headercell[aria-sort="ascending"] .e-sortfilterdiv,
+    .e-grid th.e-headercell[aria-sort="descending"] .e-sortfilterdiv {
+        color: #f5f5f5 !important;
+        opacity: 1 !important;
+    }
+
+</style>

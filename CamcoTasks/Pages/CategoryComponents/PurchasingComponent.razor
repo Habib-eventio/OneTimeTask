@@ -1,0 +1,144 @@
+﻿@* @inherits PurchasingComponentModel
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Grids
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / Pu</span></div>
+</div>
+
+<div class="row standardBorder mx-3">
+    <div class="col-md-12 m-0 p-1">
+        <div class="col-12 row m-0 p-0 standardHeaderStyle">
+            <div class="col-md-3 m-0 pt-3 text-left" style="font-size:18px">
+                @if (customPOsTotals.Any() && !IsLoadingPOs)
+                {   <div class="m-0 p-0">
+                    TODAY: @customPOsTotals[customPOsTotals.Count - 1].Count
+                </div>
+                }
+            </div>
+            <div class="col-md-6  m-0 p-0  text-center">
+                    <label  class="mt-1 m-0 p-0">  TOTAL OPEN PURCHASE REQUESTS GRAPH</label>
+            </div>
+
+            @if (!IsLoadingPOs)
+            {
+                <div class="col-md-3 p-1" style="text-align:right">
+                    <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                       role="button" data-placement="top" title="" data-original-title="Edit"
+                       data-toggle="modal" data-target="#POsModal" @onclick="RefreshPOModal">VIEW PRS DATA</a>
+                </div>
+            }
+
+        </div>
+
+        @if (IsLoadingPOs)
+        {
+            <br />
+
+            <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">LOADING...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="pt-3">
+                
+                 <SfChart Background="White" UseGroupingSeparator="true">
+                <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                <ChartPrimaryXAxis Interval="1" LabelIntersectAction="LabelIntersectAction.Rotate45" RangePadding="ChartRangePadding.None"
+                                   IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                                        <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                               </ChartPrimaryXAxis>
+                <ChartAxes>
+                    <ChartAxis Maximum="@(customPOsTotals.Max(x => x.Count) + 5)" LabelIntersectAction="LabelIntersectAction.MultipleRows"
+                               RowIndex="1" Name="YleftAxis">
+                                        <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                    </ChartAxis>
+                </ChartAxes>
+
+                <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                <ChartSeriesCollection>
+                    <ChartSeries LegendShape="LegendShape.Rectangle" Name="Total POs" DataSource="@customPOsTotals"
+                                 YAxisName="YleftAxis" XName="Date" YName="Count" Width="2"
+                                 Type="ChartSeriesType.Line">
+                    </ChartSeries >
+                </ChartSeriesCollection>
+                <ChartLegendSettings ShapeHeight="20" ShapeWidth="20" Visible="true" Alignment="Alignment.Center">
+                                        <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                </ChartLegendSettings>
+            </SfChart>
+            </div>
+
+                
+            <div class="modal fade" id="POsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                         <div class="modal-header text-center align-content-center row m-0 p-1">
+                            <div class="col-2  m-0 p-0">
+                            </div>
+                            <div class="text-center col-8 m-0 p-0 align-content-center">
+                                <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">PRS DATA</p>
+                            </div>
+                            <div class="text-right col-2 m-0 p-0">
+                                <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                            </div>
+                        </div>
+                        <div class="modal-body ">
+                            <div style="container">
+                                <SfGrid @ref="POsGrid" DataSource="@ModalcustomPOsTotals" AllowSelection="true"
+                                        AllowSorting="true" AllowPaging="false" AllowResizing="true"
+                                        AllowTextWrap="true" EnableHover="true" RowHeight="30" Height="400">
+                                    <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row">
+                                    </GridSelectionSettings>
+
+                                    <GridEditSettings AllowAdding="false"
+                                                      AllowEditing="false"
+                                                      AllowEditOnDblClick="false"
+                                                      AllowDeleting="false"></GridEditSettings>
+                                    <GridTemplates>
+                                        <DetailTemplate>
+                                            @{
+                                                var posTotals = context as POsTotals;
+                                                //Child
+                                                        <SfGrid @ref="oisListGrid" DataSource="@posTotals.PoList"
+                                                        AllowExcelExport="true" AllowPdfExport="true"
+                                                        Toolbar="@(new List<object>() { "Print","ExcelExport" ,"PdfExport","CsvExport"})"
+                                                        AllowSelection="true" AllowSorting="true" AllowPaging="false" AllowResizing="true"
+                                                        AllowTextWrap="true" EnableHover="true" RowHeight="38">
+                                                            <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                                            <Syncfusion.Blazor.Grids.GridEvents OnToolbarClick="ToolbarClickHandler"
+                                                                                        TValue="SelectedPo"></Syncfusion.Blazor.Grids.GridEvents>
+                                                            <GridColumns>
+                                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(SelectedPo.PrNumber) HeaderText="Pr Number" Width="60px"
+                                                                    ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                                                                <GridColumn TextAlign="TextAlign.Center"  HeaderTextAlign="TextAlign.Center" Format="MM/dd/yyyy" Field=@nameof(SelectedPo.DateRequested)
+                                                                    HeaderText="Request Date" Width="80px"></GridColumn>
+                                                                <GridColumn TextAlign="TextAlign.Center"  HeaderTextAlign="TextAlign.Center" Field=@nameof(SelectedPo.Description)
+                                                                    HeaderText="Description" Width="200px"></GridColumn>
+                                                            </GridColumns>
+                                                        </SfGrid>
+                                            }
+                                        </DetailTemplate>
+                                    </GridTemplates>
+                                    <GridColumns>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                    Field=@nameof(POsTotals.ActualDate)
+                                                    HeaderText="DATE" Format="MM/dd/yyyy">
+                                                </GridColumn>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" 
+                                                    Field=@nameof(POsTotals.Count)
+                                                    HeaderText="POS TOTAL"></GridColumn>
+                                    </GridColumns>
+                                </SfGrid>
+                            </div>
+                        </div>
+                    </div> 
+                </div> 
+            </div>
+
+        }
+    </div>
+</div>
+<hr /> *@

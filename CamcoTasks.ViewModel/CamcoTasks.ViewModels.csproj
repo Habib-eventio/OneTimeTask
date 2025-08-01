@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>CamcoTasks.ViewModels</AssemblyName>
+		<RootNamespace>CamcoTasks.ViewModels</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Syncfusion.Blazor.Charts" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.Inputs" Version="20.2.0.50" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CamcoTasks.Infrastructure\CamcoTasks.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

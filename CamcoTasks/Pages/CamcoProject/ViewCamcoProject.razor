@@ -1,0 +1,217 @@
+﻿@page "/camcoProject/viewCamcoProject"
+
+@using CamcoTasks.ViewModels.CamcoProjectsDTO;
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Navigations;
+@using Syncfusion.Blazor.Popups;
+@using CamcoTasks.ViewModels.EmployeeDTO;
+
+
+<style>
+    .e-grid .e-rowcell {
+        font-size: 16px !important;
+        color: black;
+        font-family: "Franklin Gothic Medium";
+    }
+
+    .e-grid .e-icon-filter::before, .e-grid-menu .e-icon-filter::before {
+        content: "";
+        background-image: url('Icons/filter-white.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-grid .e-filtered::before {
+        content: "";
+        background-image: url('Icons/filter-gray.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
+        background: deepskyblue;
+    }
+
+    .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text {
+        color: white;
+    }
+
+    .e-toolbar .e-toolbar-items {
+        margin: 0;
+    }
+
+    .e-tbar-btn-text, .e-toolbar-item a {
+        font-size: 10px !important;
+    }
+
+    .e-toolbar-items.e-tbar-pos {
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0"
+     style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / ViCaPo</span></div>
+</div>
+
+<div>
+    @if (_isRender)
+    {
+        <div class="text-center m-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-center pt-2">VIEW CAMCO PROJECT</h2>
+
+        <div class="ml-4 pb-5">
+            <SfGrid @ref="@ProGrid" DataSource="@productSoList" AllowSelection="true" AllowSorting="true" AllowExcelExport="true"
+                    AllowTextWrap="true" EnableHover="false" RowHeight="18" Width="100%" AllowFiltering="true">
+
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
+                <SfToolbar>
+                    <ToolbarItems>
+                        <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print"
+                                     Id="Print" OnClick="StartPrinting">
+                            <Template>
+                                @{
+                                    <img src="Icons\Finalized\Printer Button\Non-Power User\Png Files\PntS5 40x125.png" />
+                                }
+                            </Template>
+                        </ToolbarItem>
+
+                        <ToolbarItem Type="ItemType.Button" Text="EXCEL EXPORT" TooltipText="Print"
+                                     Id="Excel" OnClick="StartPrinting">
+                            <Template>
+                                @{
+                                    <img src="Icons\Finalized\Excel Download Button\Non-Power User\Png Files\ExS3 40x125.png" />
+                                }
+                            </Template>
+                        </ToolbarItem>
+                        
+                        <ToolbarItem>
+                            <Template>
+                                @{
+                                    <div>
+                                        <a href="javascript:void(0);" class="btn btn-danger"
+                                           role="button" @onclick="OpenDeletedCamcoProjects">DELETED PROJECTS</a>
+                                    </div>
+                                }
+                            </Template>
+                        </ToolbarItem>
+
+                        <ToolbarItem>
+                            <Template>
+                                @{
+                                    <div>
+                                        <a href="javascript:void(0);" class="btn btn-warning font-weight-bold base-22"
+                                           role="button" @onclick="OpenPostponedCamcoProjects">POSTPONED PROJECTS</a>
+                                    </div>
+                                }
+                            </Template>
+                        </ToolbarItem>
+
+                        <ToolbarItem Type="ItemType.Input" Align="ItemAlign.Right">
+                            <Template>
+                                <div class="col-12 m-0 p-0" style="position:relative;">
+                                    <SfTextBox ValueChange="SearchValueChange" CssClass="BackgroundCustom" Placeholder="SEARCH"></SfTextBox>
+                                    <span class="e-search-icon e-icons" style="position: absolute;top: 10px;left: 140px;" />
+                                </div>
+                            </Template>
+                        </ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>
+
+                <GridColumns>
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.Champion) HeaderText="CHAMPION"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.ProjectCode) HeaderText="PROJECT CODE"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.Department) HeaderText="DEPARTMENT"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.Description) HeaderText="DESCRIPTION"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.ProjectTypeName) HeaderText="PROJECT TYPE"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.DateCreated) Format="MM/dd/yy" HeaderText="DATE CREATED"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.EnteredBy) HeaderText="ENTERED BY"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn Field=@nameof(CamcoProjectsViewModel.Status) HeaderText="STATUS"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                    <GridColumn HeaderText="EDIT" Width="250" TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <Template>
+                            @{
+                                var project = (context as CamcoProjectsViewModel);
+
+                                <a @onclick="(() => UserNamePopupOpen(project.Id))">
+                                    <img src="Icons/EditBtn.png" class="pt-0 pl-1 pr-1 pb-0" style="cursor: pointer;width:100px;" />
+                                </a>
+                                <button class="btn btn-sm btn-success" @onclick="(() => SetStatus(project))">
+                                    COMPLETE
+                                </button>
+                            }
+                        </Template>
+                    </GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+        <SfDialog CssClass="col-lg-4 col-md-8 col-sm-10" Target="#target2" IsModal="true" ShowCloseIcon="false" Visible="@ComboBoxVisible" CloseOnEscape="false">
+            <DialogTemplates>
+                <Content>
+
+                    <div class="container-fluid row p-3 ml-0">
+                        <div class="col-lg-1"></div>
+                        <div class="col-lg-10">
+                            <div class="col-12 mt-1">
+                                <h3 style="color:black;" class="text-center font-weight-bold">ENTER USERNAME</h3>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="control_wrapper">
+                                    <SfComboBox TValue="long?" TItem="EmployeeViewModel"
+                                                DataSource="@Employees" PopupHeight="400px"
+                                                @bind-Value="changeByEmployeeId" Autofill="false" AllowFiltering="true"
+                                                AllowCustom="false" FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains" @onkeydown="Keydown">
+                                        <ComboBoxFieldSettings Text="FullName" Value="Id"></ComboBoxFieldSettings>
+                                    </SfComboBox>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-12 mt-5 text-center">
+                            <button type="submit" class="btn btn-primary w-30 p-1" style="font-size:20px;" @onclick="OpenEditCamcoProject">GO TO VIEW/EDIT PAGE</button>
+                            <button type="submit" class="btn btn-danger w-30 p-1" style="font-size:20px;" @onclick="CloseUserNamePopup">CANCEL</button>
+                        </div>
+
+                        <div class="col-lg-1"></div>
+                    </div>
+
+                </Content>
+            </DialogTemplates>
+            <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+        </SfDialog>
+    }
+</div>
+@if (IsActiveApprovalClosureRequestComponent)
+{
+    <ApprovalClosureComponent CamcoProjectId="camcoProjectIdForViewApprovalClosureRequest"
+                              CloseApprovalClosureComponent="@DeactivateApprovalClosureComponent" />
+}

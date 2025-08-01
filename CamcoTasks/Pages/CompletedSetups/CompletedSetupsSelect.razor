@@ -1,0 +1,41 @@
+﻿@page "/completedsetupsselect"
+
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+@using Syncfusion.Blazor.Calendars
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / CmSeSe</span></div>
+</div>
+<div class="row custom-top mt-1">
+    <div class="col-md-6">
+        <div class="pt-2">
+            <h2>
+                Completed Setups - Select Date Range
+            </h2>
+        </div>
+    </div>
+    <div class="col-md-3 pt-3">
+        <SfDateRangePicker @bind-StartDate="@StartValue" EndDate="@EndValue" Placeholder="Choose a Range" Width="300px"></SfDateRangePicker>
+    </div>
+    <div class="col-md-2 pt-3">
+        <button style="text-align:center" class="btn btn-primary btn-block" @onclick="Submit">View</button>
+    </div>
+</div>
+
+<br />
+<div>
+
+</div>
+
+@code {
+    public DateTime? StartValue { get; set; } = DateTime.Now;
+
+    public DateTime? EndValue { get; set; } = DateTime.Now;
+
+    private void Submit()
+    {
+        var value = StartValue.Value.ToShortDateString() + "--" + EndValue.Value.ToShortDateString();
+        value = value.Replace(@"/", "-");
+        navigationManager.NavigateTo($"/completedsetups/{value}");
+    }
+}

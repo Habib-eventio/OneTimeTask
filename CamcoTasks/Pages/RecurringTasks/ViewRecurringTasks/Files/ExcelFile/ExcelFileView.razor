@@ -1,0 +1,120 @@
+﻿﻿
+@page "/viewrecurringtasks/excelFileView/{FileId}"
+
+@using System.Data
+@using DocumentFormat.OpenXml;
+@using DocumentFormat.OpenXml.Packaging;
+@using DocumentFormat.OpenXml.Spreadsheet;
+
+
+<div id="ExcelFileId">
+    @if (IsLoading)
+    {
+        <div class="text-center m-2">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (Worksheet != null)
+        {
+            <div class="sticky-top text-center">
+                @if (IsAdd)
+                {
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-info m-1" @onclick="ActiveAddDataExcelFile">Add</button>
+                }
+
+                @if (IsUpdate)
+                {
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-primary m-1" @onclick="ActiveExcelEdit">Edit</button>
+                }
+
+                @if (IsDoing)
+                {
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-success m-1" @onclick="SaveExcelFile">Save</button>
+                }
+            </div>
+
+            <div class=" ml-5 mb-5 pb-5 mr-2">
+                <div class="table-responsive">
+                    <table id="ExcelTableId" class="table table-hover">
+                        <thead>
+                            <tr id="HeadCol">
+                                <th>Row No</th>
+
+                                @foreach (var row in Worksheet.Rows)
+                                {
+                                    @foreach (var col in row.Columns)
+                                    {
+                                        <th id="@GetColumnName(col.AddressLocal)"
+                                            title="Double-click for the selected columns" data-toggle="tooltip"
+                                            data-placement="top" @ondblclick="(() => SelectAllColumn(col))">
+                                            @GetColumnName(col.AddressLocal)
+                                        </th>
+                                    }
+                                    break;
+                                }
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var row in Worksheet.Rows.Select((value, i) => new { i, value }))
+                            {
+                                <tr id="@row.value.AddressLocal" data-toggle="tooltip" data-placement="top"
+                                    title="Double-click for the selected row">
+                                    <td @ondblclick="(() => SelectRow(row.value))">
+                                        @row.i
+                                    </td>
+
+                                    @foreach (var col in row.value.Columns)
+                                    {
+                                        <td data-toggle="tooltip" data-placement="top"
+                                            title="Double-click for the selected item">
+                                            @if (col.HasFormula)
+                                            {
+                                                @GetCellValue(col)
+                                            }
+                                            else
+                                            {
+                                                <input id="@col.AddressLocal" class="form-control form-control-sm"
+                                                       value="@col.Value" @ondblclick="(() => SelectSingleData(col))"
+                                                       type="text" @onchange="(e => UpdateExcelFile(col, e))" />
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+
+<!--excel file input data component-->
+@if (IsActiveExcelFileinputDataComponent)
+{
+    <ExcelFileInputDataComponent Title="Excel Data" SuccessMessage="ExcelFileInputDataComponenetMessage" />
+}

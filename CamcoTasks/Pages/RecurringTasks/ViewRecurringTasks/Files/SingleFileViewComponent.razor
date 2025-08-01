@@ -1,0 +1,51 @@
+﻿@using CamcoTasks.Library
+
+
+@if (FileManagerService.IsImage(FilePath))
+{
+    <div class="col-md-12">
+        <div class="card text-center cardhover">
+            <div class="card-body" style="padding:0 !important">
+                <div class="form-group" style="margin-bottom:5px;">
+                    <img class="d-block w-100" src="@FileManagerService.ConvertImagetoBase64(FilePath)" style="height: 200px;"
+                         alt="IMAGE VIEW" @onclick="(() => ViewFiles(FilePath))">
+                </div>
+                <p class="card-text" style="color:black"> Click To View Image</p>
+            </div>
+            <div class="card-footer" style="background-color:white">
+                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="(() => PrintingImage(FilePath))">
+                    PRINT IMAGE
+                </button>
+            </div>
+        </div>
+    </div>
+}
+else if (FileManagerService.IsFile(FilePath))
+{
+    <div class="col-md-12">
+        <div class="card text-center cardhover">
+            <div class="card-body text-center" style="height: 200px;">
+                <i class="@FileLogo.ReturnFileLogo(FilePath) m-2" style="margin-bottom:5px;"></i>
+            </div>
+            <div class="card-footer" style="background-color:white">
+                <a id="btn1" class="btn btn-info btn-sm text-white btn-block"
+                   style="margin-left:5px;" @onclick="(() => FileManagerService.StartDownloadFile(FilePath))" role="button"
+                   data-placement="top" title="" data-original-title="Download">
+                    DOWNLOAD FILE
+                </a>
+                <a id="btn1" class="btn btn-info btn-sm text-white btn-block"
+                   style="margin-left:5px;" @onclick="(() => FileManagerService.StartDownloadFile(FilePath))" role="button"
+                   data-placement="top" title="" data-original-title="Download">
+                    VIEW FILE
+                </a>
+            </div>
+
+        </div>
+    </div>
+}
+
+<!--image view component-->
+@if (IsActiveImageViewComponent)
+{
+    <ImageViewComponent TaskImagePath="@FilePath" IsCloseImageViewComponent="@SuccessMessageFromImageViewComponent" />
+}

@@ -1,0 +1,149 @@
+﻿<!--Edit history  modal-->
+@using CamcoTasks.ViewModels.LoggingChangeLogDTO;
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Navigations;
+@using Syncfusion.Blazor.Popups
+
+
+<style>
+    .e-grid .e-rowcell {
+        font-size: 16px !important;
+        color: black;
+        font-family: "Franklin Gothic Medium";
+    }
+
+    .e-grid .e-icon-filter::before, .e-grid-menu .e-icon-filter::before {
+        content: "";
+        background-image: url('Icons/filter-white.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-grid .e-filtered::before {
+        content: "";
+        background-image: url('Icons/filter-gray.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
+        background: deepskyblue;
+    }
+
+    .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text {
+        color: white;
+    }
+
+    .e-toolbar .e-toolbar-items {
+        margin: 0;
+    }
+
+    .e-tbar-btn-text, .e-toolbar-item a {
+        font-size: 10px !important;
+    }
+
+    .e-toolbar-items.e-tbar-pos {
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="modal fade" id="EditHistoryModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+     role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable mw-100 w-75" role="document">
+        <div class="modal-content" style="height: 100vh">
+            @if (IsLoadTask)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header" style="padding-bottom: 0px;">
+                    <h6>INITIATOR: @RecTask.Initiator</h6>
+                    @if (RecTask.ApprovedByEmployeeId != null)
+                    {
+                        <h5 style="background-color: yellow; text-align:center">TASK APPROVED BY: @EmployeeByApprovedId.FullName</h5>
+                    }
+                    <div class="col-md-2 text-right">
+                        <a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick="CloseComponent">
+                            <img src="/Icons/Finalized/Close Button/Non-Power User/Png Files/Close.png" />
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding-top:0px;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-left">DATE CREATED: @RecTask.StartDate?.ToString("MM/dd/yyyy")</h6>
+                        </div>
+                        <div class="col-md-8" style="padding-right:350px">
+                            <h3 class="text-center">EDIT HISTORY</h3>
+                        </div>
+                    </div>
+                    <SfGrid @ref="@ProGrid" DataSource="@EditHistoryLogs" AllowSelection="true" AllowSorting="true" AllowExcelExport="true"
+                            AllowTextWrap="true" EnableHover="false" RowHeight="18" Height="400" Width="100%" AllowFiltering="true">
+                            
+                        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
+                        <SfToolbar>
+                            <ToolbarItems>
+                                <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print"
+                                             Id="Print" OnClick="StartPrinting">
+                                    <Template>
+                                        @{
+                                            <img src="Icons\Finalized\Printer Button\Non-Power User\Png Files\PntS5 40x125.png" />
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+
+                                <ToolbarItem Type="ItemType.Button" Text="EXCEL EXPORT" TooltipText="Print"
+                                             Id="Excel" OnClick="StartPrinting">
+                                    <Template>
+                                        @{
+                                            <img src="Icons\Finalized\Excel Download Button\Non-Power User\Png Files\ExS3 40x125.png" />
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+
+                                <ToolbarItem Type="ItemType.Input" Align="ItemAlign.Right">
+                                    <Template>
+                                        <div class="col-12 m-0 p-0" style="position:relative;">
+                                            <SfTextBox ValueChange="SearchValueChange" CssClass="BackgroundCustom" Placeholder="SEARCH"></SfTextBox>
+                                            <span class="e-search-icon e-icons" style="position: absolute;top: 10px;left: 140px;" />
+                                        </div>
+                                    </Template>
+                                </ToolbarItem>
+                            </ToolbarItems>
+                        </SfToolbar>
+
+                        <GridColumns>
+                            <GridColumn Field=@nameof(LoggingChangeLogViewModel.UpdatedBy) HeaderText="CHANGED BY"
+                                        TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                            <GridColumn Field=@nameof(LoggingChangeLogViewModel.RecordField) HeaderText="FIELD CHANGE"
+                                        TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                            <GridColumn Field=@nameof(LoggingChangeLogViewModel.OldValue) HeaderText="OLD VALUE"
+                                        TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                            <GridColumn Field=@nameof(LoggingChangeLogViewModel.NewValue) HeaderText="NEW VALUE"
+                                        TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+
+                            <GridColumn Field=@nameof(LoggingChangeLogViewModel.UpdateDate)
+                                        HeaderText="DATE CHANGED" Format="M/dd/yyyy"
+                                        TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+                </div>
+                <div class="modal-footer">
+                </div>
+            }
+        </div>
+    </div>
+</div>

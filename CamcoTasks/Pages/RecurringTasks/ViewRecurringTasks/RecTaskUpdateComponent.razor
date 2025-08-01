@@ -1,0 +1,428 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.TasksTaskUpdatesDTO;
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Service.IService
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Files
+
+@inject IFileManagerService FileManagerService
+
+
+<style>
+    #RecUpdatePageDetails {
+        height: 300px;
+        font-weight: bold;
+    }
+
+    .e-grid .e-headertext {
+        font-size: 13px !important;
+    }
+
+    th.e-headercell.e-leftalign.e-mousepointer.e-fltr-icon {
+        padding-bottom: 0px;
+    }
+
+    th.e-headercell.e-leftalign.e-mousepointer.e-lastcell {
+        padding-bottom: 0px;
+    }
+
+    #RecUpdatePageDetails {
+        font-size: 17px;
+    }
+
+    #dueDateId {
+        font-size: 20px;
+    }
+</style>
+
+<!--task update modal-->
+<div class="modal fade" id="TaskUpdatesModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0)">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document" style="max-width: 100%; width:90%">
+        <div class="modal-content" style="height: 100vh">
+            @if (IsLoadTask)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <div class="row">
+                        <h5 class="modal-title" id="exampleModalLabel" style="font-weight: bold; margin-left: 10px;">TASK ID: @TaskForUpdate.Id</h5>
+                        <div style="margin-left:420px;">
+                            <h5 class="modal-title text-center" id="exampleModalLabel" style="font-weight:bold;">RECURRING TASK UPDATES</h5>
+                            <label class="ml-5" style="font-size:20px;">
+                                @if (CompletedSingleTaskCount1 >= 50)
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-1" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> 1 Month: </a>
+
+                                    <span style="color:#179B09">(@CompletedSingleTaskCount1%)</span>
+                                }
+                                else
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-1" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> 1 Month: </a>
+
+                                    if (CompletedSingleTaskCount1 > 0)
+                                    {
+                                        <span style="color:#CA0000">(@CompletedSingleTaskCount1%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#CA0000">N/A</span>
+                                    }
+
+                                }
+                                @if (CompletedSingleTaskCount3 >= 50)
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-3" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 3 Month: </a>
+
+                                    <span style="color:#179B09">(@CompletedSingleTaskCount3%)</span>
+                                }
+                                else
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-3" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 3 Month: </a>
+
+                                    if (CompletedSingleTaskCount3 > 0)
+                                    {
+                                        <span style="color:#CA0000">(@CompletedSingleTaskCount3%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#CA0000">N/A</span>
+                                    }
+                                }
+                                @if (CompletedSingelTaskCount6 >= 50)
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-6" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 6 Month: </a>
+                                    <span style="color:#179B09">(@CompletedSingelTaskCount6%)</span>
+                                }
+                                else
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-6" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 6 Month: </a>
+
+                                    if (CompletedSingelTaskCount6 > 0)
+                                    {
+                                        <span style="color:#CA0000">(@CompletedSingelTaskCount6%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#CA0000">N/A</span>
+                                    }
+                                }
+                                @if (CompletedSingleTaskCount12 >= 50)
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-12" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 12 Month: </a>
+                                    <span style="color:#179B09">(@CompletedSingleTaskCount12%)</span>
+                                }
+                                else
+                                {
+                                    <a href="/recurringPercentageReport/@TaskForUpdate.Id/-12" target="_blank" data-placement="top"
+                                       title="Click to view percentage details"> | 12 Month: </a>
+
+                                    if (CompletedSingleTaskCount12 > 0)
+                                    {
+                                        <span style="color:#CA0000">(@CompletedSingleTaskCount12%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#CA0000">N/A</span>
+                                    }
+                                }
+                            </label>
+                        </div>
+                    </div>
+                    <a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick="CloseComponent">
+                        <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon">
+                    </a>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="row mb-2">
+                                <div class="col-md-auto pr-0 d-flex align-items-center">
+                                    <label class="mb-0 font-weight-bold">DUE DATE</label>
+                                </div>
+                                <div class="col-md">
+                                    <SfDatePicker ID="dueDateId" Enabled="true" ShowTodayButton="true" CssClass="BackgroundCustom"
+                                    @bind-Value="@TaskForUpdate.UpcomingDate">
+                                    </SfDatePicker>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-12">
+                                    <label class="mb-0 font-weight-bold">TASK DESCRIPTION:</label>
+                                    <SfTextBox ID="RecUpdatePageDetails" HtmlAttributes="@htmlAttributeBig" CssClass="BackgroundCustom" Multiline="true" Enabled="true" @bind-Value="@TaskForUpdate.Description"></SfTextBox>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group EmailGrid h-100" style="max-height: 400px;">
+                                <table class="table table-bordered h-100" style="width:100%; line-height:0.8; border: 4px solid black;">
+                                    <thead>
+                                        <tr>
+                                            <td style="text-align: left; width: 295px; font-weight: bold; font-size:15px">
+                                                <label class="m-1 font-weight-bold" style="line-height: 1">ACTIVE EMAIL DISTRIBUTION LIST UPON TASK COMPLETION</label>
+                                                <div class="m-1">
+                                                    <input id="activejobTitleId" type="text" class="form-control form-control-sm"
+                                                           placeholder="Input Filter Key" @oninput="ActiveJobTitlesFilter" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="max-height: 178px; overflow-y: scroll; overflow-x: hidden; display: block;" class="pl-1">
+                                        @if (IsActiveJobTitlesFilter)
+                                        {
+                                            <div class="spinner-border m-auto" role="status">
+                                                <span class="sr-only"></span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var jobTitle in ActiveFilterJobTitles)
+                                            {
+                                                <tr class="table-bordered">
+                                                    <td style="text-align: left; width: 265px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <label id="@jobTitle"
+                                                                       for="@jobTitle">
+                                                                        @jobTitle
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>
+                                                <div class="mx-5">
+                                                    <a href="javascript:void(0);" class="btn btn-primary btn-block" role="button" data-placement="top" title="" data-original-title="Add" @onclick="StartEditTask">
+                                                        ADD
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="m-1" id="SaveFiles">
+                                @if (SelectedTaskFiles.Any())
+                                {
+                                    <div style="overflow-y: scroll; max-height: 350px;">
+                                        <lebal>SAVE IMAGES AND FILES</lebal>
+                                        <div class="m-1">
+                                            @foreach (var item in SelectedTaskFiles)
+                                            {
+                                                <div class="col-md-12">
+                                                    <FileViewComponent File="@item" UploadFileNoteComponentEventCallback="@ImageNoteComponentCallback"
+                                                                       DeleteFileComponentEventCallback="@DeleteSuccessFromDeleteFileComponent" />
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-bottom:20px;text-align:center">
+                        
+
+                        @if (IsTaskGraphRequired)
+                        {
+                            <div class="col-md-2">
+                                <a href="javascript:void(0);" class="btn btn-info btn-block btn-block"
+                                   style="margin-left:5px" role="button"
+                                   data-placement="top" title="" @onclick="(() => ViewTaskGraph())">
+                                    VIEW GRAPH
+                                </a>
+                            </div>
+                        }
+
+                        <div class="col-md-12">
+                            <SfGrid @ref="RecUpdateGrid" DataSource="@TaskUpdateList" ID="Detailscontainer" AllowSelection="true" AllowSorting="true" AllowPaging="false" AllowResizing="false" AllowTextWrap="true" AllowFiltering="true" EnableHover="true" RowHeight="38" Height="400">
+
+                                <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+
+                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+
+                                <GridColumns>
+                                    <GridColumn TextAlign="TextAlign.Left" Format="MM/dd/yy" DefaultValue="@DateTime.Today" Field=@nameof(TasksTaskUpdatesViewModel.UpdateDate) HeaderText="UPDATE DATE" Width="220"></GridColumn>
+
+                                    <GridColumn TextAlign="TextAlign.Left" Field=@nameof(TasksTaskUpdatesViewModel.UpdateBy) HeaderText="UPDATED BY" Width="220"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Left" Format="MM/dd/yy" Field=@nameof(TasksTaskUpdatesViewModel.DueDate) HeaderText="DUE DATE" Width="220"></GridColumn>
+
+                                    <GridColumn TextAlign="TextAlign.Left" Width="180" AllowFiltering="true"
+                                                Field=@nameof(TasksTaskUpdatesViewModel.TaskCompleted) HeaderText="COMPLETED ON TIME">
+                                        <Template Context="CompletedContext">
+                                            @{
+                                                var scontext = CompletedContext as TasksTaskUpdatesViewModel;
+                                                if (scontext != null && scontext.TaskCompleted.HasValue)
+                                                {
+                                                    if (scontext.TaskCompleted.Value)
+                                                    {
+                                                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                                                             xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                                             viewBox="0 0 512 512"
+                                                             style="enable-background:new 0 0 512 512; width:18px; height:18px; margin:3px 3px 0px 3px;" xml:space="preserve">
+                                                        <path style="fill: #137C07;" d="M256,0v512c141.385,0,256-114.615,256-256S397.385,0,256,0z" />
+                                                        <path style="fill: #20D30C;" d="M470.793,256C470.793,114.615,374.626,0,256,0C114.615,0,0,114.615,0,256s114.615,256,256,256C374.626,512,470.793,397.385,470.793,256z" />
+                                                        <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g>                                                                                                                              </svg>
+                                                    }
+                                                    else
+                                                    {
+                                                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background: new 0 0 512 512; width: 18px; height: 18px; margin: 3px 3px 3px 3px; " xml:space="preserve">
+                                                        <path style="fill:#901C0F;" d="M256,0v512c141.385,0,256-114.615,256-256S397.385,0,256,0z" />
+                                                        <path style="fill:#E0230D;" d="M470.793,256C470.793,114.615,374.626,0,256,0C114.615,0,0,114.615,0,256s114.615,256,256,256C374.626,512,470.793,397.385,470.793,256z" />
+                                                        <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </svg>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <label>-</label>
+                                                }
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Left" Field=@nameof(TasksTaskUpdatesViewModel.Update) HeaderText="UPDATE" Width="350"></GridColumn>
+
+                                    <GridColumn Visible="@IsQuestionRequired" TextAlign="TextAlign.Left" Field=@nameof(TasksTaskUpdatesViewModel.QuestionAnswer) HeaderText="Question Answer" Width="350"></GridColumn>
+
+                                    <GridColumn Visible="@IsTaskGraphRequired" TextAlign="TextAlign.Left" Field=@nameof(TasksTaskUpdatesViewModel.GraphNumber) HeaderText="@TaskForUpdate.GraphTitle" Width="300"></GridColumn>
+
+                                    <GridColumn TextAlign="TextAlign.Left" Width="380" AllowFiltering="false" HeaderText="ACTION">
+                                        <Template Context="EditDeleteContext">
+                                            @{
+                                                var context = EditDeleteContext as TasksTaskUpdatesViewModel;
+                                                if (context.EmailId.HasValue)
+                                                {
+                                                    <a href="javascript:void(0);" class="btn btn-info text-white mr-2"
+                                                       role="button" data-placement="top"
+                                                       data-toggle="modal" @onclick="(() => GetUpdateEmail(context.EmailId))">
+                                                        View Email
+                                                    </a>
+                                                }
+                                            }
+                                            <button data-placement="top" title="Add Note" data-toggle="tooltip" class="btn btn-info btn-sm" @onclick="@(e => RefreshNoteModal((EditDeleteContext as TasksTaskUpdatesViewModel)))">
+                                                <img src="/Icons/Note.png" style="width:34px;" />
+                                            </button>
+
+                                            <a data-placement="top" title="Edit Update" data-toggle="tooltip" type="button" @onclick="(() => StartTaskUpdate(TaskForUpdate, EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Edit Button/Power User/Png Files/E2 30x30.png" class="icon" />
+                                            </a>
+
+                                            <a data-placement="top" title="Delete Update" data-toggle="tooltip" type="button" @onclick="(() => DeleteUpdateConfirm(TaskForUpdate, EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Delete Button/Power User/Png Files/D3 30x30.png" class="icon" />
+                                            </a>
+
+
+                                            <a data-placement="top" title="Respond" data-toggle="tooltip" type="button" @onclick="(() => StartRespond(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Email Button/Power User/Png Files/Em2_Org 30x30.png" class="icon" />
+                                            </a>
+
+                                            @if (((EditDeleteContext as TasksTaskUpdatesViewModel).IsPicture != null
+                                        && (EditDeleteContext as TasksTaskUpdatesViewModel).IsPicture == true)
+                                        || !string.IsNullOrEmpty((EditDeleteContext as TasksTaskUpdatesViewModel).PictureLink))
+                                            {
+                                                <a id="btn1" href="javascript:void(0);" type="button" data-placement="top"
+                                                   title="" data-original-title="Delete"
+                                                   data-toggle="modal" @onclick="(
+                                                    () => ViewUpdateImage(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                    <img src="/Icons/ViewImage.png" title="Image" class="icon" />
+                                                </a>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Modal -->
+
+</div>
+
+@if (IsActiveRecTaskUpdateComponent)
+{
+    <CreateRecurringTaskComponent RecurringTask="@TaskForUpdate" EditByEmployeeName="@EditBy"
+                                  RefreshParentComponent="@DeactivateEditRecTaskComponent"
+                                  SendMessageToParent="@SuccessMessageRecUpdateComponent"
+                                  CloseCreateRecurringTaskComponent="@DeactivateEditRecTaskComponent" />
+}
+
+<!--create rec update component-->
+@if (IsActiveCreateReUpdateComponent)
+{
+    <CascadingValue Value="ViewRecurringTasksComponentRef" IsFixed="true">
+        <CreateRecUpdateComponent SelectedUpdateTaskViewModel="@TaskForCreate"
+                                  TaskUpdateViewModel="@UpdateForCreate"
+                                  SuccessMessageCreateRecUpdateComponent="@SuccessMessageRecUpdateComponent"
+                                  RefreshToParentCreateRecUpdateComponent="@RefreshRecTaskUpdateComponent"
+                                  CloseCreateRecUpdateComponent="@DeactivateCreateRecUpdateComponent" />
+    </CascadingValue>
+}
+
+<!--view email component-->
+@if (IsActiveViewEmailComponent)
+{
+    <ViewEmailComponent EmailTaskId="@TaskId" SuccessMessageViewEmail="@SuccessMessageFromViewEmailComponent" />
+}
+
+<!-- rec update email component-->
+@if (IsActiveRecUpdateEmailComponent)
+{
+    <RecUpdateEmailComponent UpdateTaskForEmail="@SelectedUpdateViewModel"
+                             SuccessMessageRecUpedateEmailComponent="@SuccessMessageRecUpdateComponent"
+                             CloseRecUpedateEmailComponent="@DeactivateRecUpdateEmailComponent" />
+}
+
+<!--delete rec update component-->
+@if (IsActiveDeleteRecUpdateComponent)
+{
+    <DeleteRecUpdateComponent TaskForDelete="@SelectedUpdateTaskViewModel"
+                              UpdateTaskForDelete="@SelectedUpdateViewModel"
+                              SuccessMessageDeleteRecUpdateComponent="@SuccessMessageRecUpdateComponent"
+                              CloseDeleteRecUpdateComponent="@DeactivateDeleteRecUpdateComponent"
+                              RefreshToParentDeleteRecUpdateComponent="@RefreshRecTaskUpdateComponent" />
+}
+
+<!--view graph component-->
+@if (IsActiveViewGraphComponent)
+{
+    <ViewGraphComponent TaskForGraph="@SelectedUpdateTaskViewModel" SuccessMessageViewGraph="@SuccessMessageFromViewGraphComponent" />
+}
+
+<!--add note component-->
+@if (IsActiveAddNoteComponent)
+{
+    <AddNoteComponent SuccessMessageAddNoteComponent="@SuccessMessageRecUpdateComponent"
+                      CloseAddNoteComponent="@DeactivateAddNoteComponent" />
+}
+
+<!--single file component-->
+@if (IsActiveTaskUpdateMultipleFileComponent)
+{
+    <TaskUpdateMultipleFileComponent TaskUpdateViewModel="@updateTaskFormultipleFile"
+                                     CloseTaskUpdateMultipleFileComponent="@DeactivateFromMultipleFile" />
+}

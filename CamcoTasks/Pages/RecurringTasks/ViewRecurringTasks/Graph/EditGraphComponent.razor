@@ -1,0 +1,110 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+
+@namespace CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+
+
+<!--Edit graph modal-->
+<div class="modal fade" id="EditGraphModal" tabindex="-1" role="dialog" @onkeydown="CloseComponent" data-keyboard="false" data-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80)">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">GRAPH DATA</h5>
+                <div class="text-right text-light">
+                    <button type="button" class="btn btn-success"
+                    @onclick="(() => SetViewModelGraph(RecTaskForEditGraphComponent))">
+                        SAVE
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <SfTextBox CssClass="BackgroundCustom" Type="Syncfusion.Blazor.Inputs.InputType.Text"
+                                       Placeholder="ENTER GRAPH TITLE" @bind-Value="@TaskForGraph.GraphTitle">
+                            </SfTextBox>
+                        </div>
+                        <div class="col-md-12">
+                            <SfTextBox CssClass="BackgroundCustom" Type="Syncfusion.Blazor.Inputs.InputType.Text"
+                                       Placeholder="ENTER Y-VERTICAL TITLE" @bind-Value="@TaskForGraph.VerticalAxisTitle">
+                            </SfTextBox>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <div class="form-group">
+                                <label style="font-weight:bold; font-size:14px;">IS TRENDLINE?</label><br />
+                                <Syncfusion.Blazor.Buttons.SfCheckBox Label=""
+                                                                      TChecked="bool?" @bind-Checked="@RecTaskForEditGraphComponent.IsTrendLine">
+                                </Syncfusion.Blazor.Buttons.SfCheckBox>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <div class="form-group">
+                                <SfTooltip ID="YmaxTooltipId" Target="#YMAZTitleId" Content="@content">
+                                    <label id="YMAZTitleId" style="font-weight:bold; font-size:14px;">
+                                        IS Y-AXIS MANUALLY SET
+                                        <span class="text-primary">
+                                            <img class="helpIcon" src="/Icons/Q3.png" />
+                                        </span>
+                                    </label>
+                                </SfTooltip>
+
+                                <div class="mt-2">
+                                    <SfNumericTextBox Placeholder="Enter Y-Axis Max Values"
+                                                      ID="YmaxId" @bind-Value="@RecTaskForEditGraphComponent.MaxYAxisValue">
+                                    </SfNumericTextBox>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mt-3">
+                            <div class="form-group">
+                                <label style="font-weight:bold; font-size:14px;">IS XAXIS INTERVAL?</label><br />
+                                <Syncfusion.Blazor.Buttons.SfCheckBox Label=""
+                                                                      TChecked="bool?" @bind-Checked="@RecTaskForEditGraphComponent.IsXAxisInterval">
+                                </Syncfusion.Blazor.Buttons.SfCheckBox>
+
+                                @if (RecTaskForEditGraphComponent.IsXAxisInterval.HasValue
+                                && RecTaskForEditGraphComponent.IsXAxisInterval.Value)
+                                {
+                                    <label>
+                                        SELECT XAXIS INTERVALE TYPE:
+                                    </label>
+                                    <SfComboBox ID="Intiator" TItem="string" TValue="string"
+                                                DataSource="@XAxisIntervalTypeList" Autofill="true" AllowFiltering="true"
+                                                CssClass="BackgroundCustom" @bind-Value="XAxisIntervalType"
+                                                FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                        <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                    </SfComboBox>
+
+                                    <label>
+                                        ENTER XAXIS RANGE:
+                                    </label>
+                                    <SfNumericTextBox TValue="double?" Placeholder="Enter X-Axis Range" CssClass="BackgroundCustom"
+                                                      ID="YmaxId" @bind-Value="@RecTaskForEditGraphComponent.XAxisIntervalRange">
+                                    </SfNumericTextBox>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(ErrorMessageForEditGraphComponent))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4 class="text-danger">* @ErrorMessageForEditGraphComponent</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

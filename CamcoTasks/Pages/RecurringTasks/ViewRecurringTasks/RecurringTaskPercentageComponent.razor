@@ -1,0 +1,165 @@
+﻿@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Popups
+@using CamcoTasks.ViewModels.EmployeeDTO
+
+@if (IsLoadData)
+{
+    <div class="text-center m-2">
+        <div class="spinner-border text-primary m-auto" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+}
+else
+{
+    <div class=" col-12 row" style="margin-top: -20px;">
+        <div class="col-12 text-center" style="margin-top: 20px;">
+            @if (!IsPending)
+            {
+                <h3 class="m-0 p-0" style="font-weight:bold">
+                    RECURRING TASKS (@RecTasksCount)
+                </h3>
+
+                <label class="m-0 p-1  font-weight-bold" style="font-size:22px;">
+                    @if (CompletedOnTimeCount1 >= 50)
+                    {
+                        <span> 1 MONTH: </span>
+
+                        <span style="color:#179B09">@CompletedOnTimeCount1%</span>
+                    }
+                    else
+                    {
+                        <span> 1 MONTH: </span>
+
+                        if (CompletedOnTimeCount1 > 0)
+                        {
+                            <span style="color:#CA0000">@CompletedOnTimeCount1%</span>
+                        }
+                        else
+                        {
+                            <span style="color:#CA0000">N/A</span>
+                        }
+
+                    }
+                    @if (CompletedOnTimeCount2 >= 50)
+                    {
+                        <span> | 2 MONTH: </span>
+
+                        <span style="color:#179B09">@CompletedOnTimeCount2%</span>
+                    }
+                    else
+                    {
+                        <span> | 2 MONTH: </span>
+
+                        if (CompletedOnTimeCount2 > 0)
+                        {
+                            <span style="color:#CA0000">@CompletedOnTimeCount2%</span>
+                        }
+                        else
+                        {
+                            <span style="color:#CA0000">N/A</span>
+                        }
+                    }
+                </label>
+
+                <div>
+                    <a class="btn btn-lg btn-success text-light" href="/viewrecurringtasks/-2">
+                        PAST 2 MONTHS LATE TASKS REPORT
+                    </a>
+                </div>
+
+                <h5 class="m-0 p-0" style="font-weight:bold">
+                    REACTIVE TASKS (@ReAssignTaskseCount) |
+                    TOTAL PAST DUE TASKS (@TotalPasDueTasks)
+                </h5>
+            } else
+            {
+                <h3 style="font-weight:bold">
+                    NEW TASKS PENDING (@TotalPendingTasks)
+                </h3>
+                <h5 style="font-weight:bold">
+                    TASKS APPROVED IN THE LAST 30 DAYS (@TotalApprovedTasks)
+                </h5>
+            }
+        </div>
+        <div class="col-3"></div>
+    </div>
+
+    @if (!IsPending && EmployeesButtons != null && EmployeesButtons.Any())
+    {
+        <div class="col-12 row m-0 p-1">
+            <div class="col-1"></div>
+            <div class="col-10">
+                <div class="table p-1 m-0 mb-2">
+                    @{
+                        var limit = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(EmployeesButtons.Count) / Convert.ToDecimal(8)));
+                        @for (int i = 0; i < limit; i++)
+                        {
+                            <div class="table-row" style="cursor:pointer;">
+                                @{
+                                    int j = i * 8;
+                                    int count = (i + 1) * 8;
+                                    for (; j < count; j++)
+                                    {
+                                        int index = j;
+                                        if (j < EmployeesButtons.Count)
+                                        {
+                                            <div id="@EmployeesButtons[index].EmployeeName" class="table-cell p-0 align-middle text-center font-weight-bold"
+                                                 style="background-color: lightblue;" @onclick="@(() => PercentageFilterFields(EmployeesButtons[index].EmployeeName))">
+                                                @EmployeesButtons[index].EmployeeName
+                                            </div>
+                                            <div class="table-cell p-0 align-middle text-center"
+                                                 style="background-color:@(EmployeesButtons[j].Color);color:white;font-weight: bold;width:75px">
+                                                @EmployeesButtons[j].Percentage%
+                                                <a href="recurringPercentageReport/@EmployeesButtons[index].EmployeeName/-2" target="_blank">
+                                                    <i class="fa-solid fa-eye fa-lg text-light"></i>
+                                                </a>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-1"></div>
+        </div>
+    }
+
+    @if (TaskArea != null && TaskArea.Any())
+    {
+        <div class="col-12 row m-0 p-1">
+            <div class="col-1"></div>
+            <div class="col-10">
+                <div class="table p-1 m-0 mb-2">
+                    @{
+                        var limit = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(TaskArea.Count) / Convert.ToDecimal(8)));
+                        @for (int i = 0; i < limit; i++)
+                        {
+                            <div class="table-row" style="cursor:pointer;">
+                                @{
+                                    int j = i * 8;
+                                    int count = (i + 1) * 8;
+                                    for (; j < count; j++)
+                                    {
+                                        int index = j;
+                                        if (j < TaskArea.Count)
+                                        {
+                                            <div id="@TaskArea[index].Item1" class="table-cell p-0 align-middle text-center font-weight-bold"
+                                                 style="background-color: lightblue;" @onclick="@(() => DepartmentFilterFields(TaskArea[index].Item1))">
+                                                @TaskArea[index].Item1<span class="text-danger">@(IsPending && TaskArea[index].Item2 > 0 ? $" ({TaskArea[index].Item2})" : "")</span>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-1"></div>
+        </div>
+    }
+}

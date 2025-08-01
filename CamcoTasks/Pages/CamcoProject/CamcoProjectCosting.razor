@@ -1,0 +1,146 @@
+﻿@page "/camcoProject/viewCamcoProjectCost"
+
+@using CamcoTasks.Data.ModelsViewModel;
+@using CamcoTasks.Infrastructure.Entities
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Navigations;
+@using Syncfusion.Blazor.Popups
+
+
+<style>
+    .e-grid .e-rowcell {
+        font-size: 16px !important;
+        color: black;
+        font-family: "Franklin Gothic Medium";
+    }
+
+    .e-grid .e-icon-filter::before, .e-grid-menu .e-icon-filter::before {
+        content: "";
+        background-image: url('Icons/filter-white.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-grid .e-filtered::before {
+        content: "";
+        background-image: url('Icons/filter-gray.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .e-toolbar-items.e-tbar-pos {
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0" style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / PoCo</span></div>
+</div>
+
+<div>
+    @if (_isRender)
+    {
+        <div class="text-center m-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-center pt-2">VIEW PROJECT COSTING</h2>
+
+        <div class="ml-4 pb-5">
+            <SfGrid @ref="@_proGrid" DataSource="@_productSoCosting" AllowTextWrap="false" AllowSelection="false"
+                    RowHeight="18" Height="600" AllowGrouping="false" AllowFiltering="true" EnableHover="false" AllowExcelExport="true">
+
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
+                <SfToolbar>
+                    <ToolbarItems>
+                        <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print"
+                                     Id="Print" OnClick="StartPrinting">
+                            <Template>
+                                @{
+                                    <img src="Icons\Finalized\Printer Button\Non-Power User\Png Files\PntS5 40x125.png" />
+                                }
+                            </Template>
+                        </ToolbarItem>
+
+                        <ToolbarItem Type="ItemType.Button" Text="EXCEL EXPORT" TooltipText="Print"
+                                     Id="Excel" OnClick="StartPrinting">
+                            <Template>
+                                @{
+                                    <img src="Icons\Finalized\Excel Download Button\Non-Power User\Png Files\ExS3 40x125.png" />
+                                }
+                            </Template>
+                        </ToolbarItem>
+
+
+                        <ToolbarItem Type="ItemType.Input" Align="ItemAlign.Right">
+                            <Template>
+                                <div class="col-12 m-0 p-0" style="position:relative;">
+                                    <SfTextBox ValueChange="SearchValueChange" CssClass="BackgroundCustom" Placeholder="SEARCH"></SfTextBox>
+                                    <span class="e-search-icon e-icons" style="position: absolute;top: 10px;left: 140px;" />
+                                </div>
+                            </Template>
+                        </ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>
+
+                <GridColumns>
+                    <GridColumn Field=@nameof(ProjectCosting.SoNumber) Width="100" TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">PROJECT<br />CODE</div>
+                        </HeaderTemplate>
+                        <Template>
+                            @{
+                                var ProId = (context as ProjectCosting);
+                                <a href="/camcoProject/viewCamcoProjectCost/@ProId.ProjectId" class="btn btn-danger pl-1 pr-1 pt-0 pb-0" style="cursor:pointer;">@ProId.SoNumber</a>
+                            }
+                        </Template>
+                </GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.ProjectTitle) HeaderText="TITLE" Width="200px"
+                    TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.Description) HeaderText="PROJECT DESCRIPTION" 
+                    TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.LastActivityDate) Format="MM/dd/yy" Width="130px"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">LAST ACTIVITY<br />DATE</div>
+                        </HeaderTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.TotalCost) Format="C0" Width="110px"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">TOTAL<br />COST($)</div>
+                        </HeaderTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.LastWeekCostSpent) Format="C0" Width="110px"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">LAST WEEK<br />COST($)</div>
+                        </HeaderTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.Hours) Width="115px"
+                                TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">HOURS<br />SPENT(hrs)</div>
+                        </HeaderTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(ProjectCosting.LastWeekHoursSpent) Width="110px" TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <HeaderTemplate>
+                            <div style="white-space: nowrap;">LAST WEEK<br />HOURS</div>
+                        </HeaderTemplate>
+                    </GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    }
+</div>

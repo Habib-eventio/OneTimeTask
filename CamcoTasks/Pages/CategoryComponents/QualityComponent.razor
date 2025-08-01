@@ -1,0 +1,270 @@
+﻿@* @inherits QualityComponentModel
+@using CamcoTasks.ViewModels.MetricsGagingDataDTO;
+@using ERP.Repository.Repository.Metric;
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Inputs
+@using ERP.Data.CustomModels.Other
+
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / Qu</span></div>
+</div>
+
+<div class="mx-3 pl-3">
+    <div class="row standardBorder">
+
+        <div class="col-md-12  m-0 p-1">
+            <div class="col-12 row m-0 p-0 standardHeaderStyle">
+                <div class="col-md-3">  </div>
+                <div class="col-md-6 text-center m-0 p-0">
+                    <h4 class="m-0 p-0 mt-1">
+                        CALIBRATION STATUS
+                    </h4>
+                </div>
+
+                @if (!IsLoadingCalibration)
+                {
+                    <div class="col-md-3 p-1" style="text-align:right">
+                        <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                           role="button" data-placement="top" title="" data-original-title="Edit"
+                           data-toggle="modal" data-target="#GageModal"
+                        @onclick="@RefreshDataModal">VIEW/EDIT CALIBRATION DATA</a>
+                    </div>
+                }
+
+            </div>
+
+            @if (IsLoadingCalibration)
+            {
+                <br />
+                <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">LOADING...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="pt-3" style="margin-bottom:-10px !important;">
+                    <SfChart UseGroupingSeparator="true">
+                        <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+
+                        <ChartPrimaryXAxis Interval="1" EnableScrollbarOnZooming="true" LabelIntersectAction="LabelIntersectAction.Rotate45" RangePadding="ChartRangePadding.None" IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                        </ChartPrimaryXAxis>
+
+                        <ChartAxes>
+                            <ChartAxis Maximum="@(GraphMetricsCustomData.Max(x => x.NumberOfGagesBehindCalibration) > GraphMetricsCustomData.Max(x => x.NumberOfLostGages)? GraphMetricsCustomData.Max(x => x.NumberOfGagesBehindCalibration)+ 100: GraphMetricsCustomData.Max(x => x.NumberOfLostGages) + 100)"
+                                       LabelIntersectAction="LabelIntersectAction.MultipleRows" RowIndex="1" Name="YleftAxis">
+                                <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                            </ChartAxis>
+                        </ChartAxes>
+
+                        <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                        <ChartSeriesCollection>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="LOST" DataSource="@GraphMetricsCustomData" XName="DateReported" Width="2" YAxisName="YleftAxis" YName="NumberOfLostGages" Type="ChartSeriesType.Line">
+                                <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                            </ChartSeries>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="BEHIND CALIBRATION" DataSource="@GraphMetricsCustomData" Width="2" YAxisName="YleftAxis" XName="DateReported" YName="NumberOfGagesBehindCalibration" Type="ChartSeriesType.Line">
+                                <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+
+                        <ChartLegendSettings ShapeHeight="20" ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="10">
+                            <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                        </ChartLegendSettings>
+                    </SfChart>
+
+                </div>
+                <br />
+
+                <div class="modal fade" id="GageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header text-center align-content-center row m-0 p-1">
+                                <div class="col-2  m-0 p-0">
+                                </div>
+                                <div class="text-center col-8 m-0 p-0 align-content-center">
+                                    <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">GAGE DATA</p>
+                                </div>
+                                <div class="text-right col-2 m-0 p-0">
+                                    <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                                </div>
+                            </div>
+                            <div class="modal-body">
+                                <div class="container">
+                                    <SfGrid @ref="CalibRefGrid" DataSource="@NewMetricsData" AllowTextWrap="true" AllowSorting="true" RowHeight="10"
+                                            Height="400" Toolbar="@gridToolBar">
+                                        <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                        <GridEvents OnActionBegin="ActionBeginCalibration" TValue="MetricsGagingDataViewModel"></GridEvents>
+                                        <GridEditSettings AllowAdding="true"
+                                                          AllowEditing="true"
+                                                          AllowEditOnDblClick="true"
+                                                          AllowDeleting="true"></GridEditSettings>
+                                        <GridSortSettings>
+                                        </GridSortSettings>
+                                        <GridColumns>
+                                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                        Field=@nameof(MetricsGagingDataViewModel.Id) HeaderText="ID" IsPrimaryKey="true" Width="100"
+                                                        AllowAdding="false" AllowEditing="false"></GridColumn>
+
+                                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                        Field=@nameof(MetricsGagingDataViewModel.NumberOfGagesBehindCalibration) Width="300"
+                                                        HeaderText="NUMBER OF GAGES BEHIND CALIBRATION"></GridColumn>
+
+                                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                        Field=@nameof(MetricsGagingDataViewModel.NumberOfLostGages) Width="200"
+                                                        HeaderText="NUMBER OF LOST GAGES">
+                                            </GridColumn>
+
+                                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" DefaultValue="@DateTime.Today" Field=@nameof(MetricsGagingDataViewModel.DateReported) Format="MM/dd/yyyy"
+                                                        Width="200" HeaderText="DATE REPORTED"></GridColumn>
+                                        </GridColumns>
+                                    </SfGrid>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <div class="pt-2">
+        <div class="row standardBorder">
+            <div class="col-md-12 m-0 p-1">
+                <div class="col-12 row m-0 p-0 standardHeaderStyle">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6 m-0 p-0">
+                        <label class="m-0 p-0 mt-1">
+                            RMA YEAR-TO-DATE
+                        </label>
+                    </div>
+
+                    @if (!IsLoadingRMA)
+                    {
+                        <div class="col-md-3 p-1" style="text-align:right">
+                            <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                               role="button" data-placement="top" title="" data-original-title="Edit"
+                               data-toggle="modal" data-target="#RMAModal" @onclick="RefreshRMAModal">VIEW RMA DATA</a>
+                        </div>
+                    }
+
+                </div>
+
+
+                @if (IsLoadingRMA)
+                {
+                    <br />
+                    <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">LOADING...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+
+                    <div>
+                        <SfChart UseGroupingSeparator="true">
+                            <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                            <ChartPrimaryXAxis Interval="1" LabelIntersectAction="LabelIntersectAction.Rotate45"
+                                               RangePadding="ChartRangePadding.None"
+                                               IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                                <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                            </ChartPrimaryXAxis>
+                            <ChartPrimaryYAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" RowIndex="1"
+                                               Maximum="@(rmaCustoms.Max(x => x.Average) > rmaCustoms.Max(x => x.Count)? rmaCustoms.Max(x => x.Average)+ 5: rmaCustoms.Max(x => x.Count) + 5)">
+                                <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                            </ChartPrimaryYAxis>
+                            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                            <ChartSeriesCollection>
+                                <ChartSeries LegendShape="LegendShape.Rectangle" Name="RMA Count" DataSource="@GraphRmaCustoms" Width="2"
+                                             XName="Date" YName="Count" Type="ChartSeriesType.Line">
+                                </ChartSeries>
+                                <ChartSeries LegendShape="LegendShape.Rectangle" Name="6 Months Average" Width="2"
+                                             DataSource="@GraphRmaCustoms" XName="Date" YName="Averege"
+                                             Type="ChartSeriesType.Spline">
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                            <ChartLegendSettings ShapeHeight="20" ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="10">
+                                <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                            </ChartLegendSettings>
+                        </SfChart>
+                    </div>
+
+                    <div class="modal fade" id="RMAModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header text-center align-content-center row m-0 p-1">
+                                    <div class="col-2  m-0 p-0">
+                                    </div>
+                                    <div class="text-center col-8 m-0 p-0 align-content-center">
+                                        <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">RMA DATA</p>
+                                    </div>
+                                    <div class="text-right col-2 m-0 p-0">
+                                        <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container">
+                                        <SfGrid @ref="RMARefGrid" DataSource="@ModalrmaCustoms" AllowTextWrap="true" AllowSorting="true" RowHeight="10"
+                                                Height="400">
+                                            <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                            <GridEditSettings AllowAdding="false"
+                                                              AllowEditing="false"
+                                                              AllowEditOnDblClick="false"
+                                                              AllowDeleting="false"></GridEditSettings>
+                                            <GridTemplates>
+                                                <DetailTemplate>
+                                                    @{
+                                                        var rmaList = context as RmaCustom;
+                                                        //Child
+                                                        <SfGrid @ref="rmalistGrid" DataSource="@rmaList.SelectedRMAs"
+                                                                AllowSelection="true" AllowSorting="true" AllowPaging="false" AllowResizing="true"
+                                                                AllowTextWrap="true" EnableHover="true" RowHeight="38">
+                                                            <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                                            <GridColumns>
+                                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(SelectedRMAs.Id) HeaderText="Id" Width="50PX"
+                                                                            ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Format="MM/dd/yyyy" Field=@nameof(SelectedRMAs.RmaDate)
+                                                                            HeaderText="RMA DATE" Width="80px"></GridColumn>
+                                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(SelectedRMAs.Reason)
+                                                                            HeaderText="REASON" Width="300px"></GridColumn>
+                                                            </GridColumns>
+                                                        </SfGrid>
+                                                    }
+                                                </DetailTemplate>
+                                            </GridTemplates>
+                                            <GridColumns>
+                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(RmaCustom.ActualDate)
+                                                            HeaderText="DATE" Width="400px"
+                                                            Format="MM/dd/yyyy"></GridColumn>
+
+                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(RmaCustom.Count)
+                                                            HeaderText="# OF RMAS OPENED"></GridColumn>
+
+                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(RmaCustom.Average)
+                                                            HeaderText="6 MONTHS AVERAGE">
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+
+    </div>
+    <hr />
+</div>
+ *@

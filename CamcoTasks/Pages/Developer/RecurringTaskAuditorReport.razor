@@ -1,0 +1,47 @@
+﻿@page "/RecurringTaskReport/AuditorRepoart"
+<div class="container-fluid">
+    @if (!IsAuthenticate)
+    {
+        <div>
+            <div class="form-group col-md-6 m-auto">
+                <label for="exampleInputEmail1">Enter Password:</label>
+                <input type="password" @bind-value="Password" class="form-control p-1" id="exampleInputEmail1" aria-describedby="emailHelp">
+                <small id="emailHelp" class="form-text text-muted p-1">
+                    @if (Error != null)
+                    {
+                        <p class="text-danger">*@Error</p>
+                    }
+                </small>
+                <button type="submit" class="btn btn-primary" @onclick="(e => Authenticate(Password))">Submit</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6 m-auto">
+                <h5 class="text-center">Recurring Task Auditor Repoaer</h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 m-auto">
+                <label>Select Date For Create Repoart:</label>
+                <input class="form-control" type="date" id="RpoartDateId" name="RpoartDate" @bind-value="ReportDate">
+
+                @if (IsDoing)
+                {
+                    <div class="m-2">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-success mt-2" @onclick="GenareatRepoart">Create Repoart</button>
+                }
+            </div>
+        </div>
+    }
+</div>

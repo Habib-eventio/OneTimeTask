@@ -1,0 +1,160 @@
+﻿@page "/camcoProject/createCamcoProject"
+@page "/camcoProject/createCamcoProject/{ProjectId:int}"
+@page "/camcoProject/createCamcoProject/{ProjectId:int}/{EmployeeId:long?}"
+
+@using CamcoTasks.Data.ModelsViewModel;
+@using CamcoTasks.ViewModels.EmployeeDTO;
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Calendars
+
+<style>
+    .autoFilled {
+        background-color: #A8E0FF !important;
+    }
+</style>
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0" style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / AdPo</span></div>
+</div>
+
+<div>
+    @if (_isRender)
+    {
+        <div class="text-center m-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-center pt-2">@ProjectTitle CAMCO PROJECT (@ProjectCodeId)</h2>
+
+        <div class="ml-4">
+            <EditForm Model="@ProjectObject" Context="mainContext">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <div class="row col-lg-8 col-md-12 p-4 m-auto mt-2 box" style="text-transform:uppercase;">
+                 <div class="col-4 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">
+                        TITLE:
+                        </label>
+
+                    <SfTextBox @ref="_titleTextBox" TValue="string" Created="OnCreate" CssClass="BackgroundCustom" @bind-Value="@ProjectObject.Title" />
+                    <ValidationMessage For="@(() => ProjectObject.Title)" />
+                </div>
+
+                <div class="col-4 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">PROJECT TYPE:</label>
+                    <SfComboBox  TValue="int?" TItem="CamcoProjectType"
+                                        DataSource="@CamcoProjectTypes" PopupHeight="400px"
+                            @bind-Value="ProjectObject.ProjectType" Autofill="false" AllowFiltering="true"
+                            AllowCustom="false" FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                        <ComboBoxFieldSettings Text="Type" Value="Id"></ComboBoxFieldSettings>
+                    </SfComboBox>
+                </div>
+
+                <div class="col-2 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">PROJECT CODE:</label>
+                            <SfTextBox Enabled="false" CssClass="autoFilled" @bind-Value="@ProjectCodeId" />
+                </div>
+
+                <div class="col-2 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">DATE ENTERED:</label>
+                            <SfDatePicker TValue="DateTime" CssClass="autoFilled" Enabled="false" Readonly="true" @bind-Value="@ProjectObject.DateCreated" />
+                </div>
+                <div class="col-6 mt-2">
+                    <label class="p-0 m-0 font-weight-bold titleStyle">DESCRIPTION:</label>
+                    <SfTextBox TValue="string" CssClass="BackgroundCustom" @bind-Value="@ProjectObject.Description" />
+                    <ValidationMessage For="@(() => ProjectObject.Description)" />
+                </div>
+
+                <div class="col-3 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">ENTERED BY:</label>
+                            <SfComboBox ID="enteredby" TValue="long?" TItem="EmployeeViewModel"
+                                        DataSource="@EmployeeModel" PopupHeight="180px"
+                                        CssClass="BackgroundCustom" @bind-Value="ProjectObject.EnteredByEmployeeId"
+                                        Autofill="false" AllowFiltering="true"
+                        AllowCustom="false" FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                <ComboBoxFieldSettings Text="FullName" Value="Id"></ComboBoxFieldSettings>
+                    </SfComboBox>
+                </div>    
+                
+                 <div class="col-3 mt-2">
+                            <label class="p-0 m-0 font-weight-bold titleStyle">CHAMPION:</label>
+                    <SfComboBox ID="champ" TValue="long?" TItem="EmployeeViewModel"
+                                        DataSource="@EmployeeModel" PopupHeight="180px"
+                                        CssClass="BackgroundCustom" @bind-Value="ProjectObject.ChampionEmployeeId"
+                                        Autofill="false" AllowFiltering="true"
+                                        AllowCustom="false" FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                <ComboBoxFieldSettings Text="FullName" Value="Id"></ComboBoxFieldSettings>
+                    </SfComboBox>
+                </div> 
+                
+                <div class="col-12 mt-4 text-center">
+                            <img src="/Icons/Save-Add.png" style="cursor: pointer; width: 130px; margin-top: 5px !important" @onclick="() => SaveManufacturer(true)" />
+                            <img src="/Icons/Save-Exit.png" style="cursor: pointer; width: 130px; margin-top: 5px !important" @onclick="() => SaveManufacturer(false)" />
+                            <button type="button" class="btn btn-danger mt-1" @onclick="() => Cancel()" style="padding-left: 20px; padding-right: 20px;">EXIT</button>
+                            @if (ProjectId > 0)
+                            {
+                                <button type="button" class="btn btn-info mt-1" @onclick="() => ProjectPostponedOrDeleted(true)" style="padding-left: 20px; padding-right: 20px; margin-left: 4px;">POSTPONE</button>
+                                <button type="button" class="btn btn-danger mt-1" @onclick="() => ProjectPostponedOrDeleted(false)" style="padding-left: 20px; padding-right: 20px;">DELETE</button>
+                            }
+                        </div>
+            </div>
+        </div>
+    </EditForm>
+        </div>
+    }
+</div>
+<div class="modal fade" id="ProjectPostponeOrDeleteModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+    style="background-color: rgba(0, 0, 0, 0.80);">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div style="display:block" class="modal-header">
+                    <div class="row">
+                        <div class="col-md-9">
+                            <h5 class="modal-title" id="exampleModalLabel">@(isPostponedProject ? "REASON FOR POSTPONING PROJECT:" : "REASON FOR DELETING PROJECT:")</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-right text-light">
+                                <button class="btn btn-danger" data-dismiss="modal" @onclick="CloseComponent">CANCEL</button>
+                                <button class="btn btn-primary m-1" @onclick="(async () => await Save())">
+                                    SAVE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <SfTextBox ID="reasonId" CssClass="BackgroundCustom" HtmlAttributes="@htmlAttribute" Multiline="true" @bind-Value="PostponeOrDeleteReason">
+                                </SfTextBox>
+                            </div>
+                        </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>@(isPostponedProject ? "DATE POSTPONED: " : "DATE DELETED: ")</label>
+                        </div>
+                        <div class="col-md-3">
+                            <SfDatePicker ID="RectaskUpdDate" Enabled="false" CssClass="BackgroundCustom" @bind-Value="@selectedDate"></SfDatePicker>
+                        </div>
+                    </div>
+                        @if (!string.IsNullOrEmpty(Error))
+                        {
+                            <div class="row">
+                                <div class="col-md-12 text-danger m-2 text-center">
+                                    <h4>* @Error</h4>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

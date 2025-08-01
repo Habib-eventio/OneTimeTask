@@ -1,0 +1,36 @@
+﻿.selectExcelData {
+    font-weight: bold;
+    background: yellow;
+    color: red;
+}
+
+.table th {
+    border-right: 2px solid #dee2e6;
+    border-top: none;
+    padding: 0;
+    text-align: center;
+    padding-left: 0px;
+    margin-left: auto;
+}
+
+.table td {
+    padding: 0;
+}
+
+.table td, .table th {
+    border-bottom: 1px solid #dee2e6;
+    border-top: none;
+    border-right: 2px solid #dee2e6;
+}
+
+input.form-control.form-control-sm {
+    border-radius: 0;
+    border: none;
+}
+
+input.form-control.form-control-sm:focus {
+    border-right: 3px solid #80bdff;
+    border-bottom: 3px solid #80bdff;
+    border-top: 3px solid #80bdff;
+}
+

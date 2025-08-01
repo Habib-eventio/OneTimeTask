@@ -1,0 +1,47 @@
+﻿@namespace CamcoTasks.Shared.Component
+
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.DropDowns
+
+
+<div class="modal fade" id="EmployeeListModel" data-backdrop="static"  tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">SELECT EMPLOYEE NAME</h5>
+                <button type="button" class="close" aria-label="Close" @onclick="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (!IsLoading)
+                {
+                    <div class="form-group">
+                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                               class="col-form-label">
+                            SELECT YOUR NAME:
+                        </label>
+                        <SfComboBox ID="EmployeeLIstId" TItem="string" TValue="string"
+                                    DataSource="@Employees" Autofill="true" AllowFiltering="true"
+                                    CssClass="BackgroundCustom" @bind-Value="EmployeeName"
+                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                        </SfComboBox>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="spinner-border m-auto" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="GoTo">GO TO</button>
+            </div>
+        </div>
+    </div>
+</div>

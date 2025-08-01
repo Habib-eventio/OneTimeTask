@@ -1,0 +1,60 @@
+﻿@page "/"
+
+@inherits CamcoTasks.Pages.IndexModel
+
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me</span></div>
+</div>
+
+<div class="ml-3">
+    <div class="jumbotron-fluid text-center mt-1">
+        <div class="container">
+            <h1 class="display-4">CAMCO TASKS</h1>
+        </div>
+    </div>
+    <hr />
+
+
+    <div class="inner-center" style="margin-bottom:30px;">
+        <div class="card-deck">
+            <div class="card text-center cardhover" style="width: 18rem;" @onclick="(()=> _navigationManager.NavigateTo(ViewTasksPage))">
+                <div class="card-body">
+                    <h3 style="color:black;margin-top: 5px;">ONE-TIME TASKS</h3>
+                    <img src="/Icons/OneTime Tasks.jpg" style="width: 300px;" />
+                    <hr />
+                    <p class="card-text" style="color:black">
+                        VIEW AND MANAGE CONTINUES IMPROVEMENT TASKS.
+                    </p>
+                </div>
+                <div class="card-footer" style="background-color:white">
+                    <button class="col-6 btn btn-danger w-100 mt-1 p-1 camcoStandardFontSize">
+                        GO TO ONE-TIME TASKS
+                        <div class="dotBlack float-right align-middle container4"><p>@OneTimeTaskCount</p> </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card text-center cardhover" style="width: 18rem;" @onclick="(()=> _navigationManager.NavigateTo(ViewRecTasksPage))">
+                <div class="card-body">
+                    <h3 style="color:black;margin-top: 5px;">RECURRING TASKS</h3>
+                    <img src="/Icons/Recurring Tasks.jfif" style="width: 300px;" />
+                    <hr />
+                    <p class="card-text" style="color:black">
+                        VIEW AND MANAGE RECURRING TASKS.
+                    </p>
+                </div>
+                <div class="card-footer" style="background-color:white">
+                    <button class="col-6 btn btn-danger w-100 mt-1 p-1 camcoStandardFontSize">
+                        GO TO RECURRING TASKS
+                        <div class="dotBlack float-right align-middle container4"><p>@RecTaskCount</p> </div>
+                    </button>
+                    <button class="col-3 btn btn-danger w-100 mt-1 p-1 camcoStandardFontSize">
+                        REPORTS
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

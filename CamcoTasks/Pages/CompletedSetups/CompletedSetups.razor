@@ -1,0 +1,171 @@
+﻿@page "/completedsetups/{hw}"
+
+@inject CamcoTasks.Service.IService.IProductionService productionService
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+@using System.Linq
+@using CamcoTasks.Data.Other
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / CmSeSe / CmSe</span></div>
+</div>
+<div class="row custom-top mt-1">
+	<div class="col-md-6">
+		<div class="pt-2">
+			<h2>
+				Completed Setups Report
+			</h2>
+		</div>
+	</div>
+
+</div>
+
+@if (Loading)
+{
+	<SfGrid DataSource="@Data" AllowGrouping="true">
+		<GridGroupSettings ShowDropArea="false" Columns="@Hide"></GridGroupSettings>
+		@*<GridTemplates>
+				<DetailTemplate>
+					@{
+						var employee = (context as SetupCompletedData);
+						<table class="detailtable" width="100%">
+							<colgroup>
+								<col width="33%">
+								<col width="33%">
+								<col width="33%">
+							</colgroup>
+							<tbody>
+								<tr>
+									<td>
+										<span style="font-weight: 500;">Part Number: </span> @employee.PartNumber
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="font-weight: 500;">Average Setup Time: </span> @employee.AvgSetupTimePerPart
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="font-weight: 500;">Op: </span> @employee.OpNumber
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					}
+				</DetailTemplate>
+			</GridTemplates>*@
+		<GridColumns>
+			<GridColumn HeaderTextAlign="TextAlign.Center" Field=@nameof(SetupCompletedData.Employee) HeaderText="Employee" Width="110"> </GridColumn>
+			<GridColumn HeaderTextAlign="TextAlign.Center" Field=@nameof(SetupCompletedData.CountOfSetupsCompleted) HeaderText="Total Setups Completed For Period" TextAlign="TextAlign.Center"> </GridColumn>
+			<GridColumn HeaderTextAlign="TextAlign.Center" Field=@nameof(SetupCompletedData.PartNumber) HeaderText="Part Number" TextAlign="TextAlign.Center"> </GridColumn>
+			<GridColumn HeaderTextAlign="TextAlign.Center" Field=@nameof(SetupCompletedData.AvgSetupTimePerPart) HeaderText="Avg Setup Time Per Part/Route" TextAlign="TextAlign.Center"> </GridColumn>
+			<GridColumn HeaderTextAlign="TextAlign.Center" Field=@nameof(SetupCompletedData.OpNumber) HeaderText="OP" TextAlign="TextAlign.Center"> </GridColumn>
+		</GridColumns>
+	</SfGrid>
+}
+else
+{
+	<p style="text-align:center"><em>Loading...</em></p>
+}
+
+<style type="text/css" class="cssStyles">
+    .e-grid .e-headercell {
+        background-color: #24202C;
+    }
+
+    .e-grid .e-altrow {
+        /*background-color: #DBD7E3;*/
+        background-color: #EBEBEB;
+    }
+
+    .e-grid .e-detailindentcell {
+        background-color: #EB711D;
+    }
+
+    .e-grid .e-detailrowexpand {
+        background-color: #EB711D;
+        width: 30px;
+    }
+
+    .e-grid.e-default .e-detailheadercell {
+        width: 10px;
+    }
+
+    .e-grid .e-rowcell {
+        text-transform: uppercase;
+    }
+
+    .e-grid .e-detailrowcollapse {
+        width: 20px;
+    }
+	.detailtable td {
+		font-size: 13px;
+		padding: 4px;
+		max-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+</style>
+
+@code {
+	[Parameter]
+	public string hw { get; set; }
+
+	string[] Hide = (new string[] { "Employee" });
+
+	private DateTime? fromDate;
+	private DateTime? toDate;
+	public bool Loading { get; set; } = false;
+
+	private List<SetupCompletedData> Data;
+
+	//Do something with param
+	protected override async Task OnParametersSetAsync()
+	{
+		hw.Replace("-", "/");
+		var value = hw.Split("--");
+		fromDate = DateTime.Parse(value[0]);
+		toDate = DateTime.Parse(value[1]);
+		await LoadData();
+		Loading = true;
+		StateHasChanged();
+	}
+
+	private async Task LoadData()
+	{
+		Data = new List<SetupCompletedData>();
+		if (fromDate.HasValue && toDate.HasValue)
+		{
+			var data = (await productionService.GetData(fromDate.Value, toDate.Value)).ToList();
+			var dList = data.ToList();
+			var employees = dList.Select(a => a.Employee).OrderBy(a => a).ToList();
+			var tempData = new List<SetupCompletedData>();
+
+			foreach (var item in employees)
+			{
+				var empData = dList.Where(a => a.Employee == item).ToList();
+				foreach (var _i in empData)
+				{
+					SetupCompletedData setup = new SetupCompletedData();
+					setup.Employee = _i.Employee;
+					double avgtime = 0;
+
+					avgtime = (double)data.Where(a => a.PartNumber == _i.PartNumber && a.Employee == _i.Employee).Average(a => a.SetUpTime);
+
+					setup.AvgSetupTimePerPart = avgtime;
+
+					setup.CountOfSetupsCompleted = data.Count(a => a.Employee == _i.Employee);
+					setup.PartNumber = _i.PartNumber;
+					setup.OpNumber = _i.OpNumber;
+
+					var datacheck = Data.Where(a => a.PartNumber == setup.PartNumber && a.OpNumber == setup.OpNumber && a.AvgSetupTimePerPart == setup.AvgSetupTimePerPart).ToList();
+					if (datacheck.Count() < 1)
+					{
+						Data.Add(setup);
+					}
+				}
+			}
+		}
+		Loading = true;
+	}
+}

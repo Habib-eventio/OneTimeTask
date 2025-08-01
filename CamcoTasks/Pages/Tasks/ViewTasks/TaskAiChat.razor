@@ -1,0 +1,95 @@
+﻿@page "/chat"
+@using CamcoTasks.Service.IService
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.TasksTasksDTO
+@inject ITasksService TasksService
+@inject IBotService Bot
+@using Microsoft.AspNetCore.Components.Web
+
+
+<PageTitle>Task Assistant</PageTitle>
+
+<div class="container py-4" style="max-width:700px">
+    <h3 class="mb-3">Chat with Task-App Assistant</h3>
+
+    <!-- Chat history -->
+    <div class="chat-box border rounded p-3 mb-3" style="height:340px; overflow-y:auto">
+        @foreach (var m in Messages)
+        {
+            <div class="@($"bubble {m.From}")">@m.Text</div>
+        }
+    </div>
+
+    <!-- Input row -->
+    <div class="input-group">
+        <input class="form-control"
+               @bind="Current"
+               @onkeydown="HandleKeyDown"
+               placeholder="Ask anything…" />
+        <button class="btn btn-primary" @onclick="Send">Send</button>
+    </div>
+</div>
+
+@code {
+    record Bubble(string Text, string From); // "user" | "bot"
+    private List<Bubble> Messages = new();
+    private string Current = "";
+
+    private async Task Send()
+    {
+        if (string.IsNullOrWhiteSpace(Current)) return;
+        var text = Current.Trim();
+        Current = "";
+
+        Messages.Add(new(text, "user"));
+        try
+        {
+            var reply = await Bot.SendMessageAsync(text);
+            Messages.Add(new(reply, "bot"));
+        }
+        catch (Exception ex)
+        {
+            Messages.Add(new($"Error: {ex.Message}", "bot"));
+        }
+        StateHasChanged(); // Force UI update
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") _ = Send();
+    }
+
+    // Remove the unused Key method
+}
+<style>
+    .bubble {
+        margin: .25rem 0;
+        padding: .5rem .75rem;
+        border-radius: 12px;
+        max-width: 80%;
+    }
+
+        .bubble.user {
+            background: #0d6efd;
+            color: #fff;
+            margin-left: auto;
+        }
+
+        .bubble.bot {
+            background: #f1f1f1;
+            color: #111;
+            margin-right: auto;
+        }
+
+    .chat-box {
+        background: #fafafa;
+    }
+
+    .col-lg-7 {
+        position: relative;
+        width: 100%;
+        padding-right: 69px !important;
+        padding-left: 15px !important;
+        padding-top: 107px !important;
+    }
+</style>

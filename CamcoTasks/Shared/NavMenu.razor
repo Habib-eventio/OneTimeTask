@@ -1,0 +1,85 @@
+﻿@using CamcoTasks.Pages.Tasks.Reports
+@using CamcoTasks.Library
+@using Syncfusion.Blazor.DropDowns
+@using CamcoTasks.Shared.Component
+
+
+<nav class="navbar fixed-top navbar-expand-lg bg-dark navbar-dark">
+    <NavLink class="navbar-brand" href="/">CAMCO TASKS</NavLink>
+    <button class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item dropdown">
+                <NavLink class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    METRICS
+                </NavLink>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <NavLink class="dropdown-item" href="/HomePage/1">GENERAL</NavLink>
+                    <NavLink class="dropdown-item" href="/HomePage/2">PURCHASING</NavLink>
+                    <NavLink class="dropdown-item" href="/HomePage/3">QUALITY</NavLink>
+                    <NavLink class="dropdown-item" href="/HomePage/4">MAINTENANCE</NavLink>
+                    <NavLink class="dropdown-item" href="/HomePage/5">STOCKROOM</NavLink>
+                    <NavLink class="dropdown-item" href="/HomePage/6">PRODUCTION</NavLink>
+                </div>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="viewtasks">ONE-TIME TASKS</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="viewrecurringtasks">RECURRING TASKS</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/camcoProject">CAMCO PROJECT</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" data-toggle="modal" data-target="#ViewTaskByEmployeePopupModal" @onclick="LoadViewTaskByEmployeePopup" style="cursor:pointer">PROJECT UPDATE</NavLink>
+            </li>
+            <li class="nav-item dropdown">
+                <NavLink class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    REPORTS
+                </NavLink>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <NavLink class="dropdown-item" href="/RecurrintTaskReport">RECURRING TASK</NavLink>
+                </div>
+            </li>
+        </ul>
+        <ul class="navbar-nav">
+            <li id="JarvisButton" class="nav-item mx-2 mt-2">
+                <NavLink style="border-bottom-width: 0px; border-top-width: 0px;"
+                         class="nav-link btn btn-danger text-white" target="_blank" rel="noopener noreferrer" href="@AppInformation.jarvisUrl">GO TO JARVIS</NavLink>
+            </li>
+            <li id="5sButton" class="nav-item mx-2 mt-2">
+                <NavLink style="border-bottom-width: 0px; border-top-width: 0px;"
+                         class="nav-link btn btn-danger text-white" href="@AppInformation.fivesUrl">GO TO 5S TASKS</NavLink>
+            </li>
+            <li id="NavBackButton" class="nav-item">
+                <NavLink class="nav-link text-white" @onclick="GoBack" style="cursor:pointer">
+                    <img src="/Icons/BckS3 40x125.png" />
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="modal fade" id="ViewTaskByEmployeePopupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 100%; width:99%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info" id="exampleModalLabel">VIEW TASK BY TASKTYPE</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (IsClick)
+                {
+                    <ViewTaskByEmployeePopup />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

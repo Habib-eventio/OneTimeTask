@@ -1,0 +1,138 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.ViewModels.TasksTaskUpdatesDTO;
+@using Syncfusion.Blazor.Grids
+@using CamcoTasks.ViewModels.Department
+
+
+<!--Task update modal-->
+<div class="modal large-modal fade" id="TaskUpdatesModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document" style="max-width: 100%; width:90%">
+        <div class="modal-content" style="height: 100vh">
+            @if (IsLoadTask)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel" style="font-weight:bold;">VIEW ONE-TIME TASK UPDATES</h5>
+                    <button class="btn btn-danger" @onclick="CloseComponet"><i class="flaticon-cancel-12"></i>CLOSE</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" style="margin-bottom:20px;text-align:center">
+                        <div class="col-md-12" style="margin-bottom:10px;">
+                            <span style="font-size: 18px;font-weight: 600;">
+                                @SelectedUpdateTaskViewModel.Description
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+
+                            <a id="btn1" href="javascript:void(0);" class="btn btn-primary btn-sm btn-block" role="button"
+                           data-placement="top" title="" data-original-title="Add" @onclick="@(e => StartTaskUpdate(null))">
+                                ADD UPDATE
+                            </a>
+                        </div>
+
+                        @if (SelectedUpdateTaskViewModel.FilesCount > 0)
+                        {
+                            <div class="col-md-2">
+                                <a id="btn1" href="javascript:void(0);" class="btn btn-info btn-sm btn-block btn-block"
+                           style="margin-left:5px" role="button" data-placement="top" title="" data-original-title="View"
+                           @onclick="(() => LoadTaskFiles(SelectedUpdateTaskViewModel))">
+                                    VIEW TASK FILES
+                                </a>
+                            </div>
+                        }
+
+                        <div class="col-md-12">
+                            <SfGrid @ref="UpdateGrid" DataSource="@SelectedUpdateTaskViewModel.TasksTaskUpdates" ID="Detailscontainer" AllowSelection="true" AllowSorting="true" AllowPaging="false" AllowResizing="true" AllowTextWrap="true" EnableHover="true" RowHeight="38">
+                                <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                <GridColumns>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Format="MM/dd/yyyy" DefaultValue="@DateTime.Today" Field=@nameof(TasksTaskUpdatesViewModel.UpdateDate) HeaderText="UPDATE DATE" Width="150"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(TasksTaskUpdatesViewModel.Update) HeaderText="UPDATE" Width="700"
+                                            ClipMode="ClipMode.EllipsisWithTooltip"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="220" AllowFiltering="false"
+                                             HeaderText="ACTION">
+                                        <Template Context="EditDeleteContext">
+
+                                            <a id="btn1" href="javascript:void(0);" role="button" data-placement="top" title=""
+                                               data-original-title="Edit"
+                                           @onclick="(() => StartTaskUpdate(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Edit Button/Power User/Png Files/E2 30x30.png" style="width:40px;" />
+                                            </a>
+                                            <a id="btn1" href="javascript:void(0);" role="button" data-placement="top"
+                                               title="" data-original-title="Delete"
+                                           @onclick="(() => DeleteUpdateConfirm(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Delete Button/Power User/Png Files/D3 30x30.png" style="width:40px;" />
+                                            </a>
+                                            <a id="btn1" href="javascript:void(0);" role="button" data-placement="top" title=""
+                                               data-original-title="Email"
+                                           @onclick="(() => StartRespond(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                <img src="/Icons/Finalized/Email Button/Power User/Png Files/Em2_Org 30x30.png" class="icon" />
+                                            </a>
+
+                                            @if ((EditDeleteContext as TasksTaskUpdatesViewModel).IsPicture != null && (EditDeleteContext as TasksTaskUpdatesViewModel).IsPicture == true)
+                                            {
+                                                <a id="btn1" href="javascript:void(0);" type="button" data-placement="top"
+                                                   title="" data-original-title="Delete"
+                                           @onclick="(() => TaskUpdateFiles(EditDeleteContext as TasksTaskUpdatesViewModel))">
+                                                    <img src="/Icons/ViewImage.png" class="icon" />
+                                                </a>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- tasks update create component-->
+@if (IsActivateTasksUpdateCreateComponent)
+{
+    <TasksUpdateCreateComponent OneTimeTask="@OneTimeTaskForTasksUpdateCreateComponent"
+                            TaskUpdate="@TaskForTasksUpdateCreateComponent"
+                            RefreshTasksUpdateViewComponent="@RefreshComponent"
+                            CallbackFromTasksUpdateCreateSaveAndClose="@CallbackFromTasksUpdateCreateSaveAndClose"
+                            CallbacckMessageTaskUpdateCreateComponent="@CallbackMessageFromTasksUpdateCreateComponent" />
+}
+
+<!--task multiple file component-->
+@if (IsActivateTasksMultipleFilesComponent)
+{
+    <TasksMultipleFilesComponent TaskViewModel="@TaskForMultipleFileComponent"
+                             CallbackMessageTasksMultipleFiles="@CallbackFromTasksMultipleFiles" />
+}
+
+<!--task update delete component-->
+@if (IsActivateTasksUpdateDeleteComponent)
+{
+    <TasksDeleteUpdateComponent DeleteViewModelUpdate="@TaskForTasksDeleteUpdateComponent"
+                            RefreshTasksUpdateViewComponent="@RefreshComponent"
+                            CallbackMessageTasksDeleteUpdateComponent="@SuccessMessageFromTasksUpdateDeleteRecComponent" />
+}
+
+<!--task update email component-->
+@if (IsActivateTasksUpdateEmailComponent)
+{
+    <TasksUpdateEmailComponent SelectedUpdateViewModel="@TaskForTasksUpdateEmailComponent"
+                           CallbackMessageTasksUpdateEmail="@CallbackMessageFromTasksUpdateEmailComponent" />
+}
+
+<!--task update multiple file component-->
+@if (IsActivateTasksUpdateMultipleFiles)
+{
+    <TasksUpdateMultipleFilesComponent TaskViewModel="@TaskForTasksUpdateMultipleFileComponent"
+                                   RefreshTasksUpdateViewComponent="@RefreshTasksUpdateView"
+                                   CallbackMessageTasksMultipleFiles="@CallbackFromTasksUpdateMultipleFilesComponent" />
+}

@@ -1,0 +1,46 @@
+﻿@page "/HomePage/"
+@page "/HomePage/{ComponenentIndex}"
+
+@inherits CamcoTasks.Pages.HomePageModel
+
+
+<div class="row">
+    <div class="col-12 pt-1 pb-1 pl-0 pr-0">
+        <div class='tabbed round'>
+            <ul>
+                <li class="@(ChosenComponent == "1" ? "active p-3" : "yellowBg")  ml-5" @onclick="() => NavigateComponent(1)">GENERAL</li>
+                <li class="@(ChosenComponent == "2" ? "active p-3" : "purpleBg") ml-5 " @onclick="() => NavigateComponent(2)">PURCHASING</li>
+                <li class="@(ChosenComponent == "3" ? "active p-3 " : "lightOrangeBg") ml-5" @onclick="() => NavigateComponent(3)">QUALITY</li>
+                <li class="@(ChosenComponent == "4" ? "active p-3" : "lightGreenBg") ml-5" @onclick="() => NavigateComponent(4)">MAINTENANCE</li>
+                <li class="@(ChosenComponent == "5" ? "active p-3" : "lightSkyBlueBg") ml-5" @onclick="() => NavigateComponent(5)">STOCKROOM</li>
+                <li class="@(ChosenComponent == "6" ? "active p-3 " : "lightPinkBg") ml-5" @onclick="() => NavigateComponent(6)">PRODUCTION</li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+@if (ChosenComponent == "1")
+{
+    <GeneralComponent />
+}
+else if (ChosenComponent == "2")
+{
+    <PurchasingComponent />
+}
+else if (ChosenComponent == "3")
+{
+    <QualityComponent />
+}
+else if (ChosenComponent == "4")
+{
+    <MainMaintenanceComponent />
+}
+else if (ChosenComponent == "5")
+{
+    <StockroomComponent />
+}
+else if (ChosenComponent == "6")
+{
+    <ProductionComponent />
+}

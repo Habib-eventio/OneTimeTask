@@ -1,0 +1,36 @@
+﻿@using Syncfusion.Blazor.Inputs;
+<div class="modal fade" id="approvalClosure" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="text-align:center">
+            <div class="modal-body">
+                <h4>PLEASE UPLOAD YOUR APPROVAL FOR CLOSURE REQUEST</h4>
+                <h4>CX157-1</h4>
+                    <div>
+                    <SfUploader AllowMultiple="false" ID="HowToUploadFilesId" AutoUpload="true"
+                                AllowedExtensions="@FileManagerService.RecurringTaskHowtoFileExtention"
+                                Multiple="false">
+                        <UploaderEvents ValueChange="SelectHowToFile" BeforeRemove="RemoveUploadedFile" />
+                    </SfUploader>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" @onclick="CloseComponent">
+                    CANCEL
+                </button>
+                <button type="button" class="btn btn-success" @onclick="StatusChangeCheck">
+                    COMPLETE
+                </button>
+                
+            </div>
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="row">
+                    <div class="col-md-12 text-danger m-2 text-center">
+                        <h4>* @ErrorMessage</h4>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

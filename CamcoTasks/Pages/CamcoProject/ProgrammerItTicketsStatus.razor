@@ -1,0 +1,87 @@
+﻿@page "/camcoProject/programmerItTicketsStatus"
+@using CamcoTasks.Data.ModelsViewModel;
+@using CamcoTasks.ViewModels.CostingProgrammersClosedITTicketsDTO;
+
+
+<style>
+    .e-grid .e-rowcell {
+        font-size: 15px !important;
+        color: black;
+        font-family: "Franklin Gothic Medium";
+    }
+</style>
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0" style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / Pr</span></div>
+</div>
+
+<div>
+    @if (_isRender)
+    {
+        <div class="text-center m-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row  pt-2">
+            <div class="col-3"></div>
+
+            <div class="col-md-6">
+                <h2 class="text-center">PROGRAMMER CLOSED IT TICKETS</h2>
+            </div>
+
+            <div class="col-3">
+                <button class="btn btn-success float-right mb-2" @onclick="@(() => UpdateProgrammerStatus())">
+                    UPDATE PROGRAMMER STATUS
+                </button>
+            </div>
+        </div>
+
+        <div class="ml-4 pb-5">
+            <SfGrid DataSource="@ClosedTickets" Height="350" EnableHover="false" RowHeight="20">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridColumns>
+                    <GridColumn HeaderText="PROGRAMMER NAME" Field=@nameof(CostingProgrammersClosedITTicketsViewModel.ProgrammerName) TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn HeaderText="WEEK CLOSE DATE" Field=@nameof(CostingProgrammersClosedITTicketsViewModel.WeekCloseDate) TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn HeaderText="CLOSED IT TICKETS" Field=@nameof(CostingProgrammersClosedITTicketsViewModel.ClosedIttickets) TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn HeaderText="OPEN TO PENDING REVIEW TICKETS" Field=@nameof(CostingProgrammersClosedITTicketsViewModel.OpenToPendingReviewIttickets) TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left"></GridColumn>
+                    <GridColumn HeaderText="TOTAL TICKETS" Field=@nameof(CostingProgrammersClosedITTicketsViewModel.ProgrammerName) TextAlign="Syncfusion.Blazor.Grids.TextAlign.Left">
+                        <Template>
+                            @{
+                                var l = (context as CostingProgrammersClosedITTicketsViewModel);
+                                <div>
+                                    @(Convert.ToInt32(l.ClosedIttickets) + Convert.ToInt32(l.OpenToPendingReviewIttickets))
+                                </div>
+                            }
+                        </Template>
+                    </GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+
+        <div class="my-2 pb-5">
+            <SfChart Width="100%" Title="IT TICKETS CLOSED BY PROGRAMMERS" Height="500">
+                <ChartTitleStyle FontFamily="Arial" FontWeight="Bold" Size="22px" Color="Black"></ChartTitleStyle>
+                <ChartArea>
+                    <ChartAreaBorder Color="Black" Width="3"></ChartAreaBorder>
+                </ChartArea>
+                <ChartPrimaryYAxis RangePadding="ChartRangePadding.Auto">
+                    <ChartAxisMajorGridLines Width="1" Color="lightgray"></ChartAxisMajorGridLines>
+                    <ChartAxisMinorGridLines Width="1" Color="lightgray"></ChartAxisMinorGridLines>
+                </ChartPrimaryYAxis>
+                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+                <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                <ChartSeriesCollection>
+                    @foreach (SeriesData series in SeriesCollection)
+                    {
+                        <ChartSeries XName=@series.XName Name="@series.EmployeeName" Width="2" YName=@series.YName DataSource=@series.Data>
+                        </ChartSeries>
+                    }
+                </ChartSeriesCollection>
+            </SfChart>
+        </div>
+    }
+</div>

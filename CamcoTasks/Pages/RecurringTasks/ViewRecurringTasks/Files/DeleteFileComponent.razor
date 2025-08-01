@@ -1,0 +1,47 @@
+﻿@namespace CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+
+
+<!--delete files modal-->
+<div class="modal fade" id="DeleteFilesModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            @if (SelectImageModel != null)
+            {
+                <div class="modal-header">
+                    @if (fileManagerService.IsImage(SelectImageModel.PictureLink))
+                    {
+                    <h5 class="modal-title" id="exampleModalLabel">DELETE IMAGE</h5>
+                    }
+                    else
+                    {
+                    <h5 class="modal-title" id="exampleModalLabel">DELETE FILE</h5>
+                    }
+                </div>
+                <div class="modal-body">
+                    @if (fileManagerService.IsImage(SelectImageModel.PictureLink))
+                    {
+                        <h4>DO YOU WANT TO DELETE THIS IMAGE ?</h4>
+                    }
+                    else
+                    {
+                        <h4>DO YOU WANT TO DELETE THIS FILE ?</h4>
+                    }
+                </div>
+            }
+            else
+            {
+                <h5 class="modal-title" id="exampleModalLabel">No File Found</h5>
+            }
+
+            <div class="modal-footer">
+                <button class="btn btn-danger" @onclick="CloseComponent">
+                    NO
+                </button>
+                <button type="button" class="btn btn-success"
+                        @onclick="(async () => await DeleteTaskFile(SelectImageModel))">
+                    YES
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

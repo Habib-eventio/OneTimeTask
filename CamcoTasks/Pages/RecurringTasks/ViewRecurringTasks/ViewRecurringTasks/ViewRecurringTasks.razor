@@ -1,0 +1,654 @@
+﻿@page "/viewrecurringtasks"
+@page "/viewrecurringtasks/{FirstName}/{Lastname}"
+@page "/viewrecurringtasks/OpenTask/{ParamTaskId}"
+@page "/viewrecurringtasks/pending/{ApproverId:long?}"
+
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.MiscTasks
+@using CamcoTasks.ViewModels.ModelsViewModel
+@using CamcoTasks.ViewModels.TasksRecTasksDTO
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Spinner
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.RecurringTasks
+@using CamcoTasks.ViewModels.EmployeeDTO
+
+@namespace CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+
+@inherits CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.ViewRecurringTasksModel
+
+<!--style-->
+<ViewRecurringTasksStyle />
+
+<div id="storedScreenshot"></div>
+
+<div id="viewRecTitle" class="col-12" style="margin-top:-20px; padding:0;">
+    <div class="col-12" style="background-color: #666666; color: white; font-size: 18px; text-align: left; padding-left:0">Ma / Me / VwReTa</div>
+    @if (ApproverId == null)
+    {
+        <div class="col-3" style="margin-top:32px">
+            <button class="btn btn-lg btn-danger mt-3" style="height:auto" @onclick="OpenPendingTasks">
+            NEW TASKS PENDING (@TotalPendingTasks)
+        </button>
+    </div>
+    }
+</div>
+            <RecurringTaskPercentageComponent @ref="PercentageComponentRef"
+                                              IsPending="@(ApproverId != null)"
+                                              EmployeeButtonCallback="@RecurringTaskPercantageCallBackEvent"
+                                              TaskAreaCallback="@RecurringTaskTaskAreaCallBackEvent"
+                                              FirstName="@FirstName" Lastname="@Lastname" ParamTaskId="@ParamTaskId" />
+
+<br />
+
+
+@* <SfDialog CssClass="col-lg-4 col-md-8 col-sm-10" Target="#target2" IsModal="true" ShowCloseIcon="false" Visible="@(ApproverId == null && ComboBoxVisibility)" CloseOnEscape="false">
+    <DialogTemplates>
+        <Content>
+
+            <div class="container-fluid row p-3 ml-0">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <div class="col-12 mt-1">
+                        <h3 style="color:black;" class="text-center font-weight-bold">ENTER USERNAME</h3>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="control_wrapper">
+                            <SfComboBox TValue="string" TItem="EmployeeViewModel"
+                                        DataSource="@Employees" PopupHeight="400px"
+                            @bind-Value="ChangeByEmployeeName" Autofill="false" AllowFiltering="true"
+                                        AllowCustom="false" FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains" @onkeydown="Keydown">
+                                <ComboBoxFieldSettings Text="FullName" Value="FullName"></ComboBoxFieldSettings>
+                            </SfComboBox>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-12 mt-4 text-center" style="display: flex; flex-direction: column; align-items: center;">
+                        <button type="submit" class="btn btn-primary w-30 p-1 mb-2" style="font-size:20px;" @onclick="OpenRecurringTaskByEmployee">LOG IN</button>
+                        <button type="submit" class="btn btn-primary w-30 p-1" style="font-size:20px; background-color: green !important;" @onclick="OpenAllRecurringTask">ALL TASKS</button>
+                </div>
+
+                <div class="col-lg-1"></div>
+            </div>
+
+        </Content>
+    </DialogTemplates>
+    <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+</SfDialog> *@
+
+@if (_isRecuringTaskLoad)
+{
+    <div class="text-center m-2">
+        <div class="spinner-border text-success" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-12 mb-5 p-0 pb-5" style="margin-top:-26px !important; zoom:95%">
+        <SfGrid @ref="RecurringTasksGrid" AllowExcelExport="true" AllowPaging="@IsActivePagination"
+                PrintMode="PrintMode.AllPages" AllowResizing="true"
+                DataSource="@Tasks" ID="Reccontainer" Query="GridQuery" AllowSelection="true" AllowSorting="true"
+                AllowFiltering="true" Width="100%" AllowTextWrap="true" EnableHover="false" RowHeight="38">
+            @if (IsActivePagination)
+            {
+                <GridPageSettings PageSize="@perPageItem">
+                    <Template>
+                        <div class="PagerTemplate">
+                            <div class="@($"e-first e-icons e-icon-first {ValidateFirst()} align-icons e-firstpage")" @onclick="ShowFirstPage" title="Go to first page">
+                            </div>
+                            <div class="@($"e-prev e-icons e-icon-prev {ValidateBack()} align-icons")" @onclick="ShowPreviousPage" title="Go to previous page"></div>
+                            <div>
+                                <input class="textbox add-border" type="text" @bind-value="pageNo" size="2" @oninput="LaunchEnteredPage" />
+                                <div id="totalpages" class="textbox"> of @totalPages pages </div>
+                            </div>
+                            <div class="@($"e-next e-icons e-icon-next   {ValidateForward()} align-icons e-next")" @onclick="ShowNextPage" title="Go to next page"></div>
+                            <div class="@($"e-last e-icons e-icon-last {ValidateLast()} align-icons")" @onclick="ShowLastPage" title="Go to last page"></div>
+                        </div>
+                        <style>
+                            .PagerTemplate {
+                                width: 1000px;
+                                height: 64px;
+                                left: 183px;
+                                top: 615px;
+                                border-radius: 0px;
+                            }
+
+                            .textbox {
+                                margin-top: 9px;
+                                margin-bottom: 9px;
+                                margin-right: 2px;
+                                text-align: center;
+                            }
+
+                            .add-border {
+                                border: #ddd 1px solid;
+                            }
+
+                            .align-icons {
+                                margin-top: 9px;
+                                margin-bottom: 9px;
+                                margin-right: 16px;
+                                cursor: pointer;
+                            }
+
+                            .e-firstpage {
+                                margin-left: 6px;
+                            }
+
+                            .e-next {
+                                margin-left: 16px;
+                            }
+
+                            .disableFirst {
+                                pointer-events: none;
+                                opacity: 0.3;
+                            }
+
+                            .disableLast {
+                                pointer-events: none;
+                                opacity: 0.3;
+                            }
+
+                            .disableFront {
+                                pointer-events: none;
+                                opacity: 0.3;
+                            }
+
+                            .disableBack {
+                                pointer-events: none;
+                                opacity: 0.3;
+                            }
+                        </style>
+                    </Template>
+                </GridPageSettings>
+            }
+
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+                @if (@isOpenAllRecurringTasks)
+                {
+                    @if (ApproverId == null)
+                    {
+                        <GridFilterColumns>
+                            <GridFilterColumn Field=@nameof(TasksRecTasksViewModel.PersonResponsible) Operator="Syncfusion.Blazor.Operator.Equal" Value="@ChangeByEmployeeName"></GridFilterColumn>
+                        </GridFilterColumns>
+                    }
+                    
+                }
+            </GridFilterSettings>
+
+            <GridSelectionSettings CheckboxOnly="true" PersistSelection="true" Type="SelectionType.Multiple"></GridSelectionSettings>
+
+            <Syncfusion.Blazor.Grids.GridEvents OnToolbarClick="StartPrinting" OnActionBegin="BeforeStartFilterGrid"
+                                                OnActionComplete="StartFilteringGrid" TValue="TasksRecTasksViewModel"></Syncfusion.Blazor.Grids.GridEvents>
+
+            <SfToolbar>
+                <ToolbarItems>
+                    <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print"
+                                 Id="Print" OnClick="StartPrinting">
+                        <Template>
+                            @{
+                                <img src="Icons\Finalized\Printer Button\Non-Power User\Png Files\PntS5 40x125.png" />
+                            }
+                        </Template>
+                    </ToolbarItem>
+
+                    <ToolbarItem Type="ItemType.Button" Text="EXCEL EXPORT" TooltipText="ExcelPrint"
+                                 Id="Excel" OnClick="StartPrinting">
+                        <Template>
+                            @{
+                                <img src="Icons\Finalized\Excel Download Button\Non-Power User\Png Files\ExS3 40x125.png" />
+                            }
+                        </Template>
+                    </ToolbarItem>
+
+                    <ToolbarItem Type="ItemType.Button" Id="Filter7" Visible="@(ApproverId == null)">
+                        <Template>
+                            @{
+                                <a href="javascript:void(0);" class="btn btn-block p-1 m-0 font-weight-bold base-22 e-filter e-icons e-btn-icon e-icon-left @filterDueToday"
+                                   role="button" data-placement="top" title="" data-original-title="Add" @onclick="RecurringTaskDueToday">
+                                    <span class="toolbareText">DUE TODAY</span>
+                                </a>
+                            }
+                        </Template>
+                    </ToolbarItem>
+
+                    <ToolbarItem Type="ItemType.Button" Id="Filter8" Visible="@(ApproverId == null)">
+                        <Template>
+                            @{
+                                <a href="javascript:void(0);" class="btn btn-block p-1 m-0 font-weight-bold base-22 e-filter e-icons e-btn-icon e-icon-left @filterPastDueDqate" role="button" data-placement="top" title="" data-original-title="Add" @onclick="FilterGridPastDueDate">
+                                    <span class="toolbareText">PAST DUE TASKS</span>
+                                </a>
+                            }
+                        </Template>
+                    </ToolbarItem>
+
+                    <ToolbarItem Type="ItemType.Button" Visible="@(ApproverId == null)" Text="CLEAR FILTERS" TooltipText="Filter" PrefixIcon="e-erase" Id="FilterClear" OnClick="StartPrinting"></ToolbarItem>
+
+                    <ToolbarItem Type="ItemType.Input" Visible="@(ApproverId == null)">
+                        <Template>
+                            @{
+                                <a href="javascript:void(0);" class="btn btn-success btn-block p-1 m-0 font-weight-bold base-22" role="button" data-placement="top" title="" data-original-title="Add" @onclick="(() => StartRecTask(null))">ADD NEW RECURRING TASK</a>
+                            }
+                        </Template>
+                    </ToolbarItem>
+                    <ToolbarItem Type="ItemType.Input" Visible="@(ApproverId == null)">
+                        <Template>
+                            @{
+                                <a href="javascript:void(0);" class="btn btn-warning btn-block p-1 m-0 font-weight-bold base-22" role="button" data-placement="top" data-original-title="Add" @onclick="ReAssignTasks">REASSIGN INACTIVE EMPLOYEE TASKS</a>
+                            }
+                        </Template>
+                    </ToolbarItem>
+                    <ToolbarItem Type="ItemType.Input" Visible="@(ApproverId == null)">
+                        <Template>
+                            @{
+                                <a href="javascript:void(0);" class="btn btn-secondary btn-block p-1 m-0 font-weight-bold base-22"
+                                   role="button" data-placement="top" data-original-title="ReAssign TASKS" @onclick="GetDeactivatedTasks">
+                                    REACTIVATE TASKS
+                                </a>
+                            }
+                        </Template>
+                    </ToolbarItem>
+                    <ToolbarItem Type="ItemType.Input" Align="ItemAlign.Right">
+                        <Template>
+                            <div class="col-12 m-0 p-0" style="position:relative;">
+                                <SfTextBox ValueChange="SearchValueChange" CssClass="BackgroundCustom" Placeholder="SEARCH"></SfTextBox>
+                                <span class="e-search-icon e-icons" style="position: absolute;top: 10px;left: 140px;" />
+                            </div>
+                        </Template>
+                    </ToolbarItem>
+                </ToolbarItems>
+            </SfToolbar>
+            <GridColumns>
+                <GridColumn TextAlign="TextAlign.Left" Width="60" AllowFiltering="true" Field=@nameof(TasksRecTasksViewModel.Id)
+                            HeaderText="ID" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })">
+                    <Template>
+                        @{
+                            var task = context as TasksRecTasksViewModel;
+                            <a href="javascript:void(0);" style="padding: 0 8px 0 8px; color:blue;" class="link"
+                               type="button" data-placement="top" title="View Recurring Task Id"
+                               data-original-title="View Recurring Task Id" @onclick="(() =>
+                               ActiveViewSingleRecurringTaskComponent(task.Id))">
+                                @($"R{task.Id}")
+                            </a>
+                        }
+                    </Template>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="120" Field=@nameof(TasksRecTasksViewModel.TaskDescriptionSubject)
+                            HeaderText="TASK SUBJECT" AllowFiltering="true" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains  })"></GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="355" 
+                            Field=@nameof(TasksRecTasksViewModel.Description) HeaderText="DESCRIPTION"
+                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains })">
+                    <Template>
+                        @{
+                            var task = context as TasksRecTasksViewModel;
+                            if (task.UpcomingDate.HasValue && task.UpcomingDate < DateTime.Today)
+                            {
+                                <label class="px-2"><span style="color:red;font-weight:bold">PAST DUE:</span> @task.Description</label>
+                            }
+                            else
+                            {
+                                <label class="px-2"> @task.Description</label>
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="80" Field=@nameof(TasksRecTasksViewModel.TaskArea)
+                            HeaderText="DEPARTMENT" AllowFiltering="true" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains  })"></GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="80" Field=@nameof(TasksRecTasksViewModel.Location)
+                            HeaderText="LOCATION" AllowFiltering="true" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains  })"></GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="85" Field=@nameof(TasksRecTasksViewModel.UpcomingDate)
+                            HeaderText="DUE DATE" Format="MM/dd/yy" AllowFiltering="true"
+                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu  })">
+                    <Template>
+                        @{
+                            var task = context as TasksRecTasksViewModel;
+                            if (task.UpcomingDate.HasValue)
+                            {
+                                if (task.UpcomingDate < DateTime.Today)
+                                {
+                                    <label class="px-2" style="font-weight:bold; color:red"> @task.UpcomingDate.Value.ToString("MM/dd/yy") </label>
+                                }
+                                else
+                                {
+                                    <label class="px-2"> @task.UpcomingDate.Value.ToString("MM/dd/yy") </label>
+                                }
+                            }
+                            else
+                            {
+                                <label class="px-2">N/A</label>
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn TextAlign="TextAlign.Center" Width="85"
+                            Field=@nameof(TasksRecTasksViewModel.PersonResponsible) HeaderText="PERSON RESPONSIBLE"
+                            Visible="true" IsPrimaryKey="false"
+                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu, Operator = Syncfusion.Blazor.Operator.Equal })">
+                    <FilterTemplate>
+                        <SfDropDownList Placeholder="PERSON RESPONSIBLE"
+                                        ID="PERSONRESPONSIBLEID" @bind-Value="@((context as PredicateModel<string>).Value)"
+                                        TItem="TasksRecMenuFilterList" TValue="string"
+                                        DataSource="@(FilterMenuList)">
+                            <DropDownListFieldSettings Value="Name" Text="Name"></DropDownListFieldSettings>
+                        </SfDropDownList>
+                    </FilterTemplate>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" Width="85"
+                            Field=@nameof(TasksRecTasksViewModel.JobTitle) HeaderText="JOB TITLE"
+                            Visible="true" IsPrimaryKey="false"
+                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains })">
+                    <FilterTemplate>
+                        <SfDropDownList Placeholder="JOB TITLE"
+                                        ID="JobTitleId" @bind-Value="@((context as PredicateModel<string>).Value)"
+                                        TItem="TasksRecMenuFilterList" TValue="string"
+                                        DataSource="@(FilterMenuList)">
+                            <DropDownListFieldSettings Value="Name" Text="Name"></DropDownListFieldSettings>
+                        </SfDropDownList>
+                    </FilterTemplate>
+                </GridColumn>
+
+                <GridColumn Visible="@(ApproverId == null)" TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Left" Width="88" AllowFiltering="true"
+                            Field=@nameof(TasksRecTasksViewModel.DateCompleted) HeaderText="LAST DATE COMPLETED"
+                            Format="MM/dd/yy" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })">
+                    <Template>
+                        @{
+                            var task = context as TasksRecTasksViewModel;
+                            if (task.DateCompleted == null)
+                            {
+                                <label class="px-2">N/A</label>
+                            }
+                            else
+                            {
+                                <label class="px-2"> @task.DateCompleted.Value.ToString("MM/dd/yy") </label>
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Left" AllowFiltering="true"
+                            HeaderText="REQUIRED" Width="90" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })"
+                            Field=@nameof(TasksRecTasksViewModel.IsPassOrFail)>
+                    <Template>
+                        @{
+                            var IsRequired = false;
+                            var task = context as TasksRecTasksViewModel;
+                            if (task.IsPassOrFail == true)
+                            {
+                                IsRequired = true;
+                                <span class="m-0 p-0" style="color:green;">PASS/</span>
+                                <span class="m-0 p-0 mr-1" style="color:red;">FAIL</span>
+                            }
+                            if (task.IsGraphRequired == true)
+                            {
+                                IsRequired = true;
+                                <span class="m-0 p-0 mr-1" style="color:blue;">GRAPH</span>
+                            }
+                            if (task.IsPicRequired == true)
+                            {
+                                IsRequired = true;
+                                <span class="m-0 p-0 mr-1" style="color:blue;">Picture</span>
+                            }
+                            if (task.IsQuestionRequired == true)
+                            {
+                                IsRequired = true;
+                                <span class="m-0 p-0 mr-1" style="color:blue;">QUESTION</span>
+                            }
+                            if (task.IsAuditRequired == true)
+                            {
+                                IsRequired = true;
+                                <span class="m-0 p-0" style="color:blue;">AUDIT FAILED LIST</span>
+                            }
+
+                            if (!IsRequired)
+                            {
+                                <span class="m-0 p-0" style="color:blue;">-</span>
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Left" Width="95"
+                            Field=@nameof(TasksRecTasksViewModel.Frequency) HeaderText="FREQUENCY"
+                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel, Operator = Syncfusion.Blazor.Operator.Contains })">
+                    <FilterTemplate>
+                        <SfDropDownList Placeholder="FREQUENCY" ID="FREQUENCYID" @bind-Value="@((context as PredicateModel<string>).Value)"
+                                        TItem="TasksRecMenuFilterList" TValue="string" DataSource="@(FilterMenuList)">
+                            <DropDownListFieldSettings Value="Name" Text="Name"></DropDownListFieldSettings>
+                        </SfDropDownList>
+                    </FilterTemplate>
+                </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Left" Width="55"
+                            Field=@nameof(TasksRecTasksViewModel.LatestGraphValue) AllowFiltering="true"
+                            HeaderText="LATEST VALUE" FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })">
+                    <Template>
+                        @{
+                            var task = context as TasksRecTasksViewModel;
+                            if (task.LatestGraphValue == null)
+                            {
+                                <label class="px-2">N/A</label>
+                            }
+                            else
+                            {
+                                <label class="px-2"> @task.LatestGraphValue.Value</label>
+                            }
+                        }
+                    </Template>
+                        </GridColumn>
+
+                <GridColumn TextAlign="TextAlign.Left" HeaderText="ACTION" Width="315">
+                    <Template>
+                        @{
+                            var Rtask = context as TasksRecTasksViewModel;
+                            <div class="col-12 m-0  p-0 row my-1">
+                                @if (ApproverId == null || Rtask.IsApproved) {
+                                    @if (Rtask.IsProtected != null && Rtask.IsProtected.Value)
+                                    {
+                                        <div style="width:250px;text-align:left;">
+                                            <a href="javascript:void(0);" class="inline-button" type="button" data-placement="top"
+                                               title="Task Updates" data-original-title="Task Updates" @onclick='(() => TaskAuthentication(Rtask, "update"))'>
+                                                <img src="/Icons/ViewUpdates.png" style="width:118px;" />
+                                            </a>
+                                            <a href="javascript:void(0);" class="inline-button" type="button" data-placement="top"
+                                               title="Task Updates" @onclick='(() => TaskAuthentication(Rtask, "subTask"))'>
+                                                <img src="/Icons/ViewSubTasks.png" style="width:118px;" />
+                                            </a>
+                                            <a class="btn viewSkinButtonStyle inline-button border-btn"
+                                               type="button" @onclick='(() => TaskAuthentication(Rtask, "deactivete"))'>
+                                                DEACTIVATE
+                                            </a>
+                                            <a class="btn viewSkinButtonStyle inline-button border-btn"
+                                               type="button" @onclick='(() => TaskAuthentication(Rtask, "instruction"))'>
+                                                Instructions
+                                            </a>
+                                            <a data-placement="top" title="Send Email" data-toggle="tooltip" type="button"
+                                               class="btn border-btn viewSkinButtonStyle inline-button" @onclick='(() => TaskAuthentication(Rtask, "nudge"))'>
+                                                Nudge
+                                                <span style="font-weight-bold">(@Rtask.NudgeCount)</span>
+                                            </a>
+                                            <a data-placement="top" title="Email Task" data-toggle="tooltip" type="button"
+                                               class="btn border-btn viewSkinButtonStyle inline-button" @onclick='(() => TaskAuthentication(Rtask, "sendEmail"))'>
+                                                SEND EMAIL
+                                            </a>
+                                        </div>
+                                        <div style="width:35px;">
+                                            <a data-placement="top" title="Edit Task" data-toggle="tooltip" type="button"
+                                               style="font-size: 12px; margin-left: 3px; min-width: 30px; margin-bottom: 3px;" @onclick='(() => TaskAuthentication(Rtask, "edit"))'>
+                                                <img src="/Icons/Finalized/Edit Button/Power User/Png Files/E2 30x30.png" />
+                                            </a>
+                                            <a data-placement="top" title="Delete Task" data-toggle="tooltip" type="button"
+                                               style="font-size: 12px; margin-left: 3px; min-width: 30px; margin-bottom: 3px; margin-top: 4px;" @onclick='(() => TaskAuthentication(Rtask, "delete"))'>
+                                                <img src="/Icons/Finalized/Delete Button/Power User/Png Files/D3 30x30.png" />
+                                            </a>
+                                            @if (!string.IsNullOrEmpty(Rtask.PictureLink) || Rtask.IsPicture == true)
+                                            {
+                                                <a data-placement="top" title="Email Task" type="button"
+                                                   style="font-size: 12px; margin-left: 2px; min-width: 30px; margin-bottom: 3px; margin-top: 4px;" data-toggle="modal" @onclick='(() => TaskAuthentication(Rtask, "loadFiles"))'>
+                                                    <img src="/Icons/Finalized/Take Picture Button/Power User/Png Files/Tpic1 30x30.png" />
+                                                </a>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div style="width:250px;text-align:left;">
+                                            <a href="javascript:void(0);" class="inline-button" type="button" data-placement="top" title="Task Updates"
+                                               data-original-title="Task Updates" @onclick="(e => ActiveViewSingleRecurringTaskComponent((context as TasksRecTasksViewModel).Id))">
+                                                <img src="/Icons/ViewUpdates.png" style="width:118px;" />
+                                            </a>
+                                            <a href="javascript:void(0);" class="inline-button" type="button" data-placement="top"
+                                               title="Task Updates" @onclick="(e => ViewTaskSubTasks((context as TasksRecTasksViewModel).Id))">
+                                                <img src="/Icons/ViewSubTasks.png" style="width:118px;" />
+                                            </a>
+                                            <a type="button" class="btn viewSkinButtonStyle inline-button border-btn" @onclick="(e => StartDeactivateTask((context as TasksRecTasksViewModel)))">
+                                                DEACTIVATE
+                                            </a>
+                                            <a type="button" class="btn viewSkinButtonStyle inline-button border-btn" @onclick="(e => ViewFiles((context as TasksRecTasksViewModel)))">
+                                                Instructions
+                                            </a>
+                                            <a data-placement="top" title="Send Email" data-toggle="tooltip" type="button"
+                                               class="btn border-btn viewSkinButtonStyle inline-button" @onclick='(e => SendNudgeEmail((context as TasksRecTasksViewModel)))'>
+                                                Nudge
+                                                <span class="font-weight-bold">(@Rtask.NudgeCount)</span>
+                                            </a>
+                                            <a data-placement="top" title="Email Task" data-toggle="tooltip" type="button"
+                                               class="btn border-btn viewSkinButtonStyle inline-button" @onclick="(() => StartEmail(context as TasksRecTasksViewModel))">
+                                                Send Email
+                                                <span class="font-weight-bold">(@Rtask.EmailCount)</span>
+                                            </a>
+                                        </div>
+                                        <div style="width:35px;">
+                                            <a data-placement="top" title="Edit Task" data-toggle="tooltip" type="button" @onclick="(e => StartRecTask((context as TasksRecTasksViewModel)))" style="font-size: 12px; margin-left: 3px; min-width: 25px; margin-bottom: 3px;">
+                                                <img src="/Icons/Finalized/Edit Button/Power User/Png Files/E2 30x30.png" />
+                                            </a>
+                                            <a data-placement="top" title="Delete Task" data-toggle="tooltip" type="button" @onclick="(e => StartDeleteTask((context as TasksRecTasksViewModel)))" style="font-size: 12px; margin-left: 3px; min-width: 25px; margin-bottom: 3px; margin-top: 4px;">
+                                                <img src="/Icons/Finalized/Delete Button/Power User/Png Files/D3 30x30.png" />
+                                            </a>
+                                            @if (!string.IsNullOrEmpty(Rtask.PictureLink) || Rtask.IsPicture == true)
+                                            {
+                                                <a data-placement="top" title="Email Task" type="button" style="font-size: 12px; margin-left: 3px; min-width: 25px; margin-bottom: 3px; margin-top: 4px;" @onclick="(() => LoadFiles(Rtask))">
+                                                    <img src="/Icons/Finalized/Take Picture Button/Power User/Png Files/Tpic1 30x30.png" />
+                                                </a>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <a data-placement="top" title="Edit Task" data-toggle="tooltip" type="button" @onclick="(e => StartRecTask((context as TasksRecTasksViewModel)))" style="font-size: 12px; margin-left: 3px; min-width: 25px; margin-bottom: 3px;">
+                                        <img src="/Icons/Review.png" style="width:118px;" />
+                                    </a>
+                                }
+
+                            </div>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+
+            <SfSpinner @bind-Visible="IsGridSpinner">
+            </SfSpinner>
+
+        </SfGrid>
+    </div>
+
+
+    <!--create recurring task component-->
+    @if (IsActiveCreateTask)
+    {
+        <CreateRecurringTaskComponent ApproverId="@ApproverId" RecurringTask="@RecurringTask"
+                                      EditByEmployeeName="@ChangeByEmployeeName"
+                                      RefreshParentComponent="@RefreshViewRecurringWithPercentageComponent"
+                                      SendMessageToParent="@SuccessMessageViewRecurringTasksComponent"
+                                      CloseCreateRecurringTaskComponent="@DeactiveCreateComponent" />
+    }
+
+    <!--delete task component-->
+    @if (IsActiveDeleteComponent)
+    {
+            <DeleteRecTaskComponent TaskViewModel="@SelectedTaskViewModel"
+                                MessageFromDeleteRecTaskComponent="@SuccessMessageViewRecurringTasksComponent"
+                                RefreshParentComponent="@RefreshViewRecurringWithPercentageComponent"
+                                CloseDeleteRecTaskComponent="@DeactiveDeleteRecTaskComponent" />
+    }
+
+    <!--deactive rec task component-->
+    @if (IsActiveDeactivateComponent)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            <DeactiveRecTaskComponent TaskViewModel="@SelectedTaskViewModel" />
+        </CascadingValue>
+    }
+
+    <!--task update component-->
+    @if (IsActiveRecTaskUpdateComponent)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            <RecTaskUpdateComponent TaskForUpdate="@SelectedTaskForUpdate" EditBy="@ChangeByEmployeeName"
+                                    SuccessMessagRecUpdateComponent="@SuccessMessageViewRecurringTasksComponent"
+                                    RefreshToParentRecTaskUpdateComponent="@RefreshViewRecurringTaskComponent"
+                                    CloseRecTaskUpdateComponent="@DeactivateRecTaskUpdateComponent" />
+        </CascadingValue>
+    }
+
+    <!-- single file component -->
+    @if (IsActiveSingleFileComponent)
+    {
+        <SingleFileComponent TaskFilePath="@TaskFile" SuccessMessageSingleFile="@SuccessMessageFromSingleFile" />
+    }
+
+    <!--multiple file component-->
+    @if (IsActiveMultipleFileComponent)
+    {
+        <MultipleFileComponent TaskViewModel="@SelectedTaskViewModel" ReturnRecurringTaskId="@RefreshViewRecurringTaskComponent" CloseMultipleFileComponent="@DeactivateFromMultipleFile" />
+    }
+
+    <!--simple email component-->
+    @if (IsActiveSimpleEmailComponent)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            <SimpleEmailComponent EmailTask="@SelectTaskForSimpleEmail" />
+        </CascadingValue>
+    }
+
+    <!--Active rec task component-->
+    @if (IsActiveActiveRecComponent)
+    {
+        <ActiveRecTaskComponent RefreshParentComponent="@RefreshViewRecurringWithPercentageComponent"
+                                CloseActiveRecurringTaskComponent="@DeactivateActiveRecTaskComponent" />
+    }
+
+    <!--Active misc tasks component-->
+    @if (IsActiveMiscTasksComponent)
+    {
+        <MiscTasksComponent EventCallbackMiscTasks="@DeactiveMiscTasks" />
+    }
+
+    <!--Active view single recurring task component-->
+    @if (IsActiveViewSingleRecurringTask)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            <ViewSingleRecurringTask RecTaskId="@RecurringTaskIdForViewSingleRecurringTask"
+                                     RefreshParentComponent="@RefreshViewRecurringWithPercentageComponent"
+                                     SendMessageToParent="@SuccessMessageViewRecurringTasksComponent"
+                                     EventCallbackViewSingleRecTask="@DeactiveViewSingleRecurringTaskComponent" />
+        </CascadingValue>
+    }
+}
+
+

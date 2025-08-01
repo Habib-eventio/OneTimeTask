@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\CamcoTasks.Library\CamcoTasks.Library.csproj" />
+		<ProjectReference Include="..\CamcoTasks.Service\CamcoTasks.Service.csproj" />
+		<ProjectReference Include="..\CamcoTasks.ViewModel\CamcoTasks.ViewModels.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,53 @@
+﻿<!--camera Image Modal -->
+<div class="modal fade bd-example-modal-xl" id="CameraModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" style="background-color: rgba(0, 0, 0, 0.80); z-index:1100;" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Capturing Device Camera</h5>
+                <div class="col-md-4 text-right">
+                    <a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick="(() => CloseComponent(true))">
+                        <img src="/Icons/Finalized/Close Button/Non-Power User/Png Files/Close.png" />
+                    </a>
+                    <a href="javascript:void(0);" type="button" @onclick="(() => CloseComponent(false))">
+                        <img src="/Icons/Finalized/Save Button/Non-Power User/Png Files/save.png" />
+                    </a>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="m-1">
+                            <a href="javascript:void(0);" class="btn btn-primary btn-sm btn-block" style="margin-left:5px; margin-top:3px;" role="button" data-placement="top" title="" data-original-title="Capture" @onclick="(() => Capture())">
+                                Capture Image
+                            </a>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div id="camera"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5" style="height:513px; overflow-y:scroll;">
+                        <div class="form-group">
+                            <label style="font-size:14px; font-weight:bold;"> Captured Images: </label>
+                        </div>
+                        @if (CapturedImgaesList != null)
+                        {
+                            @foreach (var item in CapturedImgaesList)
+                            {
+                                <div style="display: inline-flex; margin-right: 10px; margin-bottom: 10px; position:relative;">
+                                    <img src="@item.Value" alt="Alternate Text" width="200" height="200" style="" />
+                                    <a data-placement="top" title="Delete Task" data-toggle="tooltip" type="button" style="position: absolute; top: 0px; right: 0px;" @onclick="(() => RemoveCamImage(item))">
+                                        <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" style="width: 25px;" />
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

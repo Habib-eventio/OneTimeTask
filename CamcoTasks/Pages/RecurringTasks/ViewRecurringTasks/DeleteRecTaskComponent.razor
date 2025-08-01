@@ -1,0 +1,49 @@
+﻿<!--delete recurring task modal-->
+<div class="modal fade" id="deleteRecurringTask" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">DELETE RECURRING TASK</h5>
+                <a href="javascript:void(0);" type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="CloseComponent">
+                    <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon" />
+                </a>
+            </div>
+            <div class="modal-body">
+                <h4>DO YOU WANT TO DELETE THIS RECURRING TASK ?</h4>
+                <table class="table table-danger">
+                    <tr>
+                        <td>ID:</td>
+                        <td>@TaskViewModel.Id</td>
+                    </tr>
+                    <tr>
+                        <td>INITIATOR:</td>
+                        <td>@TaskViewModel.Initiator?.ToUpper()</td>
+                    </tr>
+                    <tr>
+                        <td>START DATE:</td>
+                        <td>@TaskViewModel.DateCreated</td>
+                    </tr>
+                    <tr>
+                        <td>DUE DATE:</td>
+                        <td>@TaskViewModel.UpcomingDate</td>
+                    </tr>
+                    <tr>
+                        <td>DESCRIPTION:</td>
+                        <td style="word-wrap:break-word; max-width:100px">@TaskViewModel.Description?.ToUpper()</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" @onclick="CloseComponent">
+                    NO
+                </button>
+
+                <button type="button" data-dismiss="modal" class="btn btn-danger"
+                        @onclick="(async () => await DeleteTask())">
+                    YES
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

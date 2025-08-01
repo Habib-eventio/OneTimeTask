@@ -1,0 +1,45 @@
+﻿.cardhover {
+    border-color: gray;
+    transition: .5s;
+    box-shadow: rgba(128, 128, 128, 0.43) 3px 3px;
+    color: black;
+}
+
+.cardhover:hover {
+    border-color: blue;
+    transition: .7s;
+    box-shadow: rgba(128, 128, 128, 1) 5px 5px;
+    color: blue;
+}
+
+.link-outline-primary {
+    color: blue;
+    border-color: blue;
+    border: 2px solid blue;
+    transition: .5s;
+}
+
+.link-outline-primary:hover {
+    color: white;
+    background-color: #1b6ec2;
+    border-color: blue;
+    border: 2px solid blue;
+    transition: .5s;
+    font-weight: bold;
+}
+
+.e-grid .e-headercell {
+    background-color: #24202C;
+}
+
+.e-grid .e-altrow {
+    background-color: #C6EEFF;
+}
+
+.e-grid .e-detailindentcell {
+    background-color: #EB711D;
+}
+
+.e-grid e-detailrowexpand {
+    background-color: #EB711D;
+}

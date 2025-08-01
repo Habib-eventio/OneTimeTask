@@ -1,0 +1,152 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.TasksRecTasksDTO;
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+
+<!--Active task modal-->
+<div class="modal fade" id="ActivateTaskModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document">
+        <div class="modal-content" style="height: 100vh; overflow-y: auto;">
+            @if (DeactivatedTasks == null || !DeactivatedTasks.Any())
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+
+                <div class="modal-header" style="background-color: white;">
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        DEACTIVATED TASKS (<span>@DeactiveTaskseCount</span>)
+                    </h5>
+                    <div class="text-right text-light">
+                        <button class="btn btn-danger" data-dismiss="modal" @onclick="CloseActiveRecTaskComponent">
+                            <i class="flaticon-cancel-12"></i> CLOSE
+                        </button>
+                    </div>
+                </div>
+
+                
+                <div class="modal-body" style="overflow-x: hidden;">
+                    
+                        <SfGrid @ref="DeactivatedGrid" DataSource="@DeactivatedTasks" AllowTextWrap="true" EnableStickyHeader="true"
+                                AllowFiltering="true" AllowSorting="true" AllowExcelExport="true" AllowResizing="true">
+
+                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
+                            <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+
+                            <GridEditSettings AllowAdding="false"
+                                              AllowEditing="false"
+                                              AllowEditOnDblClick="false"
+                                              AllowDeleting="false"></GridEditSettings>
+
+                            <Syncfusion.Blazor.Grids.GridEvents TValue="TasksRecTasksViewModel"></Syncfusion.Blazor.Grids.GridEvents>
+
+                            <SfToolbar>
+                                <ToolbarItems>
+                                    <ToolbarItem Type="ItemType.Button" Text="PRINT REPORT" TooltipText="Print"
+                                                 Id="Print" OnClick="StartPrinting">
+                                        <Template>
+                                            @{
+                                                <img src="Icons\Finalized\Printer Button\Non-Power User\Png Files\PntS5 40x125.png" />
+                                            }
+                                        </Template>
+                                    </ToolbarItem>
+
+                                    <ToolbarItem Type="ItemType.Button" Text="EXCEL EXPORT" TooltipText="Print"
+                                                 Id="Excel" OnClick="StartPrinting">
+                                        <Template>
+                                            @{
+                                                <img src="Icons\Finalized\Excel Download Button\Non-Power User\Png Files\ExS3 40x125.png" />
+                                            }
+                                        </Template>
+                                    </ToolbarItem>
+                                </ToolbarItems>
+                            </SfToolbar>
+
+                            <GridColumns>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.Id) HeaderText="ID" Width="60"
+                                            Visible="true" IsPrimaryKey="false"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.PersonResponsible) HeaderText="PERSON RESPONSIBLE" Width="150"
+                                            Visible="true" IsPrimaryKey="false"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left" HeaderText="DUE DATE"
+                                            Field=@nameof(TasksRecTasksViewModel.UpcomingDate)
+                                            Format="MM/dd/yyyy" Width="100" AllowFiltering="true"
+                                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })">
+                                    <Template>
+                                        @{
+                                            var task = context as TasksRecTasksViewModel;
+                                            if (task.UpcomingDate < DateTime.Today && task.UpcomingDate.HasValue)
+                                            {
+                                                <label style="font-weight:bold; color:red"> @task.UpcomingDate.Value.ToString("MM/dd/yyyy") </label>
+                                            }
+                                            else
+                                            {
+
+                                                <label> @task.UpcomingDate.Value.ToString("MM/dd/yyyy") </label>
+                                            }
+                                        }
+                                    </Template>
+                                </GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.Description) HeaderText="DESCRIPTION" Width="300"
+                                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Excel })"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.DateCompleted) HeaderText="LAST DATE COMPLETED" Width="110"
+                                            Format="MM/dd/yyyy"
+                                            FilterSettings="@(new FilterSettings { Type = Syncfusion.Blazor.Grids.FilterType.Menu })"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.Frequency) HeaderText="FREQUENCY" Width="100"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left"
+                                            Field=@nameof(TasksRecTasksViewModel.Initiator) HeaderText="INITIATOR" Width="150"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Left" HeaderText="ACTION">
+                                    <Template>
+                                        @{
+                                            <a href="javascript:void(0);" class="btn btn-primary no-print" style="margin-right:10px"
+                                               role="button" data-placement="top" title="" data-original-title="Activate"
+                                            @onclick="(e => ActivateTask((context as TasksRecTasksViewModel)))">RE-ACTIVATE</a>
+                                            // <a href="javascript:void(0);" class="btn btn-primary no-print"
+                                            //    role="button" data-placement="top" title="" data-original-title="Edit"
+                                            // @onclick="(e => StartRecTask((context as TasksRecTasksViewModel)))">EDIT</a>
+                                            <a href="javascript:void(0);"
+                                               role="button" data-placement="top" title="" data-original-title="Delete"
+                                            @onclick="(e => ActiveRecTaskDeleteComponent((context as TasksRecTasksViewModel)))">
+                                                <img src="/Icons/Finalized/Delete Button/Power User/Png Files/D3 30x30.png" />
+                                            </a>
+                                        }
+                                    </Template>
+                                </GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!--create recurring task component-->
+@if (IsActiveCreateTask)
+{
+    <CreateRecurringTaskComponent RecurringTask="@RecurringTask"
+                                  RefreshParentComponent="@LoadDeactiveTask"
+                                  SendMessageToParent="@MessageFromCreateRecurringTaskComponent"
+                                  CloseCreateRecurringTaskComponent="@DeactiveCreateRecurringTasksComponent" />
+}
+
+<!--delete rec task component-->
+@if (IsActiveDeleteComponent)
+{
+    <DeleteRecTaskComponent TaskViewModel="@RecurringTask"
+                            MessageFromDeleteRecTaskComponent="@MessageFromCreateRecurringTaskComponent"
+                            RefreshParentComponent="@LoadDeactiveTask"
+                            CloseDeleteRecTaskComponent="@DeactiveRecTaskDeleteComponent" />
+}

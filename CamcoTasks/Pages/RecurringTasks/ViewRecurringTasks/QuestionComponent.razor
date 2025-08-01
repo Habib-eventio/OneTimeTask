@@ -1,0 +1,50 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+
+
+<!--Aditional question modal-->
+<div class="modal fade" id="AddQuestionModal" tabindex="-1" @onkeydown="CloseComponent" data-keyboard="false" data-backdrop="static" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="z-index:8888888888; background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">QUESTION</h5>
+                <div class="text-right text-light">
+                    <button type="button" class="btn btn-success" data-dismiss="modal"
+                    @onclick="(() => SetQuestionViewModel(RecTaskForQuestion,true))">
+                        SAVE
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <SfTextBox ID="QuestionD" CssClass="BackgroundCustom"
+                                       Type="Syncfusion.Blazor.Inputs.InputType.Text"
+                                       Placeholder="WRITE QUESTION"
+                                       Multiline="true"
+                            @bind-Value="@RecTaskForQuestion.Question">
+                            </SfTextBox>
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

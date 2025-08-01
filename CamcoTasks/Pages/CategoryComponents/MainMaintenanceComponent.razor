@@ -1,0 +1,249 @@
+﻿@* @inherits MainMaintenanceComponentModel
+@using CamcoTasks.ViewModels.ItTicket;
+@using CamcoTasks.ViewModels.MaintenanceWorkOrderDataDTO;
+
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / Ma</span></div>
+</div>
+
+<div class="row standardBorder m-3">
+    <div class="col-md-12 m-0 p-1">
+        <div class="row col-12 m-0 p-0" style=" font-weight: bold; background: black; color: #ffffff;">
+            <div class="col-md-3" style="font-size:18px">
+                @if (MaintenanceOpenTickets.Any() && !IsLoadingMaintenance)
+                {
+                    <div class="m-0 p-0">
+                        TOTAL TICKETS (TODAY): @MaintenanceOpenTickets[MaintenanceOpenTickets.Count - 1].TicketCount
+                    </div>
+                    <div class="m-0 p-0">
+                        TOTAL PRIORITY ONE (TODAY): @MaintenanceOpenTickets[MaintenanceOpenTickets.Count - 1].Priority
+                    </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <div class="pt-2">
+                    <h4 class="standardHeaderStyle text-break">
+                        MAINTENANCE CHART
+                    </h4>
+                </div>
+            </div>
+
+            @if (!IsLoadingMaintenance)
+            {
+                <div class="col-md-3 p-1" style="text-align:right">
+                    <a href="javascript:void(0);" class="btn btn-dark" style="margin-top: 3px; margin-bottom: 3px; background: #eddec0; color: black"
+                       role="button" data-placement="top" title=""
+                       data-original-title="Edit" data-toggle="modal" data-target="#ViewMaintenanceModal">
+                        VIEW MAINTENANCE DATA
+                    </a>
+                </div>
+            }
+        </div>
+
+        @if (IsLoadingMaintenance)
+        {
+            <br />
+            <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">LOADING...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="pt-3" style="margin-bottom:13px !important;">
+                <SfChart Background="White" UseGroupingSeparator="true">
+                    <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+
+                    <ChartPrimaryXAxis Interval="1" Span="2" LabelIntersectAction="LabelIntersectAction.Rotate45" RangePadding="ChartRangePadding.Additional" IntervalType="IntervalType.Days"
+                                   ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                        <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                    </ChartPrimaryXAxis>
+                    <ChartCrosshairSettings Enable="false"></ChartCrosshairSettings>
+
+                    <ChartColumns>
+                        <ChartColumn Width="50%">
+                        </ChartColumn>
+                        <ChartColumn Width="50%">
+                        </ChartColumn>
+                    </ChartColumns>
+
+                    <ChartAxes>
+                        <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" OpposedPosition="true" RowIndex="1" Name="YRightAxis" Maximum="@(MaintenanceOpenTickets.Max(x => x.Priority) + 5)">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+
+
+                        </ChartAxis>
+                        <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" RowIndex="1" Name="YleftAxis" Maximum="@(MaintenanceOpenTickets.Max(x => x.TicketCount) + 10)">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                        </ChartAxis>
+                    </ChartAxes>
+                    <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                    <ChartSeriesCollection>
+                        <ChartSeries LegendShape="LegendShape.Rectangle" Name="MAINTENANCE PRIORITY 1" Width="1"
+                                 DataSource="@MaintenanceOpenTickets" XName="Date" YName="priority"
+                                 YAxisName="YRightAxis" Type="ChartSeriesType.Spline">
+                        </ChartSeries>
+                        <ChartSeries LegendShape="LegendShape.Rectangle" Name="MAINTENANCE TICKETS COUNT" Width="1"
+                                 DataSource="@MaintenanceOpenTickets"
+                                 XName="Date" YName="TicketCount" YAxisName="YleftAxis" Type="ChartSeriesType.Spline">
+                        </ChartSeries>
+
+                        <ChartLegendSettings ShapeHeight="20" ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="19">
+                            <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                        </ChartLegendSettings>
+                    </ChartSeriesCollection>
+                </SfChart>
+            </div>
+        }
+    </div>
+
+    <div class="modal fade" id="ViewMaintenanceModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-center align-content-center row m-0 p-1">
+                    <div class="col-2  m-0 p-0">
+                    </div>
+                    <div class="text-center col-8 m-0 p-0 align-content-center">
+                        <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">MAINTENANCE DATA</p>
+                    </div>
+                    <div class="text-right col-2 m-0 p-0">
+                        <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        @if (MaintenanceOpenTicketsDesc.Any())
+                        {
+                            <SfGrid DataSource="@MaintenanceOpenTicketsDesc" AllowTextWrap="true" AllowSorting="true" RowHeight="10"
+                                Height="400" ID="gridMaintananceOpenTickets">
+                                <GridColumns>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" HeaderText=" " Width="120" ClipMode="ClipMode.EllipsisWithTooltip">
+                                        <Template>
+                                            @{
+                                                var MaintenanceTicket = (context as MaintenanceOpenTicketDates);
+                                                <div class="m-0 p-0">
+                                                    <a href="javascript:void(0);" class="btn btn-primary no-print p-0  pl-1 pr-1"
+                                                   role="button" data-placement="top" title=""
+                                                   data-original-title="Edit" data-toggle="modal"
+                                                   data-target="#ViewAllMaintenanceTickets"
+                                                   @onclick="(e => ViewMaintenanceTicketHandler(MaintenanceTicket))">
+                                                        VIEW TICKETS
+                                                    </a>
+                                                </div>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceOpenTicketDates.TicketCount)
+                                            HeaderText="TICKET COUNT" Width="90"
+                                            AllowAdding="false" AllowEditing="false"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="150">
+                                        <Template>
+                                            @{
+                                                var MaintenanceTicket = (context as MaintenanceOpenTicketDates);
+                                                <div class="m-0 p-0">
+                                                    <a href="javascript:void(0);" class="btn btn-primary no-print p-0 pl-1 pr-1"
+                                                   role="button" data-placement="top" title=""
+                                                   data-original-title="Edit" data-toggle="modal"
+                                                   data-target="#ViewAllMaintenanceTicketsPriority1"
+                                                   @onclick="(e => ViewMaintenanceTicketPriorityOneHandler(MaintenanceTicket))">
+                                                        VIEW PRIORITY 1 TICKETS
+                                                    </a>
+                                                </div>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                Field=@nameof(MaintenanceOpenTicketDates.Priority) HeaderText="PRIORITY 1 COUNT" Width="100"
+                                            AllowAdding="false" AllowEditing="false"></GridColumn>
+                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceOpenTicketDates.ActualDate) Format="MM/dd/yyyy" Width="90"
+                                            HeaderText="DATE REPORTED"></GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ViewAllMaintenanceTickets" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" style="width:100%" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-center align-content-center row m-0 p-1">
+                    <div class="col-2  m-0 p-0">
+                    </div>
+                    <div class="text-center col-8 m-0 p-0 align-content-center">
+                        <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">MAINTENANCE TICKETS DETAILS</p>
+                    </div>
+                    <div class="text-right col-2 m-0 p-0">
+                        <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <SfGrid DataSource="@MaintenanceTicketsByDate" AllowTextWrap="true" AllowSorting="true" Height="300">
+                            <GridColumns>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.Requestor) HeaderText="REQUESTER" Width="65px"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.Location) HeaderText="LOCATION" Width="65px"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.ProblemProjectDescriptionAndOrSymptoms)
+                                            HeaderText="PROJECT DESCRIPTION OR SYMPTOMS" Width="300px"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.RemarksActionsTaken)
+                                            HeaderText="ACTIONS TAKEN" Width="200px"></GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ViewAllMaintenanceTicketsPriority1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-center align-content-center row m-0 p-1">
+                    <div class="col-2  m-0 p-0">
+                    </div>
+                    <div class="text-center col-8 m-0 p-0 align-content-center">
+                        <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">MAINTENANCR PRIORITY ONE DETAILS</p>
+                    </div>
+                    <div class="text-right col-2 m-0 p-0">
+                        <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <SfGrid DataSource="@MaintenanceTicketsByDate" AllowTextWrap="true" AllowSorting="true" Height="400" RowHeight="10">
+                            <GridColumns>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.Requestor) HeaderText="REQUESTER" Width="65"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.Location) HeaderText="LOCATION" Width="65"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.ProblemProjectDescriptionAndOrSymptoms)
+                                            HeaderText="PROJECT DESCRIPTION OR SYMPTOMS" Width="300"></GridColumn>
+                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                            Field=@nameof(MaintenanceWorkOrderDataViewModel.RemarksActionsTaken)
+                                            HeaderText="ACTIONS TAKEN" Width="200"></GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div> *@

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<UserSecretsId>9e2d9d68-4f7f-4727-a3b2-44669c6dbc13</UserSecretsId>
+	</PropertyGroup>
+
+  <ItemGroup>
+		<PackageReference Include="Azure.Core" Version="1.46.2" />
+		<PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
+		<PackageReference Include="iTextSharp" Version="5.5.13.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Graph" Version="5.84.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CamcoTasks.Library\CamcoTasks.Library.csproj" />
+    <ProjectReference Include="..\CamcoTasks.ViewModel\CamcoTasks.ViewModels.csproj" />
+    <ProjectReference Include="..\CamcoTasks.Infrastructure\CamcoTasks.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

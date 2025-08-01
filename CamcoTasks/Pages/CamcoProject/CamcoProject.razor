@@ -1,0 +1,78 @@
+﻿@* @page "/camcoProject"
+
+@using System.IO
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Popups
+
+<style>
+    .e-grid .e-rowcell {
+        font-size: 16px !important;
+        color: black;
+        font-family: "Franklin Gothic Medium";
+    }
+</style>
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0" style="background-color: #666666; color: white; height: 20px; margin-top: 70px !important;">
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / CcPj</span></div>
+</div>
+
+<div>
+    <h1 class="text-center pt-2">SO GENERATOR</h1>
+
+    <div class="row"></div>
+    <div class="col-md-6 m-auto">
+        <div class="col-12 box px-5 pt-2 pb-3 text-center">
+            <div class="col-12 text-center p-2">
+                <a href="/camcoProject/createCamcoProject" class="btn btn-danger mt-1 p-1 w-100 titleList">ADD CAMCO PROJECT</a>
+            </div>
+            <div class="col-12 text-center p-2">
+                <a href="/camcoProject/viewCamcoProject" class="btn btn-danger mt-1 p-1 w-100 titleList">
+                    VIEW/EDIT CAMCO PROJECT
+                </a>
+            </div>
+            <div class="col-12 text-center p-2">
+                <button class="btn btn-danger mt-1 p-1 w-100 titleList" onclick="@(() => OpenDialog())">
+                    VIEW PROJECT COSTING
+                    </button>
+            </div>
+            <div class="col-12 text-center p-2">
+                <a href="/camcoProject/programmerItTicketsStatus" class="btn btn-danger mt-1 p-1 w-100 titleList">PROGRAMMERS CLOSED IT TICKETS</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <SfDialog CssClass="col-lg-6 col-md-12 col-sm-12" Target="#target2" IsModal="true" ShowCloseIcon="true" @bind-Visible="Visibility">
+        <DialogTemplates>
+            <Content>
+
+                <div class="container-fluid row p-5 ml-0">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-10">
+                        <div class="col-12 mt-1">
+                            <h2 style="color:black;" class="text-center font-weight-bold">PASSWORD PROTECTED</h2>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="control_wrapper">
+                                <label class="p-0 m-0 font-weight-bold" style="font-size:22px; color:black">PASSWORD:</label>
+                                <SfTextBox @ref="@PassWordTextBox" Type="InputType.Password" CssClass="BackgroundCustom" TValue="string" @onkeyup="(args) => Keydown(args)" @bind-Value="@Password" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-12 mt-5 text-center">
+                        <button type="submit" class="btn btn-primary w-25 p-1" style="font-size:22px;" @onclick="@(() => GoToThePage("/camcoProject/viewCamcoProjectCost"))">&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;</button>
+                        <button type="button" class="btn btn-danger w-25 p-1" style="font-size:22px;" @onclick="() => DialogClose()">CANCEL</button>
+                    </div>
+
+                    <div class="col-lg-1"></div>
+                </div>
+
+            </Content>
+        </DialogTemplates>
+        <DialogEvents OnOverlayModalClick="OverlayClick"></DialogEvents>
+        <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+    </SfDialog>
+</div> *@

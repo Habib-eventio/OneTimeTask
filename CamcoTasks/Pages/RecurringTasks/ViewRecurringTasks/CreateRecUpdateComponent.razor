@@ -1,0 +1,674 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.EmployeeDTO;
+@using CamcoTasks.ViewModels.TasksRecTasksDTO;
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.PdfViewerServer
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Files;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Graph
+
+
+<!--recurring task update-->
+@if (!WithoutModel) {
+<div class="modal fade" id="RecTaskUpdate" style="overflow-y: scroll; padding-right: 0px !important; background-color: rgba(0, 0, 0, 0.80)"
+     data-keyboard="false" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document" style="max-width: 100%;width: 80%;">
+        <div class="modal-content" style="height: 100vh; overflow-y: auto;">
+            @if (IsLoading)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-weight:bold">@UpdateTitle RECURRING TASK UPDATE</h5>
+                    <div class="text-light text-right">
+                        <a class="btn btn-danger" data-dismiss="modal" @onclick="CloseComponent">CANCEL</a>
+
+                        @if (IsDoingTask)
+                        {
+                            <div class="spinner-border text-success ml-3" role="status">
+                                <span class="sr-only"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <a type="button" class="btn btn-success m-1" @onclick="(async () => await TrySaveUpdate(false))">SAVE</a>
+                            <input type="submit" id="saveclose" class="btn btn-primary" @onclick="(async () => await TrySaveUpdate(true))" value="SAVE & CLOSE" />
+                        }
+                    </div>
+                </div>
+                @if (SelectedUpdateViewModel != null)
+                {
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-2" style="margin-bottom:10px; background-color:lightgray;">
+                                    <div class="row col-md-11 m-auto">
+                                        <span style="font-size: 22px;font-weight: 600;" class="row col-md-6 m-auto">
+                                            Task Id:
+                                        </span>
+                                        <span style="font-size: 22px;" class="row col-md-6">
+                                            @RecTask.Id
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-10" style="margin-bottom:10px; background-color:lightgray;">
+                                    <span style="font-size: 18px;font-weight: 600;">
+                                        Task Description:
+                                    </span>
+                                    <SfTextBox @onkeypress="@KeyPressHandler" HtmlAttributes="@htmlAttributeBig" CssClass="BackgroundCustom" Multiline="true" Enabled="false" @bind-Value="@RecTask.Description">
+                                    </SfTextBox>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label style="margin-bottom:0px; font-weight:bold">UPDATE DATE</label>
+                                        <SfDatePicker @onkeypress="@KeyPressHandler" ID="RectaskUpdDate" Enabled="false" ShowTodayButton="true" CssClass="BackgroundCustom" @bind-Value="@SelectedUpdateViewModel.UpdateDate">
+                                        </SfDatePicker>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label style="margin-bottom:0px; font-weight:bold">COMPLETED BY</label>
+                                        <SfComboBox ID="Audit" TItem="string" TValue="string"
+                                                    DataSource="@Auditemployee" Autofill="true" AllowFiltering="true"
+                                                    CssClass="BackgroundCustom" @bind-Value="SelectedUpdateViewModel.UpdateBy"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+                                </div>
+
+                                @if (IsTaskGraphRequired)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label style="margin-bottom: 0px; font-weight: bold ">@RecTask.VerticalAxisTitle</label>
+
+                                            <Syncfusion.Blazor.Inputs.SfNumericTextBox @onkeypress="@KeyPressHandler" CssClass="BackgroundCustom" ID="RecUpdGraphNo" Placeholder="Enter Graph Number" @bind-Value="@SelectedUpdateViewModel.GraphNumber">
+                                                <Syncfusion.Blazor.Inputs.NumericTextBoxEvents TValue="decimal" ValueChange="CheckRecUpdGraphNo"></Syncfusion.Blazor.Inputs.NumericTextBoxEvents>
+                                            </Syncfusion.Blazor.Inputs.SfNumericTextBox>
+                                        </div>
+                                    </div>
+                                }
+                                    @if (RecTask.IsHandDeliveredRequired == true)
+                                    {
+                                        <div class="col-md-12 mt-2">
+                                            <div class="form-group">
+                                                <label style="margin-bottom: 0px; font-weight: bold">HAND DELIVER TO:</label>
+                                                    <SfTextBox ID="RecTaskHandDeliverTo" @bind-Value="@RecTask.HandDocumentDeliverTo" Readonly="true"></SfTextBox>
+                                            </div>
+                                        </div>
+                                    }
+
+                                <div class="col-md-12 mt-2">
+                                    <div class="form-group" spellcheck="true">
+                                        <label style="margin-bottom: 0px; font-weight: bold">UPDATE DESCRIPTION:</label>
+                                        @if (RecTask.IsDescriptionMandatory == true)
+                                        {
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" CssClass="BackgroundCustom" ID="RecUpdDesc" Multiline="true" Placeholder="Enter Update" HtmlAttributes="@htmlAttributeBig" @bind-Value="@SelectedUpdateViewModel.Update" OnChange="CheckRecUpdDesc"></SfTextBox>
+                                        }
+                                        else
+                                        {
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" ID="RecUpdDesc" Multiline="true" Placeholder="Enter Update" HtmlAttributes="@htmlAttributeBig" @bind-Value="@SelectedUpdateViewModel.Update"></SfTextBox>
+                                        }
+                                    </div>
+                                </div>
+
+                                @if (RecTask.IsQuestionRequired == true)
+                                {
+                                    <div class="col-md-12">
+                                        <hr />
+                                        <div class="form-group">
+                                            <label style="margin-bottom: 0px; font-weight: bold">QUESTION:</label>
+                                            <label style="margin-bottom: 0px;">@RecTask.Question</label>
+                                        </div>
+                                        <div class="form-group" spellcheck="true">
+                                            <label style="margin-bottom: 0px; font-weight: bold">ANSWER TO QUESTION:</label>
+
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" CssClass="BackgroundCustom" ID="RecupdQuestion" HtmlAttributes="@htmlAttribute" Multiline="true" Placeholder="Write Answer" @bind-Value="@SelectedUpdateViewModel.QuestionAnswer" OnChange="CheckRecupdQuestion">
+                                            </SfTextBox>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (RecTask.IsPicRequired == true)
+                                {
+                                    <div class="col-md-8">
+                                        <div class="form-group mt-2 mb-2">
+                                            <label style="margin-bottom:0px; font-weight:bold">
+                                                MANDATORY IMAGE REQUIRED TO BE UPLOADED
+                                            </label>
+
+                                            <a href="javascript:void(0);" type="button" data-original-title="Camera"
+                                               data-toggle="modal" @onclick="(() => UseDeviceCamera())">
+                                                <img src="/Icons/Finalized/Take Picture Button/Non-Power User/Png Files/TpicS8 40x125.png"
+                                                     style="height: 32px;" />
+                                            </a>
+
+                                            <button id="howToFileInputButtonId"
+                                                    class="btn btn-sm btn-success" @onclick='(() => ActivePastPicture("UploadUpdateFiles"))'
+                                                    data-toggle="tooltip" data-placement="top" title="CLICK PAST PICTURE BUTTON THEN CTRL + V FOR PAST PICTURE">
+                                                PASTE PICTURE
+                                            </button>
+
+                                            <span style="color:red;margin-left:5px;">
+                                                <input type="text" readonly value="PLEASE UPLOAD AN IMAGE"
+                                                       style="color:red; width:205px; height:29px;">
+                                            </span>
+                                        </div>
+                                        <div class="form-group" style="position:relative">
+                                            <SfUploader @onkeypress="@KeyPressHandler"
+                                                        AllowedExtensions=".docx,.doc,.pdf,
+                                                                    .xlsx, .xls, .csv, .xlsb, .pptx, .docx, .jpg,.png,.gif,
+                                                                    .jpeg, .bmp,.svg,  .jfif, .apng, .ico"
+                                                        CssClass="BackgroundCustom" ID="UploadUpdateFiles"
+                                                        AllowMultiple="true" AutoUpload="true"
+                                                        Multiple="false" @ref="UpdateUploadObj">
+                                                <UploaderEvents BeforeUpload="BeforeUploadImage"
+                                                                ValueChange="SelectUpdateImage"
+                                                                BeforeRemove="RemoveUpdatePreImage" />
+                                            </SfUploader>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group m-2">
+                                                @if (!string.IsNullOrEmpty(RecTask.UpdateImageDescription))
+                                                {
+                                                    <label style="margin-bottom:0px; font-weight:bold">
+                                                        REQUIRED IMAGE DESCRIPTION:
+                                                    </label>
+                                                    <label style="margin-bottom:0px;">
+                                                        @RecTask.UpdateImageDescription.ToUpper()
+                                                    </label>
+                                                }
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mt-5">
+                                        @if (UpdateUploadFiles.Any())
+                                        {
+                                            <div style="overflow-y: scroll; max-height: 300px;" class="m-1">
+                                                <lebal>Upload Images and Files</lebal>
+                                                @foreach (var item in UpdateUploadFiles)
+                                                {
+                                                    <div class="col-md-12">
+                                                        <FileViewComponent File="@item"
+                                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponent" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                @if (RecTask.IsDocumentRequired == true)
+                {
+                    <div class="col-md-12">
+                        <div class="row">
+                           <div class="col-md-6">
+                             <div class="form-group mt-2 mb-2">
+                                 <label style="margin-bottom:0px; font-weight:bold">
+                                MANDATORY DOCUMENT(CX FORM/PDF) REQUIRED TO BE UPLOADED
+                                 </label>
+                             </div>
+                             <div class="form-group" style="position:relative; width:100%">
+                               <SfUploader @onkeypress="@KeyPressHandler"
+                                           AllowedExtensions=".docx,.doc,.pdf,.xlsx, .xls, .csv, .xlsb, .pptx, .docx, .bmp, .svg, .jfif"
+                                                                    CssClass="BackgroundCustom" ID="UploadMandatoryDocument" AllowMultiple="true" AutoUpload="true"
+                                                                    Multiple="false" @ref="DocumentUploadObj">
+                                           <UploaderEvents BeforeUpload="BeforeUploadImage"  ValueChange="SelectRequiredDocument" BeforeRemove="RemoveRequiredDocument" />
+                               </SfUploader>
+                             </div>
+                            </div>
+                               <div class="col-md-6">
+                                  <div class="form-group mt-2 mb-2">
+                                    <label style="font-weight:bold;">
+                                         CX FORM/PDF
+                                     </label>
+                                       <div>
+                                                            <SfPdfViewerServer EnableDownload="true" EnablePrint="true" EnableAnnotationToolbar="true"
+                                                                               Height="170px" DocumentPath="@RecTask.UpdatedDocumentLink">
+                                                            </SfPdfViewerServer>
+                                       </div>
+                                  </div>
+                               </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mt-5">
+                        @if (UpdateUploadFiles.Any())
+                        {
+                            <div style="overflow-y: scroll; max-height: 300px;" class="m-1">
+                                <lebal>Upload Images and Files</lebal>
+                                @foreach (var item in UpdateUploadFiles)
+                                {
+                                    <div class="col-md-12">
+                                        <FileViewComponent File="@item"
+                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponent" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                                @if (RecTask.IsPassOrFail == true)
+                                {
+                                    <div class="col-md-12" style="margin-top:14px;">
+                                        <div class="form-group">
+                                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0px;">TASK PASSED?</label>
+                                            <a data-toggle="tooltip" data-placement="right" title="MARK YES IF TASK AUDIT IS PASSED">
+                                                <img src="/Icons/Finalized/Help Button/Power User/Png Files/Q3 30x30.png" style="width:20px;" />
+                                            </a>
+                                            <br />
+                                            <link href="https://cdn.jsdelivr.net/css-toggle-switch/latest/toggle-switch.css" rel="stylesheet" />
+                                            <div class="switch-toggle switch-3 switch-candy">
+                                                <input @onchange="SelectionAddChanged" id="no" value="NO" name="state-d" type="radio" checked="@(!SelectedUpdateViewModel.IsPass)" />
+                                                <label id="NoLabelId" for="no">NO</label>
+
+                                                <input @onchange="SelectionAddChanged" id="yes" value="YES" name="state-d" type="radio" checked="@SelectedUpdateViewModel.IsPass" />
+                                                <label id="YesLabelId" for="yes">YES</label>
+
+                                                <a></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    if (SelectedUpdateViewModel.IsPass == false)
+                                    {
+                                        <div class="col-md-12">
+                                            <label style="font-weight: bold; margin-bottom: 0px;">FAIL REASON</label>
+                                            <SfTextBox @onkeypress="@KeyPressHandler" CssClass="BackgroundCustom" ID="RecUpdFail"
+                                                       HtmlAttributes="@htmlAttribute"
+                                                       Multiline="true" Placeholder="Enter Fail Reason"
+                                            @bind-Value="SelectedUpdateViewModel.FailReason"
+                                                       OnChange="CheckPRecUpdFail" />
+                                        </div>
+                                    }
+                                }
+
+                                @if (RecTask.IsAuditRequired == true)
+                                {
+                                    <div class="col-md-12" style="margin-top:14px;">
+                                        <div class="form-group">
+                                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0px;">EMPLOYEES</label>
+                                            <SfGrid PrintMode="PrintMode.AllPages" DataSource="@AuditemployeeEmails" ID="Reccontainer"
+                                                    AllowSelection="true" AllowSorting="true"
+                                                    AllowFiltering="true" Width="100%" AllowTextWrap="true" EnableHover="false" RowHeight="20"
+                                                    Height="300" Toolbar="@(new List<object>() { "Search" })">
+                                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                                <GridPageSettings PageSizes="true"></GridPageSettings>
+                                                <GridSelectionSettings CheckboxOnly="true" PersistSelection="true" Type="SelectionType.Multiple"></GridSelectionSettings>
+                                                <GridColumns>
+                                                    <GridColumn Visible="false" Field=@nameof(EmployeeEmail.Id)
+                                                                HeaderText="Employee Id" AllowFiltering="false">
+                                                    </GridColumn>
+                                                    <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center" Field=@nameof(EmployeeEmail.FullName)
+                                                                HeaderText="Employee Email" AllowFiltering="false">
+                                                        <Template>
+                                                            @{
+                                                                var item = context as EmployeeEmail;
+                                                                if (item.IsSelected)
+                                                                {
+                                                                    <input id="NewChk1" type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" checked />
+                                                                    <label for="NewChk1">@item.FullName</label>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" />
+                                                                    <label for="NewChk1">@item.FullName</label>
+                                                                }
+                                                            }
+                                                        </Template>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </SfGrid>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(TaskUpdateErrorMessage))
+                        {
+                            <div class="row">
+                                <div class="col-md-12 text-danger m-2 text-center">
+                                    <h4>* @TaskUpdateErrorMessage</h4>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="modal-footer">
+                </div>
+            }
+        </div>
+    </div>
+</div>
+}
+
+@if (WithoutModel) {
+            @if (IsLoading)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                @if (SelectedUpdateViewModel != null)
+                {
+                            <div class="row text-left">
+                                <div class="col-md-12 d-flex justify-content-end mb-2">
+                                    <button class="btn btn-success text-white" @onclick="(async () => await TrySaveUpdate(false))">SAVE</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label style="margin-bottom:0px; font-weight:bold">UPDATE DATE</label>
+                                        <SfDatePicker @onkeypress="@KeyPressHandler" ID="RectaskUpdDate" Enabled="false" ShowTodayButton="true" CssClass="BackgroundCustom" @bind-Value="@SelectedUpdateViewModel.UpdateDate">
+                                        </SfDatePicker>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label style="margin-bottom:0px; font-weight:bold">COMPLETED BY</label>
+                                        <SfComboBox ID="Audit" TItem="string" TValue="string"
+                                                    DataSource="@Auditemployee" Autofill="true" AllowFiltering="true"
+                                                    CssClass="BackgroundCustom" @bind-Value="SelectedUpdateViewModel.UpdateBy"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+                                </div>
+
+                                @if (IsTaskGraphRequired)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label style="margin-bottom: 0px; font-weight: bold ">@RecTask.VerticalAxisTitle</label>
+
+                                            <Syncfusion.Blazor.Inputs.SfNumericTextBox @onkeypress="@KeyPressHandler" CssClass="BackgroundCustom" ID="RecUpdGraphNo" Placeholder="Enter Graph Number" @bind-Value="@SelectedUpdateViewModel.GraphNumber">
+                                                <Syncfusion.Blazor.Inputs.NumericTextBoxEvents TValue="decimal" ValueChange="CheckRecUpdGraphNo"></Syncfusion.Blazor.Inputs.NumericTextBoxEvents>
+                                            </Syncfusion.Blazor.Inputs.SfNumericTextBox>
+                                        </div>
+                                    </div>
+                                }
+                                 @if (RecTask.IsHandDeliveredRequired == true)
+                                 {
+                                     <div class="col-md-12 mt-2">
+                                         <div class="form-group">
+                                             <label style="margin-bottom: 0px; font-weight: bold">HAND DELIVER TO:</label>
+                                                <SfTextBox ID="RecTaskHandDeliverTo" @bind-Value="@RecTask.HandDocumentDeliverTo" Readonly="true"></SfTextBox>
+                                        </div>
+                                     </div>
+                                 }
+
+                                <div class="col-md-12 mt-2">
+                                    <div class="form-group" spellcheck="true">
+                                        <label style="margin-bottom: 0px; font-weight: bold">UPDATE DESCRIPTION:</label>
+                                        @if (RecTask.IsDescriptionMandatory == true)
+                                        {
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" CssClass="BackgroundCustom" ID="RecUpdDesc" Multiline="true" Placeholder="Enter Update" HtmlAttributes="@htmlAttributeBig" @bind-Value="@SelectedUpdateViewModel.Update" OnChange="CheckRecUpdDesc"></SfTextBox>
+                                        }
+                                        else
+                                        {
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" ID="RecUpdDesc" Multiline="true" Placeholder="Enter Update" HtmlAttributes="@htmlAttributeBig" @bind-Value="@SelectedUpdateViewModel.Update"></SfTextBox>
+                                        }
+                                    </div>
+                                </div>
+
+                                @if (RecTask.IsQuestionRequired == true)
+                                {
+                                    <div class="col-md-12">
+                                        <hr />
+                                        <div class="form-group">
+                                            <label style="margin-bottom: 0px; font-weight: bold">QUESTION:</label>
+                                            <label style="margin-bottom: 0px;">@RecTask.Question</label>
+                                        </div>
+                                        <div class="form-group" spellcheck="true">
+                                            <label style="margin-bottom: 0px; font-weight: bold">ANSWER TO QUESTION:</label>
+
+                                            <SfTextBox @onkeypress="@KeyPressHandler" @ref="updateDescription" CssClass="BackgroundCustom" ID="RecupdQuestion" HtmlAttributes="@htmlAttribute" Multiline="true" Placeholder="Write Answer" @bind-Value="@SelectedUpdateViewModel.QuestionAnswer" OnChange="CheckRecupdQuestion">
+                                            </SfTextBox>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (RecTask.IsPicRequired == true)
+                                {
+                                    <div class="col-md-8">
+                                        <div class="form-group mt-2 mb-2">
+                                            <label style="margin-bottom:0px; font-weight:bold">
+                                                MANDATORY IMAGE REQUIRED TO BE UPLOADED
+                                            </label>
+
+                                            <a href="javascript:void(0);" type="button" data-original-title="Camera"
+                                               data-toggle="modal" @onclick="(() => UseDeviceCamera())">
+                                                <img src="/Icons/Finalized/Take Picture Button/Non-Power User/Png Files/TpicS8 40x125.png"
+                                                     style="height: 32px;" />
+                                            </a>
+
+                                            <button id="howToFileInputButtonId"
+                                                    class="btn btn-sm btn-success" @onclick='(() => ActivePastPicture("UploadUpdateFiles"))'
+                                                    data-toggle="tooltip" data-placement="top" title="CLICK PAST PICTURE BUTTON THEN CTRL + V FOR PAST PICTURE">
+                                                PASTE PICTURE
+                                            </button>
+
+                                            <span style="color:red;margin-left:5px;">
+                                                <input type="text" readonly value="PLEASE UPLOAD AN IMAGE"
+                                                       style="color:red; width:205px; height:29px;">
+                                            </span>
+                                        </div>
+                                        <div class="form-group" style="position:relative">
+                                            <SfUploader @onkeypress="@KeyPressHandler"
+                                                        AllowedExtensions=".docx,.doc,.pdf,
+                                                                    .xlsx, .xls, .csv, .xlsb, .pptx, .docx, .jpg,.png,.gif,
+                                                                    .jpeg, .bmp,.svg,  .jfif, .apng, .ico"
+                                                        CssClass="BackgroundCustom" ID="UploadUpdateFiles"
+                                                        AllowMultiple="true" AutoUpload="true"
+                                                        Multiple="false" @ref="UpdateUploadObj">
+                                                <UploaderEvents BeforeUpload="BeforeUploadImage"
+                                                                ValueChange="SelectUpdateImage"
+                                                                BeforeRemove="RemoveUpdatePreImage" />
+                                            </SfUploader>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group m-2">
+                                                @if (!string.IsNullOrEmpty(RecTask.UpdateImageDescription))
+                                                {
+                                                    <label style="margin-bottom:0px; font-weight:bold">
+                                                        REQUIRED IMAGE DESCRIPTION:
+                                                    </label>
+                                                    <label style="margin-bottom:0px;">
+                                                        @RecTask.UpdateImageDescription.ToUpper()
+                                                    </label>
+                                                }
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mt-5">
+                                        @if (UpdateUploadFiles.Any())
+                                        {
+                                            <div style="overflow-y: scroll; max-height: 300px;" class="m-1">
+                                                <lebal>Upload Images and Files</lebal>
+                                                @foreach (var item in UpdateUploadFiles)
+                                                {
+                                                    <div class="col-md-12">
+                                                        <FileViewComponent File="@item"
+                                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponent" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                @if (RecTask.IsDocumentRequired == true)
+                {
+                    <div class="col-md-8">
+                        <div class="form-group mt-2 mb-2">
+                            <label style="margin-bottom:0px; font-weight:bold">
+                                MANDATORY DOCUMENT REQUIRED TO BE UPLOADED
+                            </label>
+                            <br />
+                            <span style="color:red;margin-left:5px;">
+                                <input type="text" readonly value="PLEASE UPLOAD AN DOCUMENT(CX FORM/PDF)"
+                                       style="color:red; width:350px; height:29px;">
+                            </span>
+                        </div>
+                        <div class="form-group" style="position:relative">
+                            <SfUploader @onkeypress="@KeyPressHandler"
+                                        AllowedExtensions=".docx,.doc,.pdf,.xlsx, .xls, .csv, .xlsb, .pptx, .docx, .bmp, .svg, .jfif"
+                                        CssClass="BackgroundCustom" ID="UploadMandatoryDocument"
+                                        AllowMultiple="true" AutoUpload="true"
+                                        Multiple="false" @ref="DocumentUploadObj">
+                                <UploaderEvents BeforeUpload="BeforeUploadImage"
+                                                ValueChange="SelectRequiredDocument"
+                                                BeforeRemove="RemoveRequiredDocument" />
+                            </SfUploader>
+                        </div>
+
+                        <SfToolbar>
+                            <ToolbarItems>
+                                <ToolbarItem Type="ItemType.Button" Text="CX/FORM EXPORT" TooltipText="Download CX Form"
+                                             Id="Excel" OnClick="StartDownloadDocument">
+                                    <Template>
+                                        @{
+                                            <img src="Icons\Finalized\Pdf Download Button\Non-Power User\Png Files\pdf-125x40.png" />
+                                        }
+                                    </Template>
+                                </ToolbarItem>
+                            </ToolbarItems>
+                        </SfToolbar>
+                    </div>
+
+                    <div class="col-md-4 mt-5">
+                        @if (UpdateUploadFiles.Any())
+                        {
+                            <div style="overflow-y: scroll; max-height: 300px;" class="m-1">
+                                <lebal>Upload Images and Files</lebal>
+                                @foreach (var item in UpdateUploadFiles)
+                                {
+                                    <div class="col-md-12">
+                                        <FileViewComponent File="@item"
+                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponent" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                                @if (RecTask.IsPassOrFail == true)
+                                {
+                                    <div class="col-md-12" style="margin-top:14px;">
+                                        <div class="form-group">
+                                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0px;">TASK PASSED?</label>
+                                            <a data-toggle="tooltip" data-placement="right" title="MARK YES IF TASK AUDIT IS PASSED">
+                                                <img src="/Icons/Finalized/Help Button/Power User/Png Files/Q3 30x30.png" style="width:20px;" />
+                                            </a>
+                                            <br />
+                                            <link href="https://cdn.jsdelivr.net/css-toggle-switch/latest/toggle-switch.css" rel="stylesheet" />
+                                            <div class="switch-toggle switch-3 switch-candy">
+                                                <input @onchange="SelectionAddChanged" id="no" value="NO" name="state-d" type="radio" checked="@(!SelectedUpdateViewModel.IsPass)" />
+                                                <label id="NoLabelId" for="no">NO</label>
+
+                                                <input @onchange="SelectionAddChanged" id="yes" value="YES" name="state-d" type="radio" checked="@SelectedUpdateViewModel.IsPass" />
+                                                <label id="YesLabelId" for="yes">YES</label>
+
+                                                <a></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    if (SelectedUpdateViewModel.IsPass == false)
+                                    {
+                                        <div class="col-md-12">
+                                            <label style="font-weight: bold; margin-bottom: 0px;">FAIL REASON</label>
+                                            <SfTextBox @onkeypress="@KeyPressHandler" CssClass="BackgroundCustom" ID="RecUpdFail"
+                                                       HtmlAttributes="@htmlAttribute"
+                                                       Multiline="true" Placeholder="Enter Fail Reason"
+                                            @bind-Value="SelectedUpdateViewModel.FailReason"
+                                                       OnChange="CheckPRecUpdFail" />
+                                        </div>
+                                    }
+                                }
+
+                                @if (RecTask.IsAuditRequired == true)
+                                {
+                                    <div class="col-md-12" style="margin-top:14px;">
+                                        <div class="form-group">
+                                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0px;">EMPLOYEES</label>
+                                            <SfGrid PrintMode="PrintMode.AllPages" DataSource="@AuditemployeeEmails" ID="Reccontainer"
+                                                    AllowSelection="true" AllowSorting="true"
+                                                    AllowFiltering="true" Width="100%" AllowTextWrap="true" EnableHover="false" RowHeight="20"
+                                                    Height="300" Toolbar="@(new List<object>() { "Search" })">
+                                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                                <GridPageSettings PageSizes="true"></GridPageSettings>
+                                                <GridSelectionSettings CheckboxOnly="true" PersistSelection="true" Type="SelectionType.Multiple"></GridSelectionSettings>
+                                                <GridColumns>
+                                                    <GridColumn Visible="false" Field=@nameof(EmployeeEmail.Id)
+                                                                HeaderText="Employee Id" AllowFiltering="false">
+                                                    </GridColumn>
+                                                    <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center" Field=@nameof(EmployeeEmail.FullName)
+                                                                HeaderText="Employee Email" AllowFiltering="false">
+                                                        <Template>
+                                                            @{
+                                                                var item = context as EmployeeEmail;
+                                                                if (item.IsSelected)
+                                                                {
+                                                                    <input id="NewChk1" type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" checked />
+                                                                    <label for="NewChk1">@item.FullName</label>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" />
+                                                                    <label for="NewChk1">@item.FullName</label>
+                                                                }
+                                                            }
+                                                        </Template>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </SfGrid>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        @if (!string.IsNullOrEmpty(TaskUpdateErrorMessage))
+                        {
+                            <div class="row">
+                                <div class="col-md-12 text-danger m-2 text-center">
+                                    <h4>* @TaskUpdateErrorMessage</h4>
+                                </div>
+                            </div>
+                        }
+                }
+            }
+}
+
+<!--camera component-->
+@if (IsActiveCameraComponent)
+{
+    <CameraComponent SuccessMessageCamera="@SuccessMessageFromCameraComponent" />
+}
+
+@if (OpenChartTemp)
+{
+    if (RecTask != null)
+    {
+        <GraphComponent @ref="GraphComponentRef" WithoutModel="@WithoutModel" RecurringTask="@RecTask" />
+     }
+}

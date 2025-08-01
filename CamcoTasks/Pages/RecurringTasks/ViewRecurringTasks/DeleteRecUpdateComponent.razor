@@ -1,0 +1,50 @@
+﻿<!--update delete modal-->
+<div class="modal fade" id="deleteupdateModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">DELETE UPDATE</h5>
+            </div>
+            <div class="modal-body">
+                <h4>DO YOU WANT TO DELETE THIS UPDATE ?</h4>
+                <table class="table table-danger">
+                    <tr>
+                        <td>ID:</td>
+                        <td>@UpdateTaskForDelete.UpdateId</td>
+                    </tr>
+                    <tr>
+                        <td>UPDATE DATE:</td>
+                        <td>@UpdateTaskForDelete.UpdateDate</td>
+                    </tr>
+                    <tr>
+                        <td>UPDATE:</td>
+                        <td>@UpdateTaskForDelete.Update</td>
+                    </tr>
+                    <tr>
+                        <td>RECURRING Task Id:</td>
+                        <td>@UpdateTaskForDelete.RecurringID</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" @onclick="CloseComponent">
+                    NO
+                </button>
+                @if (IsDoingTask)
+                {
+                    <div class="spinner-border text-success ml-3" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-success"
+                        @onclick="(async () => await DeleteUpdate())">
+                        YES
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

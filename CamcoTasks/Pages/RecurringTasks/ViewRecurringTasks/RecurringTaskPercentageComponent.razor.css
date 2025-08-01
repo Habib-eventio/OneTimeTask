@@ -1,0 +1,23 @@
+﻿th.vertical {
+    height: 150px;
+    line-height: 14px;
+    padding-bottom: 20px;
+    text-align: left;
+    transform: rotate(90deg);
+}
+
+.table {
+    display: table;
+    border-collapse: collapse;
+}
+
+.table .table-row {
+    display: table-row;
+}
+
+.table .table-cell {
+    display: table-cell;
+    text-align: left;
+    border: 1px solid black;
+    background-color: white;
+}

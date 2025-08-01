@@ -1,0 +1,15 @@
+﻿.e-grid .e-headercell {
+    background-color: #24202C;
+}
+
+.e-grid .e-altrow {
+    background-color: #EBEBEB;
+}
+
+.e-grid .e-detailindentcell {
+    background-color: #EB711D;
+}
+
+.e-grid e-detailrowexpand {
+    background-color: #EB711D;
+}

@@ -1,0 +1,107 @@
+﻿<!--graph component-->
+<div class="col-md-12@(WithoutModel ? " px-0": "")" id="ChartDiv">
+    @if (!IsLoading)
+    {
+         <SfChart @ref="ChartObj" ID="recurringTaskGraphId" UseGroupingSeparator="true" Height="@chartHeight" Width="@chartWidth" Title="@RecTaskForGraphComponent.GraphTitle">
+            <ChartTitleStyle TextAlignment="Alignment.Center" Size="24px" FontWeight="bold"></ChartTitleStyle>
+
+            <ChartZoomSettings EnableSelectionZooming="true" EnableScrollbar="@isScrollbarEnabled" Mode="ZoomMode.X"></ChartZoomSettings>
+
+            @if (RecTaskForGraphComponent.IsXAxisInterval.HasValue
+                 && RecTaskForGraphComponent.IsXAxisInterval.Value)
+            {
+                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTimeCategory" LabelFormat="MM/dd/yyyy"
+                                   IntervalType="@XAxisIntervalName"
+                                   Interval="@(RecTaskForGraphComponent.XAxisIntervalRange ?? 1)" LabelRotation="45"
+                ZoomFactor="zoomFactor" ZoomPosition="zoomPosition">
+                    <ChartAxisLineStyle Width="6" Color="black"></ChartAxisLineStyle>
+                    <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold"/>
+                    <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold"/>
+                </ChartPrimaryXAxis>
+            }
+            else
+            {
+                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTimeCategory" LabelFormat="MM/dd/yyyy" LabelRotation="45"
+                                   IntervalType="IntervalType.Days" Interval="1" ZoomFactor="zoomFactor" ZoomPosition="zoomPosition">
+                    <ChartAxisLineStyle Width="6" Color="black"></ChartAxisLineStyle>
+                    <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                    <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold" />
+                </ChartPrimaryXAxis>
+            }
+            
+
+            @if (RecTaskForGraphComponent.IsMaxValueRequired.HasValue
+                 && RecTaskForGraphComponent.IsMaxValueRequired.Value)
+            {
+                <ChartPrimaryYAxis Span="2" Title="@RecTaskForGraphComponent.VerticalAxisTitle"
+                                   Maximum="@(RecTaskForGraphComponent.MaxYAxisValue ?? 0)" LabelFormat="{value}">
+                    <ChartAxisLineStyle Width="6" Color="black"></ChartAxisLineStyle>
+                    <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold"/>
+                    <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold"/>
+                </ChartPrimaryYAxis>
+            }
+            else
+            {
+                <ChartPrimaryYAxis Span="2" Title="@RecTaskForGraphComponent.VerticalAxisTitle" LabelFormat="{value}">
+                    <ChartAxisLineStyle Width="6" Color="black"></ChartAxisLineStyle>
+                    <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                    <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold" />
+                </ChartPrimaryYAxis>
+            }
+
+            <ChartRows>
+                <ChartRow Height="50%" />
+                <ChartRow Height="50%" />
+            </ChartRows>
+
+            @if (RecTaskForGraphComponent.IsMaxValueRequired.HasValue
+           && RecTaskForGraphComponent.IsMaxValueRequired.Value)
+            {
+                <ChartAxes>
+                    <ChartAxis OpposedPosition="true" RowIndex="1" Name="YAxis"
+                               Maximum="@(RecTaskForGraphComponent.MaxYAxisValue ?? 0)" LabelFormat="{value}">
+                        <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                        <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold">
+                        </ChartAxisTitleStyle>
+                    </ChartAxis>
+                </ChartAxes>
+            }
+            else
+            {
+                <ChartAxes>
+                    <ChartAxis OpposedPosition="true" RowIndex="1" Name="YAxis" LabelFormat="{value}">
+                        <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                        <ChartAxisTitleStyle Size="24px" Color="black" FontWeight="Bold">
+                        </ChartAxisTitleStyle>
+                    </ChartAxis>
+                </ChartAxes>
+            }
+
+            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+            <ChartSeriesCollection>
+                @foreach (var series in SeriesCollection.Select((value, i) => new { i, value }))
+                {
+                    @if (SeriesCollection.Count == 2 && series.i == 1)
+                    {
+                        <ChartSeries XName="UpdateDate" Name="@RecTaskForGraphComponent.TrendLineTitle" Width="2"
+                                     YName="GraphNumber" DataSource=@series.value>
+                        </ChartSeries>
+                    }
+                    else
+                    {
+                        <ChartSeries XName="UpdateDate" Name="@RecTaskForGraphComponent.GraphTitle" Width="2"
+                                     YName="GraphNumber" DataSource=@series.value>
+                        </ChartSeries>
+                    }
+                }
+            </ChartSeriesCollection>
+
+            <ChartLegendSettings Visible="true" Padding="5" ToggleVisibility="false"
+                                 Position="@LegendPosition.Bottom"
+                                 ShapeHeight="20" ShapeWidth="20" MaximumLabelWidth="200">
+                <ChartLegendBorder Color="black" Width="4" />
+            </ChartLegendSettings>
+        </SfChart> 
+    }
+</div>

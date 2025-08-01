@@ -1,0 +1,39 @@
+﻿@using CamcoTasks.Infrastructure.Entities
+@using Microsoft.AspNetCore.Identity
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("email", out var email) &&
+            query.TryGetValue("password", out var password))
+        {
+            var user = await UserManager.FindByEmailAsync(email);
+            if (user != null)
+            {
+                var result = await SignInManager.PasswordSignInAsync(
+                    user.UserName,
+                    password,
+                    isPersistent: false,
+                    lockoutOnFailure: false
+                );
+
+                if (result.Succeeded)
+                {
+                    // ✅ Use HttpContext to perform redirect before Blazor renders anything
+                    var context = HttpContextAccessor.HttpContext;
+                    context.Response.Redirect("/");
+                    return;
+                }
+            }
+        }
+
+        HttpContextAccessor.HttpContext.Response.Redirect("/login");
+    }
+}

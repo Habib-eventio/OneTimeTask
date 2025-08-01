@@ -1,0 +1,67 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.EmployeeDTO;
+@using CamcoTasks.ViewModels.TasksRecTasksDTO;
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+
+
+
+<!--Faild empoyee modal-->
+<div class="modal fade bd-example-modal-sm" id="FailedEmailModal" @onkeydown="CloseComponent" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                    <h5 class="modal-title" id="exampleModalLabel">DOCUMENT SHOULD DELIVER TO</h5>
+                
+                <div class="text-right text-light">
+                    <button type="button" data-dismiss="modal" class="btn btn-success" @onclick="SaveFalidEmail">
+                        SAVE
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body FailGrid">
+                <SfGrid PrintMode="PrintMode.AllPages" DataSource="@EmployeeEmails" ID="Reccontainer" AllowSelection="true" AllowSorting="true" AllowFiltering="true" Width="100%" AllowTextWrap="true" EnableHover="false" RowHeight="20" Height="300" Toolbar="@(new List<object>() { "Search" })">
+                    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                    <GridPageSettings PageSizes="true"></GridPageSettings>
+                    <GridSelectionSettings CheckboxOnly="true" PersistSelection="true" Type="SelectionType.Multiple"></GridSelectionSettings>
+                    <GridColumns>
+                        <GridColumn TextAlign="TextAlign.Left" HeaderTextAlign="TextAlign.Center" Field=@nameof(EmployeeEmail.FullName) HeaderText="Employee:" AllowFiltering="false">
+                            <Template>
+                                @{
+                                    var item = context as EmployeeEmail;
+                                    if (item.IsSelected)
+                                    {
+                                        <input id="NewChk1" type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" checked />
+                                        <label for="NewChk1">@item.FullName</label>
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" style="margin-bottom:2px;" @onchange="(e => MarkFailedCheck(e, item))" />
+                                        <label for="NewChk1">@item.FullName</label>
+                                    }
+                                }
+                            </Template>
+                        </GridColumn>
+                    </GridColumns>
+                </SfGrid>
+                <br />
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

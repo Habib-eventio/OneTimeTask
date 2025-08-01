@@ -1,0 +1,22 @@
+﻿.e-grid .e-headercell {
+    background-color: #24202C;
+}
+
+.e-grid .e-altrow {
+    /*background-color: #DBD7E3;*/
+    background-color: #EBEBEB;
+}
+
+.e-grid .e-detailindentcell {
+    background-color: #EB711D;
+}
+
+.e-grid .e-detailrowexpand {
+    background-color: #EB711D;
+    width: 30px;
+}
+
+
+.e-grid .e-rowcell {
+    text-transform: uppercase;
+}

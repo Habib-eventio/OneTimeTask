@@ -1,0 +1,127 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.IService
+
+@inject IFileManagerService FileManagerService
+
+
+@if (File != null)
+{
+    <div id="fileViewId">
+        <div class="card text-center cardhover">
+            <div class="card-body" style="padding:0 !important">
+                <div class="form-group" style="margin-bottom:5px;">
+                    @if (FileManagerService.IsImage(File.PictureLink))
+                    {
+                        <img class="d-block w-100"
+                             src=@FileManagerService.ConvertImagetoBase64(File.PictureLink)
+                             style="height: 200px;"
+                             alt="IMAGE VIEW" @onclick="(() => ViewFiles(File))">
+
+                        <p class="card-text" style="color:black">
+                            Click To View Image
+                        </p>
+                    }
+                    else
+                    {
+                        @if (File.FileInfo != null)
+                        {
+                            @if (!string.IsNullOrEmpty(File.FileInfo.Name))
+                            {
+                                @if (FileManagerService.IsImage(File.FileInfo.Name))
+                                {
+                                    <img class="d-block w-100" src="@FileManagerService.ConvertImagetoBase64(File)" style="height: 200px;"
+                                         alt="File VIEW">
+                                }
+                                else
+                                {
+                                    <i class="@FileLogo.ReturnFileLogo(File.FileInfo.Name) d-block w-100 p-4" style="height: 200px;">
+                                    </i>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <a href="@FileManagerService.ViewRecurringFiles(File.Id, File.PictureLink)"
+                               class="d-block w-100" target="_blank" style="height: 200px;">
+                                <i class="@FileLogo.ReturnFileLogo(File.PictureLink) p-4 m-5">
+                                </i>
+                            </a>
+                            <p class="card-text" style="color:black">
+                                Click To View File
+                            </p>
+                        }
+                    }
+
+                    @if (string.IsNullOrEmpty(File.ImageNote))
+                    {
+                        <p class="card-text" style="color:black">@File.FileName</p>
+                    }
+                    else
+                    {
+                        <p class="card-text" style="color:black">
+                            @File.ImageNote.ToUpper()
+                        </p>
+                    }
+                </div>
+            </div>
+            <div class="card-footer" style="background-color:white">
+                <button class="btn btn-sm btn-outline-primary mr-1"
+                        type="button" @onclick="(() => StartUploadFileImageNote(File))">
+                    Change Note
+                </button>
+
+                @if (FileManagerService.IsImage(File.PictureLink))
+                {
+                    <button class="btn btn-sm btn-outline-primary"
+                            type="button" @onclick="(() => PrintingImage(fileManagerService.ConvertImagetoBase64(File.PictureLink)))">
+                        PRINT IMAGE
+                    </button>
+                }
+
+                @if (FileManagerService.IsFile(File.PictureLink))
+                {
+                    <button class="btn btn-sm btn-outline-primary"
+                    @onclick="(() => FileManagerService.StartDownloadFile(File))">
+                        DOWNLOAD
+                    </button>
+                }
+
+                @if (File.FileInfo != null)
+                {
+                    <button class="btn btn-sm btn-danger m-1"
+                            type="button" @onclick="(() => StartDeleteTaskFile(File.FileInfo.Id))">
+                        DELETE FILE
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-sm btn-danger m-1" @onclick="(() => StartDeleteTaskFile(File))">
+                        DELETE FILE
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!--image view component-->
+    @if (isActiveImageViewComponent)
+    {
+        <ImageViewComponent TaskImagePath="@TaskImage" IsCloseImageViewComponent="@SuccessMessageFromImageViewComponent" />
+    }
+
+    <!--Update File Note Component-->
+    @if (IsActiveUploadFileNoteComponent)
+    {
+        <UploadFileNoteComponent Note="@FileNote"
+                                 ImageNoteComponentSuccessMessage="@UploadFileNoteComponentSucessMessage"
+                                 CloseUploadFileNoteComponent="@DeactiveUploadFileNoteComponent" />
+    }
+
+    <!--delete file component-->
+    @if (isActiveDeleteFileComponent)
+    {
+        <DeleteFileComponent SelectImageModel="@SelectedImage" FilePath="@FilePath"
+                             DeleteSuccessModal="@SuccessMessageFromDeleteFileComponent"
+                             DeleteSuccessPath="@DeleteSuccessFromDeleteFileComponent" />
+    }
+}

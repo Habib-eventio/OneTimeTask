@@ -1,0 +1,48 @@
+﻿@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+
+
+<!--Respond modal-->
+<div class="modal fade" id="RespondModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+     style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">SEND UPDATE EMAIL</h5>
+                <div class="text-right text-light">
+                    <button class="btn btn-danger" data-dismiss="modal">
+                        CANCEL
+                    </button>
+                    <button type="button" class="btn btn-success"
+                            @onclick="(() => SendUpdatedEmail())">
+                        SEND EMAIL
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>EMAIL BODY NOTE</label>
+                                <SfTextBox ID="UpdateMailBody" @ref="EmailNoteRef"
+                                           CssClass="BackgroundCustom" Multiline="true"
+                                           HtmlAttributes="@htmlAttribute" Placeholder="Enter Update Note"
+                                           @bind-Value="UpdateRespondBody" OnChange="CheckUpdateMailBody">
+                                </SfTextBox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

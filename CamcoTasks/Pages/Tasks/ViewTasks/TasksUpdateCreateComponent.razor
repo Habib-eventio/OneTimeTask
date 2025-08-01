@@ -1,0 +1,146 @@
+﻿@using CamcoTasks.Library
+@using Syncfusion.Blazor.Grids
+@using CamcoTasks.ViewModels.Department
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Library
+@using CamcoTasks.Service.Service
+@using CamcoTasks.ViewModels.EmployeeDTO;
+@using CamcoTasks.ViewModels.TasksRecTasksDTO;
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Files;
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Graph
+
+
+<!--add or edit task update modal-->
+<div class="modal fade" id="AddEditTaskUpdate" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.20);">
+    <div class="modal-dialog modal-xl modal-dialog-centered mw-50 w-50" role="document" style="max-width: 100%; width:90%">
+        <div class="modal-content" style="height: 600px">
+            @if (IsLoadTask)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@UpdateTitle TASK UPDATE</h5>
+                    <div class="text-light text-right">
+                        <a class="btn btn-danger m-1" @onclick="CloseComponent">CANCEL</a>
+
+                        @if (IsDoingTask)
+                        {
+                            <div class="spinner-border text-success ml-3" role="status">
+                                <span class="sr-only"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <a type="button" class="btn btn-success" @onclick="(async () => await TryHandlingUpdate(false))">SAVE</a>
+                            <a type="button" class="btn btn-primary" @onclick="(async () => await TryHandlingUpdate(true))">SAVE & CLOSE</a>
+                        }
+                    </div>
+                </div>
+                <div class="modal-body" style="overflow:auto">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>UPDATE DATE</label>
+                                    <Syncfusion.Blazor.Calendars.SfDatePicker ShowTodayButton="true" CssClass="BackgroundCustom" ID="UpdateDate" @bind-Value="@SelectedUpdateViewModel.UpdateDate">
+                                        <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                    </Syncfusion.Blazor.Calendars.SfDatePicker>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label style="font-weight:bold; font-size:14px;">IS TASK COMPLETED?</label><br />
+                                    <Syncfusion.Blazor.Buttons.SfCheckBox Label="" TChecked="bool" @bind-Checked="@IsTaskDone">
+                                    </Syncfusion.Blazor.Buttons.SfCheckBox>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <Syncfusion.Blazor.Inputs.SfUploader AllowMultiple="true"
+                                                                     AllowedExtensions=".pdf,.txt,.pptx,.zip,.rar,.pdf,.pptx,.docx,.doc,.xlsx,.xlsb,.csv,.jpg,.png,.gif,.jpeg,.bmp,.svg,.jfif,.apng,.ico"
+                                                                     ID="UploadFiles" AutoUpload="true" Multiple="true" @ref="UploadObj">
+                                        <Syncfusion.Blazor.Inputs.UploaderEvents ValueChange="SelectTaskupdateFiles" BeforeRemove="RemoveTaskUpdateFiles" />
+                                    </Syncfusion.Blazor.Inputs.SfUploader>
+                                </div>
+                            </div>
+
+                            @if (TaskUpdateUploadFiles.Any() || UpdateUploadFiles.Any())
+                            {
+                                <div style="overflow-y: scroll; max-height: 700px;">
+                                    <div class="m-1" id="UploadFiles">
+                                        @if (TaskUpdateUploadFiles.Any())
+                                        {
+                                            <lebal>Upload Images and Files</lebal>
+                                            <div class="m-1">
+                                                @foreach (var taskUpdateUploadFile in TaskUpdateUploadFiles)
+                                                {
+                                                    <div class="col-md-12" style="margin-bottom:10px;">
+                                                        <div class="card text-center cardhover">
+                                                            <div class="card-body" style="padding:0 !important">
+                                                                <div class="form-group" style="margin-bottom:5px;">
+                                                                    @if (fileManagerService.IsImage(taskUpdateUploadFile.FileInfo.Name))
+                                                                    {
+                                                                        <img class="d-block w-100" src="@ConvertImageToBase64(taskUpdateUploadFile)" style="height: 200px;" alt="IMAGE VIEW" @onclick="(() => ActiveTasksImageShowComponent(ConvertImageToBase64(taskUpdateUploadFile), taskUpdateUploadFile.FileInfo.Name))">
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <i class="@FileLogo.ReturnFileLogo(taskUpdateUploadFile.FileInfo.Name) m-2"></i>
+                                                                        <p class="card-text" style="color:black">@taskUpdateUploadFile.FileInfo.Name</p>
+                                                                    }
+
+                                                                </div>
+                                                                @if (fileManagerService.IsImage(taskUpdateUploadFile.FileInfo.Name))
+                                                                {
+                                                                    <p class="card-text" style="color:black"> Click To View Image</p>
+                                                                }
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                </div>
+                            }
+
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>UPDATE</label>
+                                    <Syncfusion.Blazor.Inputs.SfTextBox CssClass="text-multiline" HtmlAttributes="@htmlAttributeBig"
+                                                                    Multiline="true" Placeholder="Enter Update" ID="UpdateDescription"
+                                                                    @bind-Value="@SelectedUpdateViewModel.Update">
+                                    </Syncfusion.Blazor.Inputs.SfTextBox>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ErrorUpdateMessage))
+                    {
+                        <div class="row">
+                            <div class="col-md-12 text-danger m-2 text-center">
+                                <h4>* @ErrorUpdateMessage</h4>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

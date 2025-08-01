@@ -1,0 +1,75 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Popups
+@using CamcoTasks.Shared.Component
+
+
+<style>
+    #MiscTaskWorkDetails {
+        height: 260px;
+    }
+</style>
+
+<!--Employee list component-->
+@if (IsActiveEmployeeeListComponent)
+{
+    <EmployeeListComponent EventCallbackEmployeeListComponent="@SetEmployeeName" />
+}
+
+
+<!--misc task modal-->
+@if (IsActiveMiscTaskModal)
+{
+    <SfDialog CssClass="col-lg-8 col-md-12 col-sm-12" Target="#target1" IsModal="true"
+              ShowCloseIcon="true" @bind-Visible="IsActiveMiscTaskModal">
+        <DialogEvents Closed="@(() => Cancle(false))"></DialogEvents>
+        <DialogTemplates>
+            <Content>
+                <div>
+                    <div class="container-fluid px-5">
+                        <div class="col-12  row">
+                            <div class="col-4 ml-2">
+                                <label class="p-0 m-0 font-weight-normal" style="font-size:25px; color: #000000;">
+                                    <span>TASK RESPONSIBLE: @EmployeeName</span>
+                                    MISC TASK STARTED  @CalculatedTime.ToString("HH:mm:ss")
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center col-12 font-weight-bold pl-0 pr-0" style="font-size: 36px; color: black;">MISC</div>
+                            </div>
+                            <div class="col-4"></div>
+                        </div>
+                        <div class="col-12 pl-2">
+                            <div class="col-12 p-1 font-weight-bold">
+                                <div class="col-12">
+                                    <label class="p-0 m-0" style="font-size:18px;">WORK DETAIL:</label>
+                                    <SfTextBox ID="MiscTaskWorkDetails" CssClass="BackgroundCustom" Multiline="true" @bind-Value="MiscObj.WorkDetails" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-5 pl-2">
+                            <div class="text-center col-12">
+                                <button type="submit" class="btn btn-success mt-2 text-white font-weight-bold"
+                                        style="cursor:pointer;" @onclick="() => Save()">
+                                    START TASK
+                                </button>
+                                <button class="btn btn-danger mt-2 text-white font-weight-bold" style="cursor:pointer;" @onclick="() => Cancle(true)">
+                                    CANCEL TASK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Content>
+        </DialogTemplates>
+        <DialogAnimationSettings Effect="@DialogEffect.None"></DialogAnimationSettings>
+    </SfDialog>
+}
+
+<!--End misc task modal-->
+@if (IsActiveEndMiscTask){
+    <EndMiscTasksComponent Transaction="@TransactionBy" CategoryId="@CategoryId"
+                  EventCallbackEndMiscTasks="@SuccessMessageFormEndMiscTaskComponent" />
+}

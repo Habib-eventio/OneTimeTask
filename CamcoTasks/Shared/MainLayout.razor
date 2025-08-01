@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+
+
+<div class="main">
+	<NavMenu />	
+
+	<div class="content">
+		<BlazoredToasts Position="Blazored.Toast.Configuration.ToastPosition.BottomRight"
+		Timeout="2" RemoveToastsOnNavigation="true" ShowCloseButton="true" ShowProgressBar="true" />
+		@Body
+	</div>
+
+    <div class="footer no-print" style="z-index: 9999;">
+    <div class="col-12 row p-0 m-0 text-center">
+        <div class="col-12 p-0">
+                <label>
+                    ©@DateTime.Now.Year <label class="pl-3">
+                        CAMCO TASKS
+                        <label class="pl-3">
+                            ALL RIGHTS RESERVED
+                            <label class="pl-3">
+                                LAST UPDATED: 10/8/2024 9:44 AM
+                        </label>
+                    </label>
+                </label>
+            </label>
+        </div>
+    </div>
+</div>
+</div>

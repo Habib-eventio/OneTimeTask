@@ -1,0 +1,171 @@
+﻿@* @page "/budget-chart"
+@inject IJSRuntime JS
+ 
+<div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
+     style="background: white; outline: 1px #ECEBE9 solid; outline-offset: -1px;">
+<div class="flex justify-between w-full">
+<div class="flex flex-1 items-start gap-2 py-1">
+<div class="relative w-6 h-6 overflow-visible">
+<img class="img" src="img/budget-menu-icon.svg" />
+</div>
+<div class="text-[#171412] text-base font-medium leading-6 font-['Roboto']">
+                Budget Expense
+</div>
+ 
+        </div>
+</div>
+ 
+    <div class="flex-1 h-px outline outline-1 outline-[#ECEBE9] outline-offset-[-0.5px] w-full my-3"></div>
+ 
+ 
+    <div id="spentChart" class="w-full aspect-[1/2] md:aspect-[4/2] max-w-full h-auto">
+        @if (!chartReady)
+        {
+<div class="text-center py-10 text-gray-500">Loading chart...</div>
+        }
+</div>
+ 
+ 
+</div>
+ 
+<GenericPopupComponent IsVisible="showAddTaskFormPopup" OnClose="()=>showAddTaskFormPopup=false" MaxWidth="440px">
+<BudgetItemComponent Eventid="@Eventid" OnClose="()=>showAddTaskFormPopup=false" BudgetItemUpdated="@RefreshTasksDataAsync"></BudgetItemComponent>
+</GenericPopupComponent>
+ 
+@code {
+    public class BudgetItemDto
+    {
+        public string? CategoryName { get; set; }
+        public decimal ActualAmount { get; set; }
+    }
+ 
+    [Parameter]
+    public int Eventid { get; set; }
+ 
+    bool showAddTaskFormPopup = false;
+    private List<BudgetItemDto> BudgetItems { get; set; } = new();
+    private List<object> ChartData { get; set; } = new();
+    private bool chartReady = false;
+ 
+    private bool componentRendered = false;
+    private bool hasRenderedChart = false;
+    private decimal TotalSpent { get; set; } = 0;
+    private bool isClientReady = false;
+    private bool _hasInitialized;
+    protected override async Task OnParametersSetAsync()
+    {
+        if (isClientReady) // If already interactive
+        {
+            await LoadChartDataAsync();
+ 
+            if (chartReady)
+            {
+                await RenderChartAsync();
+            }
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if (_hasInitialized)
+            return;
+ 
+        _hasInitialized = true;
+        try
+        {
+            await LoadChartDataAsync();
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+    void ShowAddTaskFormPopup()
+    {
+        showAddTaskFormPopup = true;
+    }
+    private async Task RefreshTasksDataAsync()
+    {
+        await LoadChartDataAsync();
+        showAddTaskFormPopup = false;
+    }
+    public async Task LoadChartDataAsync()
+    {
+ 
+        // var result = await budgetService.GetBudgetItemsAsync(Eventid);
+        // var items = result?.Value;
+ 
+        if (items != null && items.Any())
+        {
+            BudgetItems = items
+                .Where(item => !string.IsNullOrEmpty(item.CategoryName))
+                .GroupBy(item => item.CategoryName!)
+                .Select(group => new BudgetItemDto
+                    {
+                        CategoryName = group.Key,
+                        ActualAmount = group.Sum(i => i.ActualAmount)
+                    })
+                .ToList();
+        }
+        else
+        {
+            BudgetItems = new List<BudgetItemDto>();
+        }
+ 
+        TotalSpent = BudgetItems.Sum(b => b.ActualAmount);
+ 
+        ChartData = BudgetItems.Select(item => new
+        {
+            categoryName = item.CategoryName,
+            actualAmount = item.ActualAmount,
+            color = GetColorForCategory(item.CategoryName)
+        }).ToList<object>();
+ 
+        chartReady = true;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isClientReady = true;
+ 
+            await LoadChartDataAsync();
+ 
+            if (chartReady)
+            {
+                await RenderChartAsync();
+            }
+        }
+    }
+ 
+    private async Task RenderChartAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("renderSpentChart", ChartData, TotalSpent);
+        }
+        catch (JSException ex)
+        {
+            Console.WriteLine("JS error: " + ex.Message);
+        }
+    }
+    private string GetColorForCategory(string? name) => name switch
+    {
+        "Invitations & Stationary" =>     "#FFD088",
+        "Decor & Design" =>               "#C1DEFC",
+        "Food & Beverage" =>              "#C3B6FC",
+        "Venue & Rentals" =>              "#F6ABBB",
+        "Entertainment & Activities" =>   "#FFB14A",
+        "Photography & Videography" =>    "#96CAFA",
+        "Transportation & Logistics" =>   "#C3B6FC",
+        "Planning & Coordination" =>      "#ED6586",
+        "Attire & Beauty" =>              "#FF9E33",
+        "Stationery & Printing" =>        "#57A5F4",
+        "Gifts & Favors" =>               "#DCD7FD",
+        "Staffing & Labor" =>             "#8BC34A",
+        "Permits, Insurance & Legal" =>   "#FF9800",
+        "Technology & Software" =>        "#009688",
+        "Marketing & Promotion" =>        "#795548",
+        "Miscellaneous & Contingency" =>  "#CCCCCC",
+        _ => "#CCCCCC" // Default color for unknown categories
+    };
+} *@

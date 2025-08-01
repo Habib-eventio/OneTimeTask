@@ -1,0 +1,45 @@
+﻿<!--deactive modal-->
+<div class="modal fade" id="DeactivateRecurringTask" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">DEACTIVATE RECURRING TASK</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="CloseComponent">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>DO YOU WANT TO DEACTIVATE THIS RECURRING TASK ?</h4>
+                <table class="table table-dark">
+                    <tr>
+                        <td>ID:</td>
+                        <td>@TaskViewModel.Id</td>
+                    </tr>
+                    <tr>
+                        <td>INITIATOR:</td>
+                        <td>@TaskViewModel.Initiator</td>
+                    </tr>
+                    <tr>
+                        <td> DATE:</td>
+                        <td>@TaskViewModel.DateCreated</td>
+                    </tr>
+                    <tr>
+                        <td>DUE DATE:</td>
+                        <td>@TaskViewModel.UpcomingDate</td>
+                    </tr>
+                    <tr>
+                        <td>DESCRIPTION:</td>
+                        <td style="word-wrap:break-word; max-width:100px">@TaskViewModel.Description</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" data-dismiss="modal" @onclick="CloseComponent"><i class="flaticon-cancel-12"></i>NO</button>
+                <button type="button" data-dismiss="modal" class="btn btn-success"
+                        @onclick="(async () => await DeactivateTask())">
+                    YES
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

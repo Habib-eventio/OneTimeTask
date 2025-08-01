@@ -1,0 +1,51 @@
+﻿@page "/DataRestore/"
+<div class="container-fluid">
+    <div>
+        <div class="form-group col-md-6 m-auto">
+            <label for="exampleInputEmail1">Enter Password:</label>
+            <input type="password" @bind-value="Password" class="form-control p-1" id="exampleInputEmail1" aria-describedby="emailHelp">
+            <small id="emailHelp" class="form-text text-muted p-1">
+                @if (Error != null)
+                {
+                    <p class="text-danger">*@Error</p>
+                }
+            </small>
+            <button type="submit" class="btn btn-primary" @onclick="(e => Authenticate(Password))">Submit</button>
+        </div>
+    </div>
+
+    @if (IsAuthenticate)
+    {
+        <div class="row">
+            <div class="col-md-12 m-2">
+                <table class="table table-bordered">
+                    <tr>
+                        <th></th>
+                        <th>Action</th>
+                        <th>Update Action</th>
+                        <th>Task Id</th>
+                        <th>Freq</th>
+                        <th>Completed Date</th>
+                        <th>Due Date</th>
+                    </tr>
+                    @{int count = 0; }
+                    @foreach(var item in Tasks)
+                    {
+                        <tr>
+                            <td>@(count++)</td>
+                            <td><button class="btn btn-primary" @onclick="(() => FixSingleTaskDueDate(item))">Fix</button></td>
+                            <td><button class="btn btn-primary" @onclick="(() => FixSingleTaskUpdate(item))">Fix</button></td>
+                            <td>@item.Id</td>
+                            <td>@item.Frequency</td>
+                            <td>@item.DateCompleted</td>
+                            <td>@item.UpcomingDate</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+
+        </div>
+    }
+</div>
+
+

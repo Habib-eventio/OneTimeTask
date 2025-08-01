@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>fcd197fd-66ba-42b0-8c07-153fc6427eb7</UserSecretsId>
+	</PropertyGroup>
+
+  <ItemGroup>
+		<None Remove="Pages\RecurringTasks\ViewRecurringTasks\ViewRecurringTasks.razor.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Append.Blazor.Printing" Version="1.1.0" />
+		<PackageReference Include="Blazored.Toast" Version="4.1.0" />
+		<PackageReference Include="EPPlus" Version="6.2.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.20" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.16" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.15">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.13" />
+		<PackageReference Include="Syncfusion.Blazor.Charts" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.Core" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.Grid" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.PdfViewerServer.Windows" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.RichTextEditor" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.Blazor.Themes" Version="20.4.0.53" />
+		<PackageReference Include="Syncfusion.Blazor.TreeGrid" Version="20.2.0.50" />
+		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.50" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
+		<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CamcoTasks.Accessory\CamcoTasks.Accessory.csproj" />
+    <ProjectReference Include="..\CamcoTasks.Library\CamcoTasks.Library.csproj" />
+    <ProjectReference Include="..\CamcoTasks.Service\CamcoTasks.Service.csproj" />
+    <ProjectReference Include="..\CamcoTasks.ViewModel\CamcoTasks.ViewModels.csproj" />
+    <ProjectReference Include="..\CamcoTasks.Infrastructure\CamcoTasks.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

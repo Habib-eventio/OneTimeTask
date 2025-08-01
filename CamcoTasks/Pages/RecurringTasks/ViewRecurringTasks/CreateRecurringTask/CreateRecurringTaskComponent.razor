@@ -1,0 +1,868 @@
+﻿@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks;
+@using CamcoTasks.Library
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.CreateRecurringTask
+@using CamcoTasks.Service.Service
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.Popups;
+@using Syncfusion.Blazor.Calendars;
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Buttons
+@using CamcoTasks.Service.IService
+@using CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks.Files
+
+@inject IFileManagerService FileManagerService
+
+@namespace CamcoTasks.Pages.RecurringTasks.ViewRecurringTasks
+
+
+<!--Recurring task modal-->
+<div class="modal fade" id="RecurringTaskModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable mw-100 w-75" role="document">
+        <div class="modal-content" style="height: 100vh">
+            @if (IsLoadTask)
+            {
+                <div class="spinner-border m-auto" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header" style="padding-bottom: 0px;">
+                    <h5 class="modal-title" id="exampleModalLabel">@TaskTitle RECURRING TASK (Task Id: @PossibleId)</h5>
+                    <div class="col-md-8 text-right">
+                        <a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick="(() => CloseComponent(null))">
+                            <img src="/Icons/Finalized/Close Button/Non-Power User/Png Files/Close.png" />
+                        </a>
+                        @if (ApproverId != null)
+                        {
+                            <button @onclick="(async () => await DeclineTask())" style="background-color:red;color:white;margin-right:5px;">DENY TASK</button>
+
+                            <button @onclick="(async () => await OpenNoteOrInquiry(false))" style="background-color:red;color:white;margin-right:5px;">DENY TASK WITH A NOTE</button>
+
+                            <button @onclick="(async () => await OpenNoteOrInquiry(true))" style="background-color:lightblue;margin-right:5px;">INQUIRY</button>
+                        }
+                        @if (IsDoingTask)
+                        {
+                            <div class="spinner-border text-success ml-3" role="status">
+                                <span class="sr-only"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <a href="javascript:void(0);" type="button" @onclick="(async () => await TrySaveTask())">
+                                <img src='@(ApproverId == null || RecurringTask.IsApproved ? "/Icons/Finalized/Save Button/Non-Power User/Png Files/save.png": "/Icons/Finalized/Save Button/Non-Power User/Png Files/approve.png")' />
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="modal-body" style="padding-top:0px;">
+                    <div class="row" style="margin-bottom:20px;text-align:center">
+                        <div class="col-md-4">
+                            <div style="padding: 0px" spellcheck="true">
+                                <label style="float: left; font-weight: bold; margin-bottom: 0px">
+                                    SUBJECT LINE TASK DESCRIPTION
+                                </label>
+                                <br />
+                                <SfTextBox ID="TaskDescriptionSubject" maxlength="60" CssClass="BackgroundCustom"
+                                           Multiline="false"
+                                           HtmlAttributes="@htmlAttributeBig" @bind-Value="SelectedTaskViewModel.TaskDescriptionSubject" />
+                            </div>
+
+                            <div style="padding: 0px" spellcheck="true">
+                                <label style="float: left; font-weight: bold; margin-bottom: 0px">
+                                    DESCRIPTION
+                                </label>
+                                <br />
+                                <SfTextBox ID="TaskDescription" @onkeypress="@PreventESC" CssClass="BackgroundCustom e-small" Multiline="true" HtmlAttributes="@htmlAttributeBig" @bind-Value="SelectedTaskViewModel.Description" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm">
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">JOB TITLE RESPONSIBLE FOR THIS TASK:</label>
+                                        <SfComboBox ID="JobId" TItem="string" TValue="string"
+                                                    DataSource="@JobList" CssClass="BackgroundCustom" AllowFiltering="true"
+                                                    Autofill="true" @bind-Value="SelectedTaskViewModel.JobTitle"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"
+                                                            ValueChange="(e => ChangeJobTitleAsync(e))"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">
+                                            PERSON RESPONSIBLE TO DO THE TASK:
+                                        </label>
+                                        <SfComboBox ID="PersonResponsible" TItem="string" TValue="string"
+                                                    DataSource="@EmployeesByJobId" Autofill="true" AllowFiltering="true"
+                                                    CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.PersonResponsible"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">
+                                            INITIATOR:
+                                        </label>
+                                        <SfComboBox ID="Intiator" TItem="string" TValue="string"
+                                                    DataSource="@Employees" Autofill="true" AllowFiltering="true"
+                                                    CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.Initiator"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="row" style="margin-left:2px">
+                                            <label style="font-weight: bold; display: block;">CALENDAR YEAR DUE PERIOD:     </label>
+                                            <a data-toggle="tooltip" data-placement="right" title="THE CALENDAR YEAR DUE PERIOD SHOULD ONLY BE FILLED OUT IF THIS TASK CAN ONLY BE DONE DURING A SPECIFIC TIME OF THE YEAR. IF THIS TASK SHOULD BE DONE YEAR ROUND, DO NOT FILL THIS OUT">
+                                                <img src="/Icons/Finalized/Help Button/Power User/Png Files/Q3 30x30.png" style="width:19px;" />
+                                            </a>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <SfDatePicker ID="FromYearDueDate" Min='@MinDate' @bind-Value="SelectedTaskViewModel.TaskStartDueDate" ShowClearButton="true">
+                                                    <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime?"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                                </SfDatePicker>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <span style="font-weight: bold;">TO</span>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <SfDatePicker ID="ToYearDueDate" Min='@MinDate' @bind-Value="SelectedTaskViewModel.TaskEndDueDate" ShowClearButton="true">
+                                                    <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime?"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                                </SfDatePicker>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="float:left; width:100%; margin-top:10px">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;" class="col-form-label">
+                                            RANDOMIZE THIS TASK:
+                                            <SfCheckBox @bind-Checked="SelectedTaskViewModel.IsTaskRandomize">
+                                            </SfCheckBox>
+                                        </label>
+                                        
+                                    </div>
+
+                                    <div class="form-group" style="float:left; width:100%">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;" class="col-form-label">
+                                            FIRST DUE DATE OF TASK:
+                                        </label>
+                                        <SfDatePicker ID="UpcommingDate" Min='@MinDate'
+                                                      CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.UpcomingDate">
+                                            <Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime?">
+                                            </Syncfusion.Blazor.Calendars.DatePickerEvents>
+                                        </SfDatePicker>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">
+                                            FREQUENCY:
+                                        </label>
+                                        <SfComboBox ID="Freqncy" TItem="string" TValue="string"
+                                                    DataSource="@Frequencies"
+                                                    Autofill="true" AllowFiltering="true" CssClass="BackgroundCustom"
+                                                    @bind-Value="SelectedTaskViewModel.Frequency"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"
+                                                 ValueChange="(e => ChangeFrequencyAsync(e))"></ComboBoxEvents>
+                                        </SfComboBox> <br />
+                                    </div>
+
+                                    @if (SelectedTaskViewModel.Frequency == "TWICE/WEEK")
+                                    {
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                                   class="col-form-label">
+                                                FIRST DAY OF THE WEEK:
+                                            </label>
+                                            <SfComboBox ID="StatDueDayId" TItem="string" TValue="string"
+                                                        DataSource="@Days"
+                                                        Autofill="true" AllowFiltering="true" CssClass="BackgroundCustom"
+                                                        @bind-Value="SelectedTaskViewModel.StartDueDateDay"
+                                                        FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                                <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                            </SfComboBox>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                                   class="col-form-label">
+                                                SECOND DAY OF THE WEEK:
+                                            </label>
+                                            <SfComboBox ID="EndDueDayId" TItem="string" TValue="string"
+                                                        DataSource="@Days"
+                                                        Autofill="true" AllowFiltering="true" CssClass="BackgroundCustom"
+                                                        @bind-Value="SelectedTaskViewModel.EndDueDateDay"
+                                                        FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                                <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                            </SfComboBox>
+                                        </div>
+                                    }
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">
+                                            DEPARTMENT:
+                                        </label>
+                                        <SfComboBox ID="TaskArea" PopupHeight="250px" TItem="string"
+                                                    TValue="string" DataSource="@TaskArea" Autofill="true"
+                                                    AllowFiltering="true"
+                                                    CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.TaskArea"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                        </SfComboBox> <br />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm col-sm-5">
+                            <div class="row">
+                                <div class="col-md-6 pt-3" style=" min-height: 400px; ">
+                                    <div class="form-group EmailGrid" style="max-height: 400px;">
+                                        <table class="table table-bordered" style="width:100%; line-height:0.8; border: 4px solid black;">
+                                            <thead>
+                                                <tr>
+                                                    <td style="text-align: left; width: 295px; font-weight: bold; font-size:15px">
+                                                        <div class="m-1">EMAIL DISTRIBUTION LIST UPON TASK COMPLETION</div>
+                                                        <div class="m-1">
+                                                            <input type="text" class="form-control form-control-sm" placeholder="Input Filter Key" @oninput="EmailDistibutionFilter" />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="overflow-y: scroll; height: 400px; display: block; padding-left: 5px " class="my-2">
+                                                @if (IsFilter)
+                                                {
+                                                    <div class="spinner-border m-auto" role="status">
+                                                        <span class="sr-only"></span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var item in FilterJobDescriptionEmployeeEmails)
+                                                    {
+                                                        <tr class="table-bordered">
+                                                            <td style="text-align: left; width: 265px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                                @if (item.IsSelected)
+                                                                {
+                                                                    <div class="row">
+                                                                        <div class="col-md-1 pr-0">
+                                                                            <input id="EmailDistributionId @item.Id"
+                                                                                   type="checkbox" @onchange="(e =>
+                                                                                    SelectJobTitleEmailDistibution(e, item))" checked />
+                                                                        </div>
+                                                                        <div class="col-md-11">
+                                                                            <label id="EmailDistributionLabel  @item.Id"
+                                                                                   for="EmailDistributionId @item.Id">
+                                                                                @item.JobName
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="ml-3">
+                                                                        @foreach (var employeeEmail in item.EmployeeEmails)
+                                                                        {
+                                                                            <div style="text-align: left; width: 150px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                                                @if (employeeEmail.IsSelected)
+                                                                                {
+                                                                                    <input id="jobTitleInputId @employeeEmail.Id"
+                                                                                           type="checkbox" @onchange="(e =>
+                                                                                                    SelectEmailDistibution(e, item.Id, employeeEmail))" checked />
+                                                                                    <label id="jobTitleLabelId @employeeEmail.Id"
+                                                                                           for="jobTitleInputId @employeeEmail.Id">
+                                                                                        @employeeEmail.FullName
+                                                                                    </label>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input id="jobTitleInputId @employeeEmail.Id"
+                                                                                           type="checkbox" @onchange="(e =>
+                                                                                            SelectEmailDistibution(e, item.Id, employeeEmail))" />
+                                                                                    <label id="jobTitleLabelId @employeeEmail.Id"
+                                                                                           for="jobTitleInputId @employeeEmail.Id">
+                                                                                        @employeeEmail.FullName
+                                                                                    </label>
+                                                                                }
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div class="row">
+                                                                        <div class="col-md-1 pr-0">
+                                                                            <input id="EmailDistributionId @item.Id"
+                                                                                   type="checkbox" @onchange="(e => SelectJobTitleEmailDistibution(e, item))" />
+                                                                        </div>
+                                                                        <div class="col-md-11">
+                                                                            <label id="EmailDistributionLabel  @item.Id"
+                                                                                   for="EmailDistributionId @item.Id">
+                                                                                @item.JobName
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 pt-3" style=" min-height: 400px; ">
+                                    <div class="form-group EmailGrid" style="max-height: 400px;">
+                                        <table class="table table-bordered" style="width:100%; line-height:0.8; border: 4px solid black;">
+                                            <thead>
+                                                <tr>
+                                                    <td style="text-align: left; width: 295px; font-weight: bold; font-size:15px">
+                                                        <div class="m-1">ACTIVE EMAIL DISTRIBUTION LIST UPON TASK COMPLETION</div>
+                                                        <div class="m-1">
+                                                            <input id="activejobTitleId" type="text" class="form-control form-control-sm"
+                                                                   placeholder="Input Filter Key" @oninput="ActiveEmailDistibutionFilter" />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="overflow-y: scroll; height: 388px; display: block; padding-left: 5px " class="my-2">
+                                                @if (IsActiveJobDescriptionFilter)
+                                                {
+                                                    <div class="spinner-border m-auto" role="status">
+                                                        <span class="sr-only"></span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var jobTitle in ActiveFilterJobDescriptionWithEmployeeEmails)
+                                                    {
+                                                        <tr class="table-bordered">
+                                                            <td style="text-align: left; width: 265px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                                @if (jobTitle.IsSelected)
+                                                                {
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-1 pr-0">
+                                                                            <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon" style="height:13px;width:13px"
+                                                                                 @onclick="@(e => RemoveItem(jobTitle))">
+                                                                        </div>
+                                                                        <div class="col-md-11" @onclick="@(e => RemoveItem(jobTitle))">
+                                                                            <label id="ActiveEmailDistributionLabel @jobTitle.Id"
+                                                                                   for="ActiveEmailDistributionId @jobTitle.Id">
+                                                                                @jobTitle.JobName
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="ml-3">
+                                                                        @foreach (var employeeEmail in jobTitle.EmployeeEmails)
+                                                                        {
+                                                                            @if (employeeEmail.IsSelected)
+                                                                            {
+                                                                                <div style="text-align: left; width: 150px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                                                    <input id="ActiveEmailjobTitleInputId @employeeEmail.Id"
+                                                                                           type="checkbox" checked disabled />
+                                                                                    <label id="ActivejobTitleLabelId @employeeEmail.Id"
+                                                                                           for="ActiveEmailjobTitleInputId @employeeEmail.Id">
+                                                                                        @employeeEmail.FullName
+                                                                                    </label>
+                                                                                </div>
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-1 pr-0">
+                                                                            <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon" style="height:13px;width:13px"
+                                                                                 @onclick="@(e => RemoveItem(jobTitle))">
+                                                                        </div>
+                                                                        <div class="col-md-11" @onclick="@(e => RemoveItem(jobTitle))">
+                                                                            <label id="ActiveEmailDistributionLabel @jobTitle.Id"
+                                                                                   for="ActiveEmailDistributionId @jobTitle.Id">
+                                                                                @jobTitle.JobName
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <br><br><br><br><br><br>
+                            <div class="row">
+                                <div class="col-md-6" style="border: 3px solid black; height:180px;overflow-y:auto">
+                                    <div class="form-group">
+                                        <label style="font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">SEARCH EMPLOYEE JOB TITLE</label>
+                                        <SfComboBox ID="SearchEmployee" TItem="string" TValue="string"
+                                                    DataSource="@SearchByEmployeesList" Autofill="true" AllowFiltering="true"
+                                                    FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                            <ComboBoxEvents TItem="string" TValue="string"
+                                                            ValueChange="(e => SearchEmployeeJobTitle(e))"></ComboBoxEvents>
+                                        </SfComboBox>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;"
+                                               class="col-form-label">
+                                            JOB TITLE
+                                        </label>
+                                        <div style="padding-bottom: 10px;">
+                                            <SfComboBox ID="JobSearched" TItem="string" TValue="string"
+                                                        DataSource="@SearchByJobList" AllowFiltering="true"
+                                                        Autofill="true" @bind-Value="SelectedJobTilteFromSearchedEmployee"
+                                                        FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+                                                <ComboBoxEvents TItem="string" TValue="string"></ComboBoxEvents>
+                                            </SfComboBox>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <SfCheckBox @bind-Checked="SelectedTaskViewModel.IsProtected">
+                                    </SfCheckBox>
+                                    <label style="float: left; font-weight: bold; padding-bottom: 0px;">
+                                        PASSWORD PROTECTED
+                                    </label>
+
+
+                                    @if (SelectedTaskViewModel.IsProtected.HasValue
+                                   && SelectedTaskViewModel.IsProtected.Value)
+                                    {
+                                        <table class="table table-bordered"
+                                               style="width:100%; line-height:0.8;">
+                                            <thead>
+                                                <tr>
+                                                    <td style="text-align: left; width: 100%; font-weight: bold; font-size:15px">
+                                                        <div class="m-1">
+                                                            PEOPLE ALLOWED TO ACCESS THIS TASK:
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody style="overflow-y: scroll; height: 200px; display: block; padding-left: 5px " class="row col-md-6 m-auto my-2">
+                                                @foreach (var item in AuthorizationList)
+                                                {
+                                                    <tr class="table-bordered">
+                                                        <td style="text-align: left; width: 265px; margin-bottom: 2px; padding-bottom: 0px; padding-top: 4px; font-size: 12px;">
+                                                            @{
+                                                                if (item.IsSelected)
+                                                                {
+                                                                    <input id="NewCheck1" name="NewChk1" type="checkbox" @onchange="(e => MarkCompleteCheck(e, item))" checked />
+                                                                    <label for="NewCheck1">@item.FullName</label>
+                                                                }
+
+                                                                else
+                                                                {
+                                                                    <input id="NewCheck2" type="checkbox" @onchange="(e => MarkCompleteCheck(e, item))" />
+                                                                    <label id="NewCheck2" for="NewChk2">@item.FullName</label>
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+
+
+                                    <div id="HowToUploadFilesDiv" class="form-group m-1"
+                                         style="text-align: left">
+                                        <label>FILE FOR HOW TO:</label>
+                                        <div class="row">
+                                            <div>
+                                                <SfUploader AllowMultiple="false" ID="HowToUploadFilesId" AutoUpload="true"
+                                                            AllowedExtensions="@fileManagerService.RecurringTaskHowtoFileExtention"
+                                                            @ref="HowToUploadRef" Multiple="false">
+                                                    <UploaderEvents BeforeUpload="BeforeUploadImage"
+                                                                    ValueChange="SelectHowToFile"
+                                                                    BeforeRemove="RemoveHowToFile" />
+                                                </SfUploader>
+                                            </div>
+
+                                            @if (HowToFileUpload != null)
+                                            {
+                                                <div>
+                                                    <div class="m-1" id="UploadFiles">
+                                                        <FileViewComponent File="@HowToFileUpload"
+                                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponentForHowToFile" />
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;">
+                                            EXPECTED MINUTES TO DO TASK:
+                                        </label>
+                                        <SfNumericTextBox ID="ExpectedMinutesId" TValue="int?" @bind-Value="@SelectedTaskViewModel.ExpectMinutes"></SfNumericTextBox>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label style="float: left; font-weight: bold; padding-bottom: 0px;">
+                                            LOCATION:
+                                        </label>
+                                        <SfTextBox ID="TaskLocationId" Multiline="false" HtmlAttributes="@htmlAttributeBig"
+                                                   @bind-Value="SelectedTaskViewModel.Location" />
+                                    </div>
+
+                                    <div class="form-group text-left my-2">
+                                        <button type="button" style="background-color:rgb(184, 60, 186)"
+                                                class="btn text-white" @onclick="ActiveEditHistoryComponent">
+                                            VIEW EDIT HISTORY
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3 form-group mt-3" style="position:relative">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <SfUploader AllowMultiple="true" ID="UploadFilesId"
+                                                AllowedExtensions=".docx,.doc,.pdf, .xlsx, .xls, .csv, .xlsb, .pptx, .docx, .jpg,.png,.gif, .jpeg, .bmp,.svg,  .jfif, .apng, .ico, .graphml"
+                                                AutoUpload="true" Multiple="true" @ref="TaskUploadRef">
+                                        <UploaderEvents BeforeUpload="BeforeUploadImage" ValueChange="SelectTaskImages" BeforeRemove="RemoveTaskPreImage" />
+                                    </SfUploader>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <button id="FileInputButtonId"
+                                            class="btn btn-success mt-2" @onclick='(() => ActivePastPicture("UploadFilesId"))'
+                                            data-toggle="tooltip" data-placement="top" title="CLICK PAST PICTURE BUTTON THEN CTRL + V FOR PAST PICTURE">
+                                        PASTE PICTURE
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label style="font-weight:bold; font-size:13px; margin-bottom:0px;">
+                                        IS GRAPH REQUIRED?
+                                    </label>
+                                    <br />
+                                    @if (SelectedTaskViewModel.IsGraphRequired)
+                                    {
+                                        <div class="row">
+                                            <div class="col-md-6 pr-0 text-right">
+                                                <SfSwitch CssClass="e-large"
+                                                          ValueChange="(() => SetViewModelGraph(SelectedTaskViewModel, false))"
+                                                          TChecked="bool" @bind-Checked="SelectedTaskViewModel.IsGraphRequired"
+                                                          OnLabel="YES" OffLabel="NO"></SfSwitch>
+                                            </div>
+                                            <div class="col-md-6 pl-0 text-left">
+                                                <div class="form-check">
+                                                    <button class="btn btn-primary btn-sm" data-original-title="Edit"
+                                                            @onclick="(() => EditGraph(SelectedTaskViewModel))"
+                                                            type="button">
+                                                        EDIT GRAPH
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" class="btn-sm" data-placement="top"
+                                           style="margin-right: 5px;" data-original-title="Edit">
+                                            <SfSwitch CssClass="e-large"
+                                                      ValueChange="(() => SetViewModelGraph(SelectedTaskViewModel, true))"
+                                                      TChecked="bool" @bind-Checked="SelectedTaskViewModel.IsGraphRequired"
+                                                      OnLabel="YES" OffLabel="NO"></SfSwitch>
+                                        </a>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight: bold; font-size: 13px; margin-bottom: 0px;">
+                                        IS PASS/FAIL REQUIRED?
+                                    </label>
+                                    <br />
+
+                                    @if (SelectedTaskViewModel.IsPassOrFail == true)
+                                    {
+                                        <a href="javascript:void(0);" style="margin-right: 5px;">
+                                            <SfSwitch CssClass="e-large" TChecked="bool?" OnLabel="YES" OffLabel="NO" @bind-Checked="SelectedTaskViewModel.IsPassOrFail"></SfSwitch>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" style="margin-right: 5px;" data-original-title="Edit">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" OnLabel="YES" OffLabel="NO" @bind-Checked="SelectedTaskViewModel.IsPassOrFail"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight:bold; font-size:13px; margin-bottom:0px;">
+                                        IS PIC REQUIRED?
+                                    </label><br />
+
+                                    @if (SelectedTaskViewModel.IsPicRequired == true)
+                                    {
+                                        <a href="javascript:void(0);" class="btn-sm" data-placement="top" style="margin-right: 5px;" data-original-title="Edit">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" ValueChange="(() => SetImageViewModel(SelectedTaskViewModel, false))" @bind-Checked="SelectedTaskViewModel.IsPicRequired" OnLabel="YES" OffLabel="NO"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" class="btn-sm" data-placement="top" style="margin-right: 5px;" data-original-title="Edit">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" ValueChange="(() => SetImageViewModel(SelectedTaskViewModel, true))" @bind-Checked="SelectedTaskViewModel.IsPicRequired" OnLabel="YES" OffLabel="NO"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight:bold; font-size:13px; margin-bottom:0px;">
+                                        DOES A QUESTION NEED TO BE ANSWERED?
+                                    </label><br />
+                                    @if (SelectedTaskViewModel.IsQuestionRequired == true)
+                                    {
+                                        <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" ValueChange="(() => SetQuestionViewModel(SelectedTaskViewModel, false))" @bind-Checked="SelectedTaskViewModel.IsQuestionRequired" OnLabel="YES" OffLabel="NO"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" class="btn-sm" data-placement="top" style="margin-right: 5px;" data-original-title="Edit">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" ValueChange="(() => SetQuestionViewModel(SelectedTaskViewModel, true))" @bind-Checked="SelectedTaskViewModel.IsQuestionRequired" OnLabel="YES" OffLabel="NO"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight:bold; font-size:13px; margin-bottom:0px;">
+                                        IS DESCRIPTION MANDATORY?
+                                    </label><br />
+                                    <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" @bind-Checked="SelectedTaskViewModel.IsDescriptionMandatory" OnLabel="YES" OffLabel="NO"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight: bold; font-size: 13px; margin-bottom: 0px;">
+                                        HAND DELIVERED DOCUMENT REQUIRED
+                                    </label><br />
+                                    @if (SelectedTaskViewModel.IsHandDeliveredRequired == true)
+                                    {
+                                        <a href="javascript:void(0);" style="margin-right: 5px;">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" OnLabel="YES" @bind-Checked="SelectedTaskViewModel.IsHandDeliveredRequired" OffLabel="NO" ValueChange="(() => SetViewModelHandDeliverDocument(SelectedTaskViewModel, false))"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" style="margin-right: 5px;">
+                                            <Syncfusion.Blazor.Buttons.SfSwitch CssClass="e-large" TChecked="bool?" OnLabel="YES" @bind-Checked="SelectedTaskViewModel.IsHandDeliveredRequired" OffLabel="NO" ValueChange="(() => SetViewModelHandDeliverDocument(SelectedTaskViewModel, true))"></Syncfusion.Blazor.Buttons.SfSwitch>
+                                        </a>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="font-weight: bold; font-size: 13px; margin-bottom: 0px;">
+                                        IS A DOCUMENT REQUIRED TO BE UPDATED?
+                                    </label><br />
+                                </div>
+                                @if (SelectedTaskViewModel.IsDocumentRequired == true)
+                                {
+                                    <a href="javascript:void(0);" style="margin-right: 5px;">
+                                        <SfSwitch CssClass="e-large" TChecked="bool" OnLabel="YES" OffLabel="NO" @bind-Checked="SelectedTaskViewModel.IsDocumentRequired" ValueChange="(() => SetDocumentRequiredToUpdated(SelectedTaskViewModel, false))"></SfSwitch>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="javascript:void(0);" style="margin-right: 5px;" data-original-title="Edit">
+                                        <SfSwitch CssClass="e-large" TChecked="bool" OnLabel="YES" OffLabel="NO" @bind-Checked="SelectedTaskViewModel.IsDocumentRequired" ValueChange="(() => SetDocumentRequiredToUpdated(SelectedTaskViewModel, true))"></SfSwitch>
+                                    </a>
+                                }
+                            </div>
+
+                            
+                                <div class="modal fade" id="documentRequiredUpdate" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-keyboard="false"
+                                     aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.80);">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                                        <div class="modal-content" style="text-align:center">
+                                            <div class="modal-body">
+                                                <h4>A PDF template will be required to be uploaded every-time that an</h4>
+                                                <h4>update is submitted. This pdf should have a CX form number</h4>
+                                                <br/><br/>
+                                                <div style="text-align:left">
+                                                    <h5>CX FORM/PDF</h5>
+                                                </div>
+                                                <div>
+                                                    <SfUploader AllowMultiple="false" ID="DocumentRequiredId"
+                                                                AllowedExtensions=".docx,.doc,.pdf, .xlsx, .xls, .csv, .xlsb, .pptx, .docx, .jpg,.png,.gif, .jpeg, .bmp,.svg,  .jfif, .apng, .ico, .graphml"
+                                                                AutoUpload="true" Multiple="true" @ref="TaskUploadRef">
+                                                        <UploaderEvents BeforeUpload="BeforeUploadImage" ValueChange="SelectRequiredDocument" BeforeRemove="RemoveRequiredDocument" />
+                                                    </SfUploader>
+                                                </div>
+                                                <br/>
+                                            <div style="text-align:left">
+                                                <h5>Give a brief description of the PDF document</h5>
+                                                <SfTextBox ID="UpdatedDescription" CssClass="BackgroundCustom" Multiline="true"
+                                                           HtmlAttributes="@htmlAttributeForDocumentRequired" @bind-Value="SelectedTaskViewModel.UpdatedDocumentDescription" />
+                                            </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-danger" @onclick="CloseDocumentRequired">
+                                                    CANCEL
+                                                </button>
+                                                <button type="button" class="btn btn-success" @onclick="CheckMandatoryFields">
+                                                    SUBMIT
+                                                </button>
+
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                                            {
+                                                <div class="row">
+                                                    <div class="col-md-12 text-danger m-2 text-center">
+                                                        <h4>* @ErrorMessage</h4>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            
+
+                            @if (TaskUploadFiles.Any() || SelectedTaskFiles.Any())
+                            {
+                                <div>
+                                    <div class="m-1" id="UploadFiles">
+                                        @if (TaskUploadFiles.Any())
+                                        {
+                                            <lebal>Upload Images and Files</lebal>
+                                            <div class="m-1">
+                                                @foreach (var item in TaskUploadFiles)
+                                                {
+                                                    <div class="col-md-12">
+                                                        <FileViewComponent File="@item"
+                                                                           DeleteFileComponentEventCallbackForUploadFile="@DeleteSuccessFromDeleteFileComponent" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="m-1" id="SaveFiles">
+                                        @if (SelectedTaskFiles.Any())
+                                        {
+                                            <lebal>Save Images and Files</lebal>
+                                            <div class="m-1">
+                                                @foreach (var item in SelectedTaskFiles)
+                                                {
+                                                    <div class="col-md-12">
+                                                        <FileViewComponent File="@item"
+                                                                           UploadFileNoteComponentEventCallback="@StartModifyingImageNote"
+                                                                           DeleteFileComponentEventCallback="@DeleteSuccessFromDeleteFileComponent" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(RecTaskErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @RecTaskErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+                <div class="modal-footer">
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="DeclineOrInquiryNote" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true"
+     style="background-color: rgba(0, 0, 0, 0.80);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">@(IsInquiryNote ? "INQUIRY:" : "NOTE:")</h4>
+                <a href="javascript:void(0);" type="button" class="close">
+                    <img src="/Icons/Finalized/Close Button/Power User/Png Files/close.png" class="icon" @onclick="CloseComponent" />
+                </a>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <SfTextBox CssClass="BackgroundCustom" Multiline="true" ID="Notes"
+                                       HtmlAttributes="@htmlAttribute"
+                                       @bind-Value="DeclinedNote">
+                            </SfTextBox>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mt-2 text-center">
+                    <button type="submit" @onclick="(async () => await SendEmailInquiryOrNote())" class="btn btn-success w-30 p-1" style="font-size:20px;">SEND</button>
+                </div>
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-md-12 text-danger m-2 text-center">
+                            <h4>* @ErrorMessage</h4>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--graph component-->
+@if (IsActiveGraphComponent)
+{
+    <EditGraphComponent TaskForGraph="@SelectedTaskForGraph" ErrorMessage="@RecTaskErrorMessage"
+                        SuccessMessageGraphComponent="@SuccessCallbackFromGraphComponent" />
+}
+<!--Hand Deliver Names-->
+@if (IsActiveFailedEmailComponent)
+{
+    <FailedEmailComponent FailedemployeeEmails="@HandDeliverRequiredToNames" ErrorMessage="@RecTaskErrorMessage" IsHandDeliveredDocument="@IsDocumentHandDeliveryEnabled"
+                          SuccessMessageFaildEmailComponent="@SuccessMessageFromFaildEmailComponent" />
+}
+<!--sample iamge component-->
+@if (IsActiveSampleImageComponent)
+{
+    <SampleImageComponent TaskForSampleImage="@SelectedTaskForSampleImage" ErrorMessage="@RecTaskErrorMessage"
+                          SuccessMessageSampleImageComponent="@SuccessMessageFromSampleImageComponent" />
+}
+
+<!--question component-->
+@if (IsActiveQuestionComponent)
+{
+    <QuestionComponent TaskForQuestion="@SelectedTaskForQuestion" ErrorMessage="@RecTaskErrorMessage"
+                       SuccessMessageQutionComponent="@successMessageFromQuestionComponent" />
+}
+
+<!--edit history component-->
+@if (IsEditHistoryComponent)
+{
+    <EditHistoryComponent RecordType="CAMCO TASKS" RecordId="@RecTaskForEditHistory.Id"
+                          CloseEditHistoryComponent="@DeActiveEditHistoryComponent" />
+}
+

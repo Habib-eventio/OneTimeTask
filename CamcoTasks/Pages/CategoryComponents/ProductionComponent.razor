@@ -1,0 +1,528 @@
+﻿@* @inherits ProductionComponentModel
+@using CamcoTasks.Data.Services
+@using CamcoTasks.ViewModels.PlanningOverheadDTO;
+
+
+<div class="col-12 navbar navbar-expand screenLabel position-fixed top-row m-0 p-0 screenLabelStyle" >
+    <div class="col-12 m-0 p-0" style="font-size: 18px; text-align: left;"><span style="float: left">Ma / Me / Pr</span></div>
+</div>
+
+<div class="m-4 pl-2">
+    <div class="row standardBorder">
+        <div class="col-md-12 m-0 p-1">
+            <div class="text-center standardHeaderStyle">
+                <label class="m-0 p-0 mt-1">SHOP OUTPUT</label>
+            </div>
+
+            @if (IsLoadingShopOutPut)
+            {
+                <br />
+                <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">LOADING...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div>
+                    <SfGrid DataSource="@shopDailyOutputs" AllowTextWrap="true" AllowSorting="true" Height="300" EnableVirtualization="true" RowHeight="10">
+                        <GridSortSettings>
+                            <GridSortColumns>
+                                <GridSortColumn Field="Date" Direction="SortDirection.Descending"></GridSortColumn>
+                            </GridSortColumns>
+                        </GridSortSettings>
+                        <GridColumns>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                        Field=@nameof(TempShopDailyOutput.Date) Width="100" MaxWidth="100"
+                                        HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="100" MaxWidth="100"
+                                        Field=@nameof(TempShopDailyOutput.Total) HeaderText="DAILY OUTPUT" Format="C0"></GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="100" MaxWidth="100"
+                                        Field=@nameof(TempShopDailyOutput.Expenses) HeaderText="DAILY EXPENSES" Format="C0"></GridColumn>
+                            <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Width="100" MaxWidth="100"
+                                        Field=@nameof(TempShopDailyOutput.PL) HeaderText="PROFIT/LOSS" Format="C0"></GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+
+                </div>
+
+            }
+        </div>
+    </div>
+    <div class="pt-2">
+        <div class="row standardBorder">
+            <div class="col-md-12 m-0 p-1">
+                <div class="row col-12 m-0 p-0 standardHeaderStyle">
+                    <div class="col-md-3"> </div>
+                    <div class="col-md-6 m-0 p-0 text-center">
+                        <label class="mt-1 m-0 p-0">
+                            OVERHEAD
+                        </label>
+                    </div>
+
+                    @if (!IsLoadingOH)
+                    {
+                        <div class="col-md-3 p-1" style="text-align:right">
+                            <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                               role="button" data-placement="top" title="" data-original-title="Edit"
+                               data-toggle="modal" data-target="#OverHeadModal"
+                            @onclick="@RefreshDataModalOverHead">VIEW/EDIT OVERHEAD DATA</a>
+                        </div>
+                    }
+                </div>
+
+                @if (IsLoadingOH)
+                {
+                    <br />
+                    <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">LOADING...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+
+                    <SfChart UseGroupingSeparator="true">
+                        <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                        <ChartPrimaryXAxis Interval="1" LabelIntersectAction="LabelIntersectAction.Rotate45" RangePadding="ChartRangePadding.None"
+                                           IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                        </ChartPrimaryXAxis>
+
+                        <ChartAxes>
+                            <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows"
+                                       OpposedPosition="true" RowIndex="1" Name="YRightAxis">
+                                <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                            </ChartAxis>
+                            <ChartAxis LabelFormat="C0" LabelIntersectAction="LabelIntersectAction.MultipleRows"
+                                       RowIndex="1" Name="YleftAxis">
+                                <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                            </ChartAxis>
+                        </ChartAxes>
+
+                        <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                        <ChartSeriesCollection>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="OVERHEAD PER HOUR" DataSource="@CustomOverheadData"
+                                         YAxisName="YleftAxis" XName="DateReported" YName="OverheadPerHour" Width="2"
+                                         Type="ChartSeriesType.Line">
+                                <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                            </ChartSeries>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="TOTAL DIRECT HOURS" DataSource="@CustomOverheadData"
+                                         XName="DateReported" YAxisName="YRightAxis" YName="TotalDirectHours" Width="2"
+                                         Type="ChartSeriesType.Line">
+                                <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartLegendSettings ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="15">
+                            <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                        </ChartLegendSettings>
+                    </SfChart>
+
+                }
+            </div>
+
+            <div class="modal fade" id="OverHeadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header text-center align-content-center row m-0 p-1">
+                            <div class="col-2  m-0 p-0">
+                            </div>
+                            <div class="text-center col-8 m-0 p-0 align-content-center">
+                                <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">OVERHEAD DATA</p>
+                            </div>
+                            <div class="text-right col-2 m-0 p-0">
+                                <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container">
+                                <SfGrid @ref="OverHeadGridRef" DataSource="@OverheadData" AllowTextWrap="true" AllowSorting="true"
+                                        Height="400" RowHeight="10" Toolbar="@gridToolBar">
+                                    <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+                                    <GridEvents OnActionBegin="ActionBeginOverHead" TValue="PlanningOverheadViewModel"></GridEvents>
+                                    <GridEditSettings AllowAdding="true"
+                                                      AllowEditing="true"
+                                                      AllowEditOnDblClick="true"
+                                                      AllowDeleting="true"></GridEditSettings>
+                                    <GridSortSettings>
+                                    </GridSortSettings>
+                                    <GridColumns>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                    Field=@nameof(PlanningOverheadViewModel.OverheadId) Visible="false" HeaderText="ID"
+                                                    IsPrimaryKey="true"></GridColumn>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                    Field=@nameof(PlanningOverheadViewModel.OverheadDate) HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                    Field=@nameof(PlanningOverheadViewModel.OverheadPerHour) HeaderText="OVERHEAD $/HR"
+                                                    EnableGroupByFormat="true" Format="C0"></GridColumn>
+                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                    Field=@nameof(PlanningOverheadViewModel.TotalDirectHours) HeaderText="TOTAL DIRECT HRS"></GridColumn>
+                                    </GridColumns>
+                                </SfGrid>>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="pt-2">
+        <div class="row">
+            <div class="col-12 row m-0 p-0">
+                <div class="col-md-6 m-0 p-0 standardBorder">
+                    <div class="row col-12 m-0 p-1">
+                        <div class="row col-12 m-0 p-0 standardHeaderStyle">
+                            <div class="col-md-6 m-0 p-0 text-left">
+                                <label class="m-0 p-0 mt-1 ml-1">
+                                    SHOP OUTPUT TOTAL
+                                </label>
+                            </div>
+
+                            @if (!IsLoadingMetricsHistory)
+                            {
+                                <div class="col-md-6 p-1" style="text-align:right">
+                                    <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                                       role="button" data-placement="top" title="" data-original-title="Edit"
+                                       data-toggle="modal" data-target="#ShopOutPutModal" @onclick="ShopOutPutRefreshDataModal">VIEW SHOP OUTPUT TOTAL</a>
+                                </div>
+                            }
+                        </div>
+
+                        @if (IsLoadingMetricsHistory)
+                        {
+                            <br />
+                            <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                                <div class="spinner-border" role="status">
+                                    <span class="sr-only">LOADING...</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <SfChart Background="White" UseGroupingSeparator="true" Height="500">
+                                <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+
+                                <ChartPrimaryXAxis Interval="1" Span="2" LabelIntersectAction="LabelIntersectAction.Rotate45"
+                                                   RangePadding="ChartRangePadding.Additional" IntervalType="IntervalType.Days"
+                                                   ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                                    <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                                </ChartPrimaryXAxis>
+                                <ChartCrosshairSettings Enable="false"></ChartCrosshairSettings>
+
+                                <ChartColumns>
+                                    <ChartColumn Width="50%">
+                                    </ChartColumn>
+                                    <ChartColumn Width="50%">
+                                    </ChartColumn>
+                                </ChartColumns>
+
+                                <ChartAxes>
+                                    <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" OpposedPosition="true"
+                                               LabelFormat="C0" RowIndex="1" Name="YRightAxis">
+                                        <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                                    </ChartAxis>
+                                    <ChartAxis LabelFormat="C0" LabelIntersectAction="LabelIntersectAction.MultipleRows" RowIndex="1" Name="YleftAxis">
+                                        <ChartAxisLabelStyle Size="15px" Color="black" FontWeight="Bold" />
+                                    </ChartAxis>
+                                </ChartAxes>
+                                <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                                <ChartSeriesCollection>
+                                    <ChartSeries LegendShape="LegendShape.Rectangle" Name="SHOP OUTPUT TOTAL"
+                                                 DataSource="@SHOPOutPutMetricsHistories"
+                                                 XName="Date" YName="ShopOutputTotal" YAxisName="YleftAxis" Type="ChartSeriesType.Line" Width="2">
+                                        <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                                    </ChartSeries>
+
+                                    <ChartSeries LegendShape="LegendShape.Rectangle" Name="SHOP OUTPUT EXPENSES"
+                                                 DataSource="@SHOPOutPutMetricsHistories" XName="Date" YName="ShopOutputExpenses"
+                                                 YAxisName="YRightAxis" Type="ChartSeriesType.Line" Width="2">
+                                        <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                                    </ChartSeries>
+                                    <ChartLegendSettings ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="10">  <ChartLegendTextStyle Size="18px" FontWeight="Bold" /></ChartLegendSettings>
+                                </ChartSeriesCollection>
+                            </SfChart>
+
+                            <div class="modal fade" id="ShopOutPutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header text-center align-content-center row m-0 p-1">
+                                            <div class="col-2  m-0 p-0">
+                                            </div>
+                                            <div class="text-center col-8 m-0 p-0 align-content-center">
+                                                <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">SHOP OUTPUT DATA</p>
+                                            </div>
+                                            <div class="text-right col-2 m-0 p-0">
+                                                <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="container">
+                                                <SfGrid @ref="ShopOutPutGrid" DataSource="@ModalSHOPOutPutMetricsHistories" AllowTextWrap="true" AllowSorting="true"
+                                                        Height="400" RowHeight="10">
+                                                    <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row">
+                                                    </GridSelectionSettings>
+                                                    <GridEditSettings AllowAdding="false"
+                                                                      AllowEditing="false"
+                                                                      AllowEditOnDblClick="false"
+                                                                      AllowDeleting="false"></GridEditSettings>
+                                                    <GridColumns>
+                                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                                    Field=@nameof(MetricsHistoryCustomData.ActualDate)
+                                                                    HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+
+                                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                                    Field=@nameof(MetricsHistoryCustomData.ShopOutputTotal)
+                                                                    EnableGroupByFormat="true" Format="C0"
+                                                                    HeaderText="SHOP OUTPUT TOTAL"></GridColumn>
+
+                                                        <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center"
+                                                                    Field=@nameof(MetricsHistoryCustomData.ShopOutputExpenses)
+                                                                    EnableGroupByFormat="true" Format="C0"
+                                                                    HeaderText="SHOP OUTPUT EXPENSES">
+                                                        </GridColumn>
+                                                    </GridColumns>
+                                                </SfGrid>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6 m-0 p-1 standardBorder border-left row">
+                    <div class="col-12 m-0 p-0 standardHeaderStyle row">
+                        <div class="col-md-8 m-0 p-0 text-left">
+                            <label class="m-0 p-0 mt-1 ml-1">
+                                INVENTORY AND PKGINVENTORY TOTAL
+                            </label>
+                        </div>
+
+                        @if (!IsLoadingMetricsHistory)
+                        {
+                            <div class="col-md-4 p-1" style="text-align:right">
+                                <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                                   role="button" data-placement="top" title="" data-original-title="Edit"
+                                   data-toggle="modal" data-target="#InventoryModal" @onclick="InventoryRefreshDataModal">VIEW INVENTORY</a>
+                            </div>
+                        }
+
+                    </div>
+
+                    @if (IsLoadingMetricsHistory)
+                    {
+                        <br />
+                        <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">LOADING...</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <SfChart Background="White" UseGroupingSeparator="true" Height="500">
+                            <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                            <ChartPrimaryXAxis Interval="1" Span="2" LabelIntersectAction="LabelIntersectAction.Rotate45"
+                                               RangePadding="ChartRangePadding.Additional" IntervalType="IntervalType.Days"
+                                               ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                                <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                            </ChartPrimaryXAxis>
+                            <ChartCrosshairSettings Enable="false"></ChartCrosshairSettings>
+                            <ChartColumns>
+                                <ChartColumn Width="50%">
+                                </ChartColumn>
+                                <ChartColumn Width="50%">
+                                </ChartColumn>
+                            </ChartColumns>
+                            <ChartAxes>
+                                <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" OpposedPosition="true" RowIndex="1"
+                                           LabelFormat="C0" Name="YRightAxis">
+                                    <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                                    <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                                </ChartAxis>
+                                <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" LabelFormat="C0" RowIndex="1" Name="YleftAxis">
+                                    <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                                </ChartAxis>
+                            </ChartAxes>
+                            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                            <ChartSeriesCollection>
+                                <ChartSeries LegendShape="LegendShape.Rectangle" Name="INVENTORY TOTAL"
+                                             DataSource="@InventoryMetricsHistories"
+                                             XName="Date" YName="InventoryTotal" YAxisName="YleftAxis" Type="ChartSeriesType.Line">
+                                    <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                                </ChartSeries>
+
+                                <ChartSeries LegendShape="LegendShape.Rectangle" Name="PKG INVENTORY EXPENSES"
+                                             DataSource="@InventoryMetricsHistories" XName="Date" YName="PkgInventoryTotal"
+                                             YAxisName="YRightAxis" Type="ChartSeriesType.Line">
+                                    <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                                </ChartSeries>
+                                <ChartLegendSettings ShapeWidth="20" Visible="true" Alignment="Alignment.Center" Padding="10">
+                                    <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                                </ChartLegendSettings>
+                            </ChartSeriesCollection>
+                        </SfChart>
+
+                        <div class="modal fade" id="InventoryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header text-center align-content-center row m-0 p-1">
+                                        <div class="col-2  m-0 p-0">
+                                        </div>
+                                        <div class="text-center col-8 m-0 p-0 align-content-center">
+                                            <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">INVENTRY AND PKGINVENTRY DATA</p>
+                                        </div>
+                                        <div class="text-right col-2 m-0 p-0">
+                                            <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                                        </div>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="container">
+                                            <SfGrid @ref="InventoryGrid" DataSource="@ModalInventoryMetricsHistories" AllowTextWrap="true" AllowSorting="true"
+                                                    Height="400" RowHeight="10">
+                                                <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row">
+                                                </GridSelectionSettings>
+                                                <GridEditSettings AllowAdding="false"
+                                                                  AllowEditing="false"
+                                                                  AllowEditOnDblClick="false"
+                                                                  AllowDeleting="false"></GridEditSettings>
+                                                <GridColumns>
+                                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.ActualDate)
+                                                                HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+
+                                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.InventoryTotal)
+                                                                EnableGroupByFormat="true" Format="C0"
+                                                                HeaderText="INVENTORY TOTAL"></GridColumn>
+
+                                                    <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.PkgInventoryTotal)
+                                                                EnableGroupByFormat="true" Format="C0"
+                                                                HeaderText="PKG INVENTORY TOTAL">
+                                                    </GridColumn>
+
+                                                </GridColumns>
+                                            </SfGrid>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-2">
+        <div class="standardBorder row">
+            <div class="col-md-12 m-0 p-1">
+                <div class="row col-12 m-0 p-0 standardHeaderStyle">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6 m-0 p-0 text-center">
+                        <label class="m-0 p-0 mt-1">
+                            WIP TOTAL
+                        </label>
+                    </div>
+
+                    @if (!IsLoadingMetricsHistory)
+                    {
+                        <div class="col-md-3 p-1" style="text-align:right">
+                            <a href="javascript:void(0);" class="btn viewSkinButtonStyle"
+                               role="button" data-placement="top" title="" data-original-title="Edit"
+                               data-toggle="modal" data-target="#WIPModal" @onclick="WIPRefreshDataModal">VIEW WIP</a>
+                        </div>
+                    }
+
+                </div>
+
+                @if (IsLoadingMetricsHistory)
+                {
+                    <br />
+                    <div class="col-md-12" style="display:flex; justify-content:center; align-items:center;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">LOADING...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <SfChart UseGroupingSeparator="true">
+                        <ChartZoomSettings EnableSelectionZooming="true" Mode="ZoomMode.XY"></ChartZoomSettings>
+                        <ChartPrimaryXAxis Interval="1" LabelIntersectAction="LabelIntersectAction.Rotate45" RangePadding="ChartRangePadding.None"
+                                           IntervalType="IntervalType.Auto" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                            <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            <ChartAxis LabelIntersectAction="LabelIntersectAction.MultipleRows" LabelFormat="C0" RowIndex="1" Name="YleftAxis">
+                                <ChartAxisLabelStyle Size="15px" FontWeight="Bold" />
+                            </ChartAxis>
+                        </ChartAxes>
+
+                        <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+
+                        <ChartSeriesCollection>
+                            <ChartSeries LegendShape="LegendShape.Rectangle" Name="WIP TOTAL" DataSource="@WIPMetricsHistories"
+                                         YAxisName="YleftAxis" XName="Date" YName="WIPTotal" Type="ChartSeriesType.Line">
+                                <ChartTitleStyle Size="18px" FontWeight="Bold" />
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartLegendSettings ShapeWidth="20" Visible="true" Alignment="Alignment.Center">
+                            <ChartLegendTextStyle Size="18px" FontWeight="Bold" />
+                        </ChartLegendSettings>
+                    </SfChart>
+
+                    <div class="modal fade" id="WIPModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header text-center align-content-center row m-0 p-1">
+                                    <div class="col-2  m-0 p-0">
+                                    </div>
+                                    <div class="text-center col-8 m-0 p-0 align-content-center">
+                                        <p class="standardHeaderFontSize  m-0 p-0" id="exampleModalLabel">WIP TOTAL</p>
+                                    </div>
+                                    <div class="text-right col-2 m-0 p-0">
+                                        <img data-dismiss="modal" src="/Icons/Finalized/Close Button/Non-Power User/Png Files/CloS6 80x250.png" style="width:120px;height:40px;cursor:pointer" />
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container">
+                                        <SfGrid @ref="WIPGrid" DataSource="@ModalWIPMetricsHistories" AllowTextWrap="true" AllowSorting="true"
+                                                Height="400" RowHeight="10">
+                                            <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Row">
+                                            </GridSelectionSettings>
+                                            <GridEditSettings AllowAdding="false"
+                                                              AllowEditing="false"
+                                                              AllowEditOnDblClick="false"
+                                                              AllowDeleting="false"></GridEditSettings>
+                                            <GridColumns>
+                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.ActualDate)
+                                                            HeaderText="DATE" Format="MM/dd/yyyy"></GridColumn>
+
+                                                <GridColumn TextAlign="TextAlign.Center" HeaderTextAlign="TextAlign.Center" Field=@nameof(MetricsHistoryCustomData.WIPTotal)
+                                                            EnableGroupByFormat="true" Format="C0"
+                                                            HeaderText="WIP TOTAL"></GridColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<hr /> *@

@@ -1,0 +1,341 @@
+﻿@using Microsoft.Extensions.Logging
+@using CamcoTasks.Library
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Grids
+@using CamcoTasks.ViewModels.Department
+@using Syncfusion.Blazor.Inputs
+@using CamcoTasks.ViewModels.CamcoProjectsDTO
+@using Syncfusion.Blazor.Calendars;
+@using Syncfusion.Blazor.DropDowns;
+@using CamcoTasks.Service.Service;
+@using DocumentFormat.OpenXml.Wordprocessing;
+
+
+<!--Add Edit task modal-->
+<div class="modal fade" id="AddEditTaskModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered mw-100 w-75" role="document" style="overflow-y: auto;">
+		<div class="modal-content" style="height: 70vh;margin-bottom:25rem">
+			@if (IsLoadTask)
+			{
+				<div class="spinner-border m-auto" role="status">
+					<span class="sr-only"></span>
+				</div>
+			}
+			else
+			{
+				<div class="modal-header" style="padding-bottom: 0px;">
+					<h5 class="modal-title" id="exampleModalLabel">@TaskTitle ONE-TIME TASK</h5>
+					<div class="col-md-4 text-right">
+						<a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick="CloseComponent">
+							<img src="/Icons/Finalized/Close Button/Non-Power User/Png Files/Close.png" />
+						</a>
+						@if (IsDoingTask)
+						{
+							<div class="spinner-border text-success ml-3" role="status">
+								<span class="sr-only"></span>
+							</div>
+						}
+						else
+						{
+							 <a href="javascript:void(0);" type="button" data-dismiss="modal" @onclick=" (async ()=>
+								await TryHandlingTask())">
+								<img src="/Icons/Finalized/Save Button/Non-Power User/Png Files/save.png" />
+							</a>
+						}
+					</div>
+				</div>
+				<div class="modal-body">
+					<EditForm Model="@SelectedTaskViewModel">
+						<DataAnnotationsValidator />
+						<ValidationSummary />
+
+						<div style="margin-bottom:20px;text-align:center">
+							<div class="row">
+								<div class="col-md-9">
+									<div class="col-md-12">
+										<label style="float: left; font-weight: bold; margin-bottom: 5px;">Summary (Max 2000 words)</label>
+										<Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustom" HtmlAttributes="@htmlAttributeBig"
+																			Multiline="true" ID="DescriptionIdAddTask" OnChange="CheckSummary"
+																			@bind-Value="SelectedTaskViewModel.Summary" />
+									</div>
+
+									<div class="col-md-12">
+										<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">DESCRIPTION</label><br />
+										<Syncfusion.Blazor.Inputs.SfTextBox CssClass="BackgroundCustom" HtmlAttributes="@htmlAttributeBig"
+																			Multiline="true" ID="DescriptionIdAddTask" OnChange="CheckDescription"
+																			@bind-Value="SelectedTaskViewModel.Description" />
+									</div>
+									<div class="col-md-12 row">
+										<div class="col-sm col-md-6">
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">TASK TYPE</label>
+												<SfComboBox ID="TaskTypeIdAddTask" CssClass="BackgroundCustom" TItem="string" TValue="string"
+															DataSource="@TaskTypesAll" Autofill="true" AllowFiltering="true"
+															@bind-Value="SelectedTaskViewModel.TaskType"
+															FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+													<ComboBoxEvents TValue="string" TItem="string"></ComboBoxEvents>
+												</SfComboBox>
+											</div>
+
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">INITIATOR</label>
+												<SfComboBox CssClass="BackgroundCustom" TItem="string" TValue="string"
+															ID="InitiatorIdAddTask" Autofill="true" AllowFiltering="true" DataSource="@Employees"
+															@bind-Value="SelectedTaskViewModel.Initiator"
+															FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+													<ComboBoxEvents TItem="string" TValue="string" />
+												</SfComboBox>
+											</div>
+
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">PERSON RESPONSIBLE TO DO THE ONE-TIME TASK:</label>
+												<SfComboBox CssClass="BackgroundCustom" TItem="string" TValue="string"
+															ID="PersonResponsibleIdAddTask" Autofill="true" AllowFiltering="true" DataSource="@Employees"
+															@bind-Value="SelectedTaskViewModel.PersonResponsible"
+															FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+													<ComboBoxEvents TItem="string" TValue="string" />
+												</SfComboBox>
+											</div>
+
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important; ">Costing Code</label><br />
+												<SfComboBox CssClass="BackgroundCustom" TItem="int" TValue="int?"
+															Autofill="true" AllowFiltering="true" DataSource="@CostingCodes"
+															@bind-Value="SelectedTaskViewModel.CostingCode"
+															FilterType="Syncfusion.Blazor.DropDowns.FilterType.Contains">
+													<ComboBoxEvents TItem="int" TValue="int?" />
+												</SfComboBox>
+											</div>
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">DATE ADDED</label><br />
+												<Syncfusion.Blazor.Calendars.SfDatePicker ID="DateIdAddTask" CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.DateAdded">
+													<Syncfusion.Blazor.Calendars.DatePickerEvents TValue="DateTime?"></Syncfusion.Blazor.Calendars.DatePickerEvents>
+												</Syncfusion.Blazor.Calendars.SfDatePicker>
+											</div>
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">Last Update</label><br />
+												<Syncfusion.Blazor.Calendars.SfDatePicker ID="DateIdUpdateTask" CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.LastUpdate">
+												</Syncfusion.Blazor.Calendars.SfDatePicker>
+											</div>
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;">Due/Reminder Date</label><br />
+												<Syncfusion.Blazor.Calendars.SfDatePicker ID="TaskDueDateTask" CssClass="BackgroundCustom" @bind-Value="SelectedTaskViewModel.DueDate">
+												</Syncfusion.Blazor.Calendars.SfDatePicker>
+											</div>
+										</div>
+										<div class="col-sm col-md-6">
+											<div class="form-group">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important; ">DEPARTMENT</label>
+												<SfDropDownList TItem="string" TValue="string"
+																DataSource="@Departments" @bind-Value="SelectedTaskViewModel.Department">
+												</SfDropDownList>
+											</div>
+
+											<div class="camco-frm-grp">
+												<label style="float: left; font-weight: bold; margin-bottom: 0px !important;"> Status </label>
+
+                                                                               <SfComboBox TValue="int?" TItem="CamcoTasks.Infrastructure.ViewModel.Shared.ComboBoxModel<int>"
+                                                                               DataSource="@StatusTypes" PopupHeight="400px" @bind-Value="@SelectedTaskViewModel.TaskStatusId"
+                                                                               Autofill="true" AllowCustom="false">
+                                                                               <ComboBoxFieldSettings Text="Text" Value="Id"></ComboBoxFieldSettings>
+                                                                               <ComboBoxEvents TValue="int?" TItem="CamcoTasks.Infrastructure.ViewModel.Shared.ComboBoxModel<int>"></ComboBoxEvents>
+                                                                               </SfComboBox>
+											</div>
+											<div>
+												<table class="table table-bordered" style="width:100%; line-height:0.8;">
+													<thead>
+														<tr><td style="text-align: left; font-weight: bold; font-size:15px">EMAIL DISTRIBUTION LIST UPON TASK COMPLETION</td></tr>
+													</thead>
+													<tbody style="overflow-y: scroll; max-height: 230px; display: block; padding-left: 150px ">
+														@foreach (var item in EmployeeEmailsList)
+														{
+															<tr>
+																<td style="text-align: left; margin-bottom: 2px; padding-bottom: 0px; padding-top: 0px; font-size: 12px;">
+																	@{
+																		if (item.IsSelected)
+																		{
+																			<input id="NewChk1" type="checkbox"
+																				   @onchange="(e => MarkCompleteCheck(e, item))" checked />
+																			<label for="NewChk1">@item.FullName</label>
+																		}
+																		else
+																		{
+																			<input id="NewChk2" type="checkbox"
+																				   @onchange="(e => MarkCompleteCheck(e, item))" />
+																			<label for="NewChk2">@item.FullName</label>
+																		}
+																	}
+																</td>
+															</tr>
+														}
+													</tbody>
+												</table>
+											</div>
+											<div class="">
+												<a href="javascript:void(0);" class="btn btn-success btn-block btn-sm btn-round"
+												   role="button" data-placement="top" title="" data-original-title="Add"
+												   @onclick="AddTaskTypeInEdite">
+													ADD NEW TASK TYPE
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-3 form-group mt-3" style="position:relative;">
+									<Syncfusion.Blazor.Inputs.SfUploader AllowMultiple="true" AllowedExtensions=".pdf,.txt,.pptx,.zip,.rar,.pdf,.pptx,.docx,.doc,.xlsx,.xlsb,.csv,.jpg,.png,.gif,.jpeg,.bmp,.svg,.jfif,.apng,.ico" ID="tasksUploadFiles" AutoUpload="true" Multiple="true" @ref="TaskUploadRef">
+										<Syncfusion.Blazor.Inputs.UploaderEvents BeforeUpload="BeforeUploadImage"
+																				 ValueChange="SelectTaskImages" BeforeRemove="RemoveTaskPreImage" />
+									</Syncfusion.Blazor.Inputs.SfUploader>
+
+									@if (TaskUploadFiles.Any() || SelectedTaskFiles.Any())
+									{
+										<div style="overflow-y: scroll; max-height: 900px;">
+											<div class="m-1" id="UploadFiles">
+												@if (TaskUploadFiles.Any())
+												{
+													<lebal>Upload Images and Files</lebal>
+													<div class="m-1">
+														@foreach (var item in TaskUploadFiles)
+														{
+															<div class="col-md-12" style="margin-bottom:10px;">
+																<div class="card text-center cardhover">
+																	<div class="card-body" style="padding:0 !important">
+																		<div class="form-group" style="margin-bottom:5px;">
+																			@if (fileManagerService.IsImage(item.FileInfo.Name))
+																			{
+																				<img class="d-block w-100" src="@ConvertImagetoBase64(item)" style="height: 200px;" alt="IMAGE VIEW" @onclick="(() => ViewFiles(ConvertImagetoBase64(item), item.FileInfo.Name))">
+																			}
+																			else
+																			{
+																				<i class="@FileLogo.ReturnFileLogo(item.FileInfo.Name) m-2"></i>
+																				<p class="card-text" style="color:black">@item.FileInfo.Name</p>
+																			}
+
+																		</div>
+																		@if (fileManagerService.IsImage(item.FileInfo.Name))
+																		{
+																			<p class="card-text" style="color:black"> Click To View Image</p>
+																		}
+
+																	</div>
+																	<div class="card-footer" style="background-color:white">
+
+																		<button type="button" class="btn btn-sm btn-danger" @onclick="(() => StartDeleteTaskFile(item.FileInfo.Id))">
+																			DELETE
+																		</button>
+																	</div>
+																</div>
+															</div>
+														}
+													</div>
+												}
+											</div>
+
+											<div class="m-1" id="SaveFiles">
+												@if (SelectedTaskFiles.Any())
+												{
+													<lebal>Save Images and Files</lebal>
+													<div class="m-1">
+														@foreach (var item in SelectedTaskFiles)
+														{
+															<div class="col-md-12" style="margin-bottom:10px">
+																<div class="card text-center cardhover">
+																	<div class="card-body" style="padding:0 !important">
+																		<div class="form-group" style="margin-bottom:5px;">
+																			@if (fileManagerService.IsImage(item.PictureLink))
+																			{
+																				<img class="d-block w-100" src=@ConvertImagetoBase64(item.PictureLink) style="height: 200px;" alt="IMAGE VIEW" @onclick="(() => ViewFiles(item))">
+																			}
+																			else
+																			{
+																				<i class="@FileLogo.ReturnFileLogo(item.PictureLink) m-2"></i>
+																				<p class="card-text" style="color:black">@item.FileName</p>
+																			}
+																		</div>
+																		@if (fileManagerService.IsImage(item.PictureLink))
+																		{
+																			@if (string.IsNullOrEmpty(item.ImageNote))
+																			{
+																				<p class="card-text" style="color:black"> Click To View Image</p>
+																			}
+																			else
+																			{
+																				<p class="card-text" style="color:black"> @item.ImageNote.ToUpper() </p>
+																			}
+																		}
+																	</div>
+																	<div class="card-footer" style="background-color:white">
+																		@if (fileManagerService.IsImage(item.PictureLink))
+																		{
+																			<button type="button" class="btn btn-sm btn-outline-primary m-1" @onclick="(() => StartModifyingImageNote(item))">
+																				Change Note
+																			</button>
+																			<button type="button" class="btn btn-sm btn-outline-primary m-1" @onclick="(() => PrintingImage(ConvertImagetoBase64(item.PictureLink)))">
+																				PRINT IMAGE
+																			</button>
+																		}
+																		else
+																		{
+																			<a class="btn btn-info btn-sm text-white btn-block m-1" style="margin-left:5px;" @onclick="(() => StartDownloadFile(item.PictureLink))" role="button" data-placement="top" title="" data-original-title="Download">
+																				DOWNLOAD FILE
+																			</a>
+																		}
+																		<button type="button" class="btn btn-sm btn-danger m-1" @onclick="(() => StartDeleteTaskFile(item))">
+																			DELETE
+																		</button>
+																	</div>
+																</div>
+															</div>
+														}
+													</div>
+												}
+											</div>
+										</div>
+									}
+								</div>
+							</div>
+						</div>
+					</EditForm>
+				</div>
+				@if (!string.IsNullOrEmpty(OneTimeTaskErrorMessage))
+				{
+					<div class="row">
+						<div class="col-md-12 text-danger m-2 text-center">
+							<h4>* @OneTimeTaskErrorMessage</h4>
+						</div>
+					</div>
+				}
+				<div class="modal-footer">
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+<!--delete file component-->
+@if (IsActiveTasksDeleteFileComponent)
+{
+	<TasksDeleteFileComponent SelectImageModel="@SelectedTMV" FilePath="@FilePath"
+							  DeleteSuccessModal="@DeleteSuccessFromDeleteFileComponent"
+							  DeleteSuccessPath="@DeleteSuccessFromDeleteFileComponent" />
+}
+
+<!--image show component-->
+@if (IsActiveTasksImageShowComponent)
+{
+	<TasksImageViewComponent TaskImagePath="@TaskImage" IsCloseImageViewComponent="@CloseImageViewComponent" />
+}
+
+<!--image note component-->
+@if (IsActiveTasksImageNoteComponent)
+{
+	<TasksImageNoteComponent ImageNoteModel="@SelectedImageNote" ImageNoteComponentSuccessMessage="@ImageNoteComponentCallback" />
+}
+
+<!--type dialog component-->
+@if (IsActiveTypeDialogComponent)
+{
+	<TypeDialogComponent CallbackMessageTypeDialogComponent="@CallbackMessageFromTypeDialogComponent" />
+}
