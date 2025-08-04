@@ -39,7 +39,6 @@
     private bool chartReady = false;
     private bool isClientReady = false;
     private int TotalInProgress { get; set; } = 0;
-    private bool _hasInitialized;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +49,7 @@
 
         _hasInitialized = true;
         TaskStateService.StateChanged += HandleStateChangedAsync;
+        TaskStateService.OnChange += HandleTaskStateChange;
         await LoadChartDataAsync();
     }
 
@@ -130,6 +130,7 @@
     }
 
     private Task HandleStateChangedAsync()
+    private Task HandleTaskStateChange()
     {
         return RefreshChartAsync();
     }
@@ -137,6 +138,18 @@
     public void Dispose()
     {
         TaskStateService.StateChanged -= HandleStateChangedAsync;
+        TaskStateService.OnChange -= HandleTaskStateChange;
+        // Rendering will occur in OnAfterRenderAsync
+    }
+
+    private void HandleTaskStateChange()
+    {
+        _ = InvokeAsync(async () => await RefreshChartAsync());
+    }
+
+    public void Dispose()
+    {
+        TaskStateService.OnChange -= HandleTaskStateChange;
     }
 
     private string GetColorForStatus(StatusType status) => status switch

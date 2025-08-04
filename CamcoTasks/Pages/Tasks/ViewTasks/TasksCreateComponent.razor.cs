@@ -421,6 +421,8 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     }
                     await ReloadParentComponent.InvokeAsync(true);
                     await TaskStateService.NotifyStateChangedAsync();
+                    await TaskStateService.NotifyStateChanged();
+                    TaskStateService.NotifyStateChanged();
 
                 }
             }
@@ -517,6 +519,8 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
                 await ReloadParentComponent.InvokeAsync(true);
                 await TaskStateService.NotifyStateChangedAsync();
+                await TaskStateService.NotifyStateChanged();
+                TaskStateService.NotifyStateChanged();
 
             }
 
