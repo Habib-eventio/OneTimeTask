@@ -8,6 +8,7 @@ using CamcoTasks.Infrastructure.Entities;
 using CamcoTasks.Infrastructure.Entities.Login;
 using CamcoTasks.Service.IService;
 using CamcoTasks.Service.Service;
+using CamcoTasks.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +68,7 @@ builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredToast();
 builder.Services.AddBlazorDownloadFile(ServiceLifetime.Scoped);
 builder.Services.AddScoped<IPrintingService, PrintingService>();
+builder.Services.AddScoped<TaskStateService>();
 
 
 builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");

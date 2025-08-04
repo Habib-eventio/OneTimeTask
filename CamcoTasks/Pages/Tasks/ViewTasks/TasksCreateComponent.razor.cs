@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using static CamcoTasks.Pages.Tasks.ViewOneTimeSubTasks;
 using FileInfo = Syncfusion.Blazor.Inputs.FileInfo;
+using CamcoTasks.Services;
 
 namespace CamcoTasks.Pages.Tasks.ViewTasks
 {
@@ -44,6 +45,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] ICommonDataService ICommonDataService { get; set; }
         [Inject] ICamcoProjectService CamcoProjectService { get; set; }
         [Inject] IUserContextService UserContextService { get; set; }
+        [Inject] private TaskStateService TaskStateService { get; set; }
         [Parameter]
         public TasksTasksViewModel OneTimeTask { get; set; }
         [Parameter]
@@ -418,6 +420,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
                     }
                     await ReloadParentComponent.InvokeAsync(true);
+                    TaskStateService.NotifyStateChanged();
 
                 }
             }
@@ -513,6 +516,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 //await taskLogsService.SaveChangeLogAsync(logEntry);
 
                 await ReloadParentComponent.InvokeAsync(true);
+                TaskStateService.NotifyStateChanged();
 
             }
 
