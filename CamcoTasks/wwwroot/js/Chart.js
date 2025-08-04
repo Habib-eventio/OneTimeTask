@@ -15,12 +15,12 @@
         "Food & Beverage": 'triangle'
     };
 
-    // Ensure correct casing for JS property access
+    // Ensure correct casing for JS property access (camelCase from C# objects)
     const data = (budgetItems || []).map(item => ({
-        value: item.ActualAmount,
-        name: item.CategoryName,
-        color: item.Color, // ✅ Directly assign color for pie slice
-        icon: categoryIcons[item.CategoryName] || 'circle'
+        value: item.actualAmount,
+        name: item.categoryName,
+        itemStyle: { color: item.color }, // ✅ Ensure slice color matches status
+        icon: categoryIcons[item.categoryName] || 'circle'
     }));
     const hasData = data.length > 0;
 
