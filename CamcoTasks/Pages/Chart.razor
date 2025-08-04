@@ -2,8 +2,11 @@
 @using CamcoTasks.Infrastructure.EnumHelper.Enums.Task
 @using System.ComponentModel.DataAnnotations
 @using CamcoTasks.Service.IService
+@using CamcoTasks.Services
 @inject ITasksService TasksService
 @inject IJSRuntime JS
+@inject TaskStateService TaskStateService
+@implements IDisposable
 
 <div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
      style="background: white; outline: 1px #ECEBE9 solid; outline-offset: -1px;">
@@ -43,6 +46,7 @@
     {
         if (_hasInitialized) return;
         _hasInitialized = true;
+        TaskStateService.OnChange += HandleTaskStateChange;
         await LoadChartDataAsync();
     }
 
@@ -121,7 +125,18 @@
     {
         chartRendered = false;
         await LoadChartDataAsync();
+        await InvokeAsync(StateHasChanged);
         // Rendering will occur in OnAfterRenderAsync
+    }
+
+    private void HandleTaskStateChange()
+    {
+        _ = InvokeAsync(async () => await RefreshChartAsync());
+    }
+
+    public void Dispose()
+    {
+        TaskStateService.OnChange -= HandleTaskStateChange;
     }
 
     private string GetColorForStatus(StatusType status) => status switch
