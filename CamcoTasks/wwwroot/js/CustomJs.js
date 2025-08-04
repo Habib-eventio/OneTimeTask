@@ -133,7 +133,7 @@ function StartprintDiv(DivId) {
     mywindow.document.write('<link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css" />');
     mywindow.document.write('<link href="_content/Syncfusion.Blazor/styles/fabric.css" rel="stylesheet" />');
     mywindow.document.write('<link href="_content/Syncfusion.Blazor/styles/bootstrap4.css" rel="stylesheet" />');
-    mywindow.document.write('<link href="_content/Blazored.Toast/blazored-toast.min.css" rel="stylesheet" />');
+    mywindow.document.write('<link href="/_content/Blazored.Toast/blazored-toast.min.css" rel="stylesheet" />');
 
     mywindow.document.write('</head><body >');
     mywindow.document.write('<h1>' + document.title + '</h1>');
