@@ -422,6 +422,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     await ReloadParentComponent.InvokeAsync(true);
                     await TaskStateService.NotifyStateChanged();
                     TaskStateService.NotifyStateChanged();
+                    await TaskStateService.NotifyStateChangedAsync();
 
                 }
             }
@@ -514,11 +515,11 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     ChangeDetails = $"Due: {SelectedTaskViewModel.UpcomingDate:yyyy-MM-dd}"
                 };
                 //Need to add service properly
-                //await taskLogsService.SaveChangeLogAsync(logEntry);
 
                 await ReloadParentComponent.InvokeAsync(true);
                 await TaskStateService.NotifyStateChanged();
                 TaskStateService.NotifyStateChanged();
+                await TaskStateService.NotifyStateChangedAsync();
 
             }
 

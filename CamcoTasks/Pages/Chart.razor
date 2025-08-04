@@ -2,11 +2,8 @@
 @using CamcoTasks.Infrastructure.EnumHelper.Enums.Task
 @using System.ComponentModel.DataAnnotations
 @using CamcoTasks.Service.IService
-@using CamcoTasks.Services
 @inject ITasksService TasksService
 @inject IJSRuntime JS
-@inject TaskStateService TaskStateService
-@implements IDisposable
 
 <div class="inline-flex items-center gap-4 p-4 w-full h-full rounded-[16px] flex-col overflow-visible"
      style="background: white; outline: 1px #ECEBE9 solid; outline-offset: -1px;">
@@ -38,13 +35,14 @@
     private List<ChartItem> ChartData { get; set; } = new();
     private bool chartReady = false;
     private bool isClientReady = false;
+    private bool chartRendered = false;
     private int TotalInProgress { get; set; } = 0;
+    private bool _hasInitialized;
 
     protected override async Task OnInitializedAsync()
     {
         if (_hasInitialized) return;
         _hasInitialized = true;
-        TaskStateService.OnChange += HandleTaskStateChange;
         await LoadChartDataAsync();
     }
 
@@ -53,7 +51,12 @@
         if (firstRender)
         {
             isClientReady = true;
+        }
+
+        if (chartReady && isClientReady && !chartRendered)
+        {
             await RenderChartAsync();
+            chartRendered = true;
         }
     }
 
@@ -116,33 +119,9 @@
 
     private async Task RefreshChartAsync()
     {
+        chartRendered = false;
         await LoadChartDataAsync();
-        await InvokeAsync(StateHasChanged);
-        if (isClientReady)
-        {
-            await RenderChartAsync();
-        }
-    }
-
-    private Task HandleTaskStateChange()
-    {
-        return RefreshChartAsync();
-    }
-
-    public void Dispose()
-    {
-        TaskStateService.OnChange -= HandleTaskStateChange;
         // Rendering will occur in OnAfterRenderAsync
-    }
-
-    private void HandleTaskStateChange()
-    {
-        _ = InvokeAsync(async () => await RefreshChartAsync());
-    }
-
-    public void Dispose()
-    {
-        TaskStateService.OnChange -= HandleTaskStateChange;
     }
 
     private string GetColorForStatus(StatusType status) => status switch

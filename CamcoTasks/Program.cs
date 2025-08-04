@@ -69,7 +69,6 @@ builder.Services.AddBlazoredToast();
 builder.Services.AddBlazorDownloadFile(ServiceLifetime.Scoped);
 builder.Services.AddScoped<IPrintingService, PrintingService>();
 builder.Services.AddSingleton<TaskStateService>();
-builder.Services.AddScoped<TaskStateService>();
 
 
 builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
