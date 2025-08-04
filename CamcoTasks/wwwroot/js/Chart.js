@@ -20,6 +20,7 @@
         value: item.actualAmount,
         name: item.categoryName,
         itemStyle: { color: item.color }, // ✅ Ensure slice color matches status
+        color: item.color, // ✅ Directly assign color for pie slice
         icon: categoryIcons[item.categoryName] || 'circle'
     }));
     const hasData = data.length > 0;
