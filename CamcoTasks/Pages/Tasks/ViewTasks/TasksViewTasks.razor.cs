@@ -1061,12 +1061,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     await TaskGrid.Refresh();
                     _toastService.ShowSuccess("Task status updated successfully.");
                     statusModalDisplay = "none";
-<<<<<<< HEAD
-                    await TaskStateService.NotifyStateChanged();
-                    TaskStateService.NotifyStateChanged();
-=======
                     await TaskStateService.NotifyStateChangedAsync();
->>>>>>> parent of a1e04bf (Merge branch 'main' into lnohn4-codex/fix-chart-data-synchronization)
                 }
                 else
                 {

@@ -5,24 +5,11 @@ namespace CamcoTasks.Services
 {
     public class TaskStateService
     {
-<<<<<<< HEAD
-        public event Func<Task>? OnChange;
-
-        public Task NotifyStateChanged()
-        {
-            return OnChange?.Invoke() ?? Task.CompletedTask;
-        public event Action? OnChange;
-
-        public void NotifyStateChanged()
-        {
-            OnChange?.Invoke();
-=======
         public event Func<Task>? StateChanged;
 
         public Task NotifyStateChangedAsync()
         {
             return StateChanged?.Invoke() ?? Task.CompletedTask;
->>>>>>> parent of a1e04bf (Merge branch 'main' into lnohn4-codex/fix-chart-data-synchronization)
         }
     }
 }
