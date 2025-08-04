@@ -17,12 +17,11 @@
 
     // Ensure correct casing for JS property access
     const data = (budgetItems || []).map(item => ({
-        value: item.actualAmount ?? item.ActualAmount,
-        name: item.categoryName ?? item.CategoryName,
-        itemStyle: { color: item.color ?? item.Color },
-        icon: categoryIcons[item.categoryName ?? item.CategoryName] || 'circle'
+        value: item.ActualAmount,
+        name: item.CategoryName,
+        color: item.Color, // ✅ Directly assign color for pie slice
+        icon: categoryIcons[item.CategoryName] || 'circle'
     }));
-
     const hasData = data.length > 0;
 
     function getCenterText(amount) {

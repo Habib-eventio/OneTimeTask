@@ -38,8 +38,15 @@
         public int Count { get; set; }
     }
 
+    public class ChartItem
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public int ActualAmount { get; set; }
+        public string Color { get; set; } = "#cccccc";
+    }
+
     private List<StatusItemDto> StatusItems { get; set; } = new();
-    private List<object> ChartData { get; set; } = new();
+    private List<ChartItem> ChartData { get; set; } = new();
     private bool chartReady = false;
     private bool isClientReady = false;
     private int TotalInProgress { get; set; } = 0;
@@ -49,7 +56,6 @@
     {
         if (_hasInitialized) return;
         _hasInitialized = true;
-
         await LoadChartDataAsync();
     }
 
@@ -66,17 +72,6 @@
     {
         var tasks = (await TasksService.GetAllTasks()).ToList();
 
-        StatusItems = Enum.GetValues<StatusType>()
-            .Select(status => new StatusItemDto
-            {
-                Status = status,
-                StatusName = GetEnumDisplayName(status),
-                Count = tasks.Count(t =>
-                    (t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default) == status)
-            })
-            .ToList();
-
-        TotalInProgress = StatusItems.First(s => s.Status == StatusType.InProgress).Count;
         StatusItems = tasks
             .GroupBy(t => t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default)
             .Select(g => new StatusItemDto
@@ -89,12 +84,12 @@
 
         TotalInProgress = StatusItems.FirstOrDefault(s => s.Status == StatusType.InProgress)?.Count ?? 0;
 
-        ChartData = StatusItems.Select(item => new Dictionary<string, object>
+        ChartData = StatusItems.Select(item => new ChartItem
         {
-            { "categoryName", item.StatusName },
-            { "actualAmount", item.Count },
-            { "color", GetColorForStatus(item.Status) }
-        }).ToList<object>();
+            CategoryName = item.StatusName,
+            ActualAmount = item.Count,
+            Color = GetColorForStatus(item.Status)
+        }).ToList();
 
         chartReady = true;
     }
@@ -104,7 +99,7 @@
         try
         {
             if (chartReady && isClientReady)
-                await Task.Delay(1000);
+                await Task.Delay(500); // Let DOM stabilize
             await JS.InvokeVoidAsync("renderSpentChart", ChartData, TotalInProgress);
         }
         catch (JSException ex)
@@ -115,6 +110,7 @@
 
     private async Task AddNewTask()
     {
+        // Simulate adding a new "InProgress" task and refreshing the chart
         StatusItems.Add(new StatusItemDto
         {
             Status = StatusType.InProgress,
@@ -140,13 +136,6 @@
         StatusType.TemporaryTabled => "#d2b045",
         StatusType.Done => "#28a745",
         _ => "#206d62"
-        StatusType.InProgress => "#81B29A",
-        StatusType.Pending => "#E07A5F",
-        StatusType.WaitingForReview => "#F2CC8F",
-        StatusType.Tabled => "#6D597A",
-        StatusType.TemporaryTabled => "#B56576",
-        StatusType.Done => "#355070",
-        _ => "#CCCCCC"
     };
 
     private static string GetEnumDisplayName(StatusType status)
