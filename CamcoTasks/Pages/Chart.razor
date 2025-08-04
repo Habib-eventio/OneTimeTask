@@ -38,9 +38,7 @@
     private List<ChartItem> ChartData { get; set; } = new();
     private bool chartReady = false;
     private bool isClientReady = false;
-    private bool chartRendered = false;
     private int TotalInProgress { get; set; } = 0;
-    private bool _hasInitialized;
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,12 +53,7 @@
         if (firstRender)
         {
             isClientReady = true;
-        }
-
-        if (chartReady && isClientReady && !chartRendered)
-        {
             await RenderChartAsync();
-            chartRendered = true;
         }
     }
 
@@ -123,9 +116,22 @@
 
     private async Task RefreshChartAsync()
     {
-        chartRendered = false;
         await LoadChartDataAsync();
         await InvokeAsync(StateHasChanged);
+        if (isClientReady)
+        {
+            await RenderChartAsync();
+        }
+    }
+
+    private Task HandleTaskStateChange()
+    {
+        return RefreshChartAsync();
+    }
+
+    public void Dispose()
+    {
+        TaskStateService.OnChange -= HandleTaskStateChange;
         // Rendering will occur in OnAfterRenderAsync
     }
 
