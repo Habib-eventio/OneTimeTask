@@ -18,7 +18,7 @@
     <link href="CamcoTasks.styles.css" rel="stylesheet" />
 
     <!-- Third-party -->
-    <link href="_content/Blazored.Toast/blazored-toast.min.css" rel="stylesheet" />
+    <link href="/_content/Blazored.Toast/blazored-toast.min.css" rel="stylesheet" />
     <link href="_content/Syncfusion.Blazor.Themes/fabric.css" rel="stylesheet" />
     <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" />
     <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/all.min.css" />
@@ -65,8 +65,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js" integrity="sha512-XSmbX3mhrD2ix5fXPTRQb2FwK22sRMVQTpBP2ac8hX7Dh/605hA2QDegVWiAvZPiXIxOV0CbkmUjGionDpbCmw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/js/Chart.js"></script>
     <script>
-        Blazor.defaultReconnectionHandler._reconnectCallback = function (d) {
-            document.location.reload();
+        if (window.Blazor && Blazor.defaultReconnectionHandler) {
+            Blazor.defaultReconnectionHandler._reconnectCallback = function () {
+                document.location.reload();
+            };
         }
     </script>
 </body>
