@@ -42,6 +42,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (_hasInitialized) return;
+        _hasInitialized = true;
         TaskStateService.OnChange += HandleTaskStateChange;
         await LoadChartDataAsync();
     }
@@ -125,6 +127,17 @@
     private Task HandleTaskStateChange()
     {
         return RefreshChartAsync();
+    }
+
+    public void Dispose()
+    {
+        TaskStateService.OnChange -= HandleTaskStateChange;
+        // Rendering will occur in OnAfterRenderAsync
+    }
+
+    private void HandleTaskStateChange()
+    {
+        _ = InvokeAsync(async () => await RefreshChartAsync());
     }
 
     public void Dispose()

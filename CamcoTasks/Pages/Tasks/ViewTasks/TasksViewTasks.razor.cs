@@ -1062,6 +1062,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     _toastService.ShowSuccess("Task status updated successfully.");
                     statusModalDisplay = "none";
                     await TaskStateService.NotifyStateChanged();
+                    TaskStateService.NotifyStateChanged();
                 }
                 else
                 {

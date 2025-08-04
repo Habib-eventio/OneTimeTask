@@ -10,6 +10,11 @@ namespace CamcoTasks.Services
         public Task NotifyStateChanged()
         {
             return OnChange?.Invoke() ?? Task.CompletedTask;
+        public event Action? OnChange;
+
+        public void NotifyStateChanged()
+        {
+            OnChange?.Invoke();
         }
     }
 }
