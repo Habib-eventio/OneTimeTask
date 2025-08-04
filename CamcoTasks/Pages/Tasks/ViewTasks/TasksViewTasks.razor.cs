@@ -1166,14 +1166,14 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             statusModalDisplay = "none";
         }
 
-        protected void ChangeStatus(int status)
+        protected async Task ChangeStatus(int status)
         {
             try
             {
                 if (CurrentTask != null)
                 {
                     CurrentTask.TaskStatusId = status;
-                    SaveTaskStatusAsync(CurrentTask);
+                    await SaveTaskStatusAsync(CurrentTask);
                 }
 
                 CloseStatusModal();
