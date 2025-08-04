@@ -78,13 +78,16 @@
     {
         var tasks = (await TasksService.GetAllTasks()).ToList();
 
-        StatusItems = tasks
+        var taskGroups = tasks
             .GroupBy(t => t.TaskStatusId.HasValue ? (StatusType)t.TaskStatusId.Value : StatusType.Default)
-            .Select(g => new StatusItemDto
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        StatusItems = Enum.GetValues<StatusType>()
+            .Select(status => new StatusItemDto
             {
-                Status = g.Key,
-                StatusName = GetEnumDisplayName(g.Key),
-                Count = g.Count()
+                Status = status,
+                StatusName = GetEnumDisplayName(status),
+                Count = taskGroups.TryGetValue(status, out var count) ? count : 0
             })
             .ToList();
 
