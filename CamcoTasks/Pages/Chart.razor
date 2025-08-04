@@ -133,19 +133,13 @@
 
     private string GetColorForStatus(StatusType status) => status switch
     {
-        StatusType.InProgress => "#007bff",
-        StatusType.Pending => "#dc3434",
-        StatusType.WaitingForReview => "#7ec2f3",
-        StatusType.Tabled => "#ff1493",
-        StatusType.TemporaryTabled => "#d2b045",
-        StatusType.Done => "#28a745",
-        _ => "#206d62"
         StatusType.InProgress => "#81B29A",
         StatusType.Pending => "#E07A5F",
         StatusType.WaitingForReview => "#F2CC8F",
         StatusType.Tabled => "#6D597A",
         StatusType.TemporaryTabled => "#B56576",
         StatusType.Done => "#355070",
+        StatusType.Default => "#CCCCCC",
         _ => "#CCCCCC"
     };
 
