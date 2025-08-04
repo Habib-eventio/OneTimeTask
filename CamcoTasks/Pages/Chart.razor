@@ -99,10 +99,8 @@
         try
         {
             if (chartReady && isClientReady)
-            {
                 await Task.Delay(500); // Let DOM stabilize
-                await JS.InvokeVoidAsync("renderSpentChart", ChartData, TotalInProgress);
-            }
+            await JS.InvokeVoidAsync("renderSpentChart", ChartData, TotalInProgress);
         }
         catch (JSException ex)
         {
