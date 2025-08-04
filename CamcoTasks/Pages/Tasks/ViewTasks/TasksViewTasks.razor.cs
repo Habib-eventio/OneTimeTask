@@ -26,6 +26,7 @@ using CamcoTasks.Service.Service;
 using System.Threading.Tasks;
 using CamcoTasks.Infrastructure.EnumHelper.Enums.Task;
 using CamcoTasks.Infrastructure.Defaults;
+using CamcoTasks.Services;
 
 
 
@@ -49,6 +50,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] protected IEmployeeService EmployeeService { get; set; }
         [Inject] protected IHttpContextAccessor HttpContextAccessor { get; set; }
         [Inject] protected IUserContextService UserContextService { get; set; }
+        [Inject] private TaskStateService TaskStateService { get; set; }
         public OnetimeTaskBorderModel BorderModel { get; set; } = new OnetimeTaskBorderModel();
         protected SfComboBox<string, EmployeeViewModel> SelectEmployeeDropDown { get; set; }
         protected string StatusDropdownVal { get; set; } = "2";
@@ -1059,6 +1061,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     await TaskGrid.Refresh();
                     _toastService.ShowSuccess("Task status updated successfully.");
                     statusModalDisplay = "none";
+                    TaskStateService.NotifyStateChanged();
                 }
                 else
                 {
