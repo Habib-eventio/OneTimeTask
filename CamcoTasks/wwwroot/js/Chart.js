@@ -15,15 +15,26 @@
         "Food & Beverage": 'triangle'
     };
 
-    // Ensure correct casing for JS property access (camelCase from C# objects)
-    const data = (budgetItems || []).map(item => ({
+    const rawItems = budgetItems || [];
+
+    // 🧠 Create full data with color and icon
+    const data = rawItems.map(item => ({
         value: item.actualAmount,
         name: item.categoryName,
-        itemStyle: { color: item.color }, // ✅ Ensure slice color matches status
-        color: item.color, // ✅ Directly assign color for pie slice
+        itemStyle: { color: item.color },
+        color: item.color,
         icon: categoryIcons[item.categoryName] || 'circle'
     }));
-    const hasData = data.length > 0;
+
+    // ✅ FIXED: Declare hasData
+    const hasData = data.some(item => item.value > 0);
+
+    // 👁 Collect legend info from all items
+    const legendNames = rawItems.map(item => item.categoryName);
+    const legendIcons = rawItems.reduce((acc, item) => {
+        acc[item.categoryName] = categoryIcons[item.categoryName] || 'circle';
+        return acc;
+    }, {});
 
     function getCenterText(amount) {
         return [
@@ -61,7 +72,7 @@
             }
         },
         legend: {
-            show: hasData,
+            show: true,
             orient: 'horizontal',
             left: 'center',
             bottom: 0,
@@ -83,9 +94,9 @@
                 }
             },
             formatter: name => `{text|${name}}`,
-            data: data.map(item => ({
-                name: item.name,
-                icon: item.icon
+            data: legendNames.map(name => ({
+                name: name,
+                icon: legendIcons[name] || 'circle'
             }))
         },
         graphic: {
