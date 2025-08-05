@@ -674,7 +674,7 @@ else
             {
                 <div class="sidebar-modal-overlay" @onmousedown="@CloseSortPopup">
                     <div class="sidebar-modal-sort sort-popup" style="max-width: 90%; width: 39%;" @onmousedown:stopPropagation="true">
-                        <button class="btn btn-black btn-sm mr-2" data-dismiss="modal" data-bs-dismiss="modal" @onclick="CloseSortPopup" style="margin-bottom: 10px;">Save to this View</button>
+                        <button class="btn btn-black btn-sm mr-2" data-bs-dismiss="modal" @onclick="CloseSortPopup" style="margin-bottom: 10px;">Save to this View</button>
 
                         <div class="dynamic-content">
                             @foreach (var column in SortingColumns)
