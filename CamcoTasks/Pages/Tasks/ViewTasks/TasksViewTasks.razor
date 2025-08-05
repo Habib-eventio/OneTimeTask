@@ -192,7 +192,7 @@ else
                                     <Template>
                                         @{ 
                                             <a href="javascript:void(0);" class="custom-filter-button btn btn-light d-flex align-items-center px-3 py-2 m-0 font-weight-bold"
-                                               role="button" data-bs-toggle="modal" data-bs-target="#filterModal" data-placement="top" data-original-title="Filter">
+                                               role="button" data-toggle="modal" data-target="#filterModal" data-bs-toggle="modal" data-bs-target="#filterModal" data-placement="top" data-original-title="Filter">
                                                 <i class="e-icons e-filter mr-2"></i>
                                                 <span class="filter-text">Filter</span>
                                                 <span class="ml-auto"><i class="e-icons e-chevron-down"></i></span>
@@ -615,12 +615,12 @@ else
 
         <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content model-content-filter">
+                <div class="model-content-filter">
                     <div class="modal-header d-flex justify-content-between align-items-center">
                         <h5 class="modal-title" id="filterModalLabel">Advanced Filters</h5>
                         <div class="d-flex">
                             <button class="btn  btn-black btn-link mr-3" @onclick="ClearAllFilters">Clear All</button>
-                            <button type="button" class="btn btn-black btn-sm mr-2" data-bs-dismiss="modal" @onclick="ApplyFilters">Save to this view</button>
+                            <button type="button" class="btn btn-black btn-sm mr-2" data-dismiss="modal" data-bs-dismiss="modal" @onclick="ApplyFilters">Save to this view</button>
                         </div>
                     </div>
                     <div class="modal-body">
@@ -674,7 +674,7 @@ else
             {
                 <div class="sidebar-modal-overlay" @onmousedown="@CloseSortPopup">
                     <div class="sidebar-modal-sort sort-popup" style="max-width: 90%; width: 39%;" @onmousedown:stopPropagation="true">
-                        <button class="btn btn-black btn-sm mr-2" data-bs-dismiss="modal" @onclick="CloseSortPopup" style="margin-bottom: 10px;">Save to this View</button>
+                        <button class="btn btn-black btn-sm mr-2" data-dismiss="modal" data-bs-dismiss="modal" @onclick="CloseSortPopup" style="margin-bottom: 10px;">Save to this View</button>
 
                         <div class="dynamic-content">
                             @foreach (var column in SortingColumns)
@@ -920,7 +920,7 @@ else
                                 <Template>
                                     @{ 
                                         <a href="javascript:void(0);" class="custom-filter-button btn btn-light d-flex align-items-center px-3 py-2 m-0 font-weight-bold"
-                                           role="button" data-bs-toggle="modal" data-bs-target="#filterModal" data-placement="top" data-original-title="Filter">
+                                           role="button" data-toggle="modal" data-target="#filterModal" data-bs-toggle="modal" data-bs-target="#filterModal" data-placement="top" data-original-title="Filter">
                                             <i class="e-icons e-filter mr-2"></i>
                                             <span class="filter-text">Filter</span>
                                             <span class="ml-auto"><i class="e-icons e-chevron-down"></i></span>
