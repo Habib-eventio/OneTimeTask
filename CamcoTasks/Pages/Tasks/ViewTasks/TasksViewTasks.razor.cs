@@ -347,6 +347,23 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 mainTasksModel = tasksByPerson
                     .OrderByDescending(x => x.Id)
                     .ToList();
+            }
+            else
+            {
+                mainTasksModel = new();
+            }
+
+            await AssignLatestUpdates();
+            Tasks = mainTasksModel.Where(a => !a.DateCompleted.HasValue).ToList();
+            TaskTypes = mainTasksModel.Where(a => !a.DateCompleted.HasValue && !string.IsNullOrWhiteSpace(a.TaskType))
+                .Select(a => a.TaskType.ToUpper()).Distinct().OrderBy(a => a).ToList();
+            ResponsiblePerson = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+            Initiator = mainTasksModel.Select(x => x.Initiator).Distinct().OrderBy(a => a).ToList();
+            TaskTypeModelList = (await taskService.GetTaskTypes()).ToList();
+            EmployeeSelect = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+            TaskCount = Tasks.Count;
+            ResetPersonList();
+            StateHasChanged();
                 employeeList = await EmployeeService.GetListAsync(true, false);
                 Employees = employeeList.Where(a => a.FullName != null).ToList();
 
@@ -917,8 +934,20 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             IsDoneReview = true;
         }
 
-        protected async void StartOneTimeTask(TasksTasksViewModel task)
+        protected async Task StartOneTimeTask(TasksTasksViewModel task)
         {
+            IsActiveTasksCreateComponent = true;
+            ForceRenderComponent = true;
+            TasksCreateComponent = task;
+
+            // Ensure the create component is rendered before attempting to
+            // show the modal. Rendering first prevents the JavaScript call
+            // from targeting a missing DOM element when the component is
+            // initially activated.
+            await InvokeAsync(StateHasChanged);
+            await JSRuntime.InvokeAsync<object>("ShowModal", "#AddEditTaskModal");
+
+            IsSelectedTaskModalVisible = false;
             try
             {
                 IsActiveTasksCreateComponent = true;
