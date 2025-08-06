@@ -329,6 +329,9 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     mainTasksModel = tasksByPerson
                         .OrderByDescending(x => x.Id)
                         .ToList();
+                    mainTasksModel = (await taskService.GetTasksByPerson(personName))
+                    mainTasksModel = (await taskService.GetTasksByPerson(currentEmployee.FullName))
+                        .OrderByDescending(x => x.Id).ToList();
                 }
                 else
                 {
