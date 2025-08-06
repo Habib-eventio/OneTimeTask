@@ -12,6 +12,7 @@ using CamcoTasks.Infrastructure.Common.Email;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using OfficeOpenXml;
@@ -316,6 +317,36 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadData()
         {
+            var employeesData = (await EmployeeService.GetListAsync(true, false)).ToList();
+            var loggedInName = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(loggedInName) &&
+                !employeesData.Any(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase)))
+            {
+                employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
+            }
+
+            employeeList = employeesData;
+            Employees = employeesData.Where(a => a.FullName != null).ToList();
+
+            string personName = null;
+            if (UserContextService.CurrentEmployeeId != 0)
+            {
+                var currentEmployee = employeesData.FirstOrDefault(a => a.Id == UserContextService.CurrentEmployeeId);
+                personName = currentEmployee?.FullName?.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(personName))
+            {
+                personName = loggedInName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(personName))
+            {
+                var tasksByPerson = await taskService.GetTasksByPerson(personName);
+                mainTasksModel = tasksByPerson
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
             employeeList = await EmployeeService.GetListAsync(true, false);
             Employees = employeeList.Where(a => a.FullName != null).ToList();
 
@@ -347,10 +378,10 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             Tasks = mainTasksModel.Where(a => !a.DateCompleted.HasValue).ToList();
             TaskTypes = mainTasksModel.Where(a => !a.DateCompleted.HasValue && !string.IsNullOrWhiteSpace(a.TaskType))
                 .Select(a => a.TaskType.ToUpper()).Distinct().OrderBy(a => a).ToList();
-            ResponsiblePerson = employeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            ResponsiblePerson = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
             Initiator = mainTasksModel.Select(x => x.Initiator).Distinct().OrderBy(a => a).ToList();
             TaskTypeModelList = (await taskService.GetTaskTypes()).ToList();
-            EmployeeSelect = employeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            EmployeeSelect = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
             TaskCount = Tasks.Count;
             ResetPersonList();
             StateHasChanged();
