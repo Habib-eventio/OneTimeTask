@@ -267,6 +267,10 @@ namespace CamcoTasks.Service.Service
                                                                                                      && x.ParentTaskId == null
                                                                                                      && x.PersonResponsible != null
                                                                                                      && x.PersonResponsible.ToLower() == normalized));
+
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == null || x.IsDeleted == false)
+                                                                                                      && x.ParentTaskId == null
+                                                                                                      && x.PersonResponsible == personFullName));
                 }
 
                 public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue)
