@@ -364,6 +364,45 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             TaskCount = Tasks.Count;
             ResetPersonList();
             StateHasChanged();
+                employeeList = await EmployeeService.GetListAsync(true, false);
+                Employees = employeeList.Where(a => a.FullName != null).ToList();
+
+                if (UserContextService.CurrentEmployeeId != 0)
+                {
+                    var currentEmployee = employeeList.FirstOrDefault(a => a.Id == UserContextService.CurrentEmployeeId);
+                    if (currentEmployee != null)
+                    {
+                         personName = currentEmployee.FullName?.Trim();
+                         tasksByPerson = await taskService.GetTasksByPerson(personName);
+                        mainTasksModel = tasksByPerson
+                            .OrderByDescending(x => x.Id)
+                            .ToList();
+                        //mainTasksModel = (await taskService.GetTasksByPerson(personName))
+                        mainTasksModel = (await taskService.GetTasksByPerson(currentEmployee.FullName))
+                            .OrderByDescending(x => x.Id).ToList();
+                    }
+                    else
+                    {
+                        mainTasksModel = new();
+                    }
+                }
+                else
+                {
+                    mainTasksModel = new();
+                }
+
+                await AssignLatestUpdates();
+                Tasks = mainTasksModel.Where(a => !a.DateCompleted.HasValue).ToList();
+                TaskTypes = mainTasksModel.Where(a => !a.DateCompleted.HasValue && !string.IsNullOrWhiteSpace(a.TaskType))
+                    .Select(a => a.TaskType.ToUpper()).Distinct().OrderBy(a => a).ToList();
+                ResponsiblePerson = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+                Initiator = mainTasksModel.Select(x => x.Initiator).Distinct().OrderBy(a => a).ToList();
+                TaskTypeModelList = (await taskService.GetTaskTypes()).ToList();
+                EmployeeSelect = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+                TaskCount = Tasks.Count;
+                ResetPersonList();
+                StateHasChanged();
+            }
         }
 
         private async Task AssignLatestUpdates()
@@ -909,7 +948,29 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             await JSRuntime.InvokeAsync<object>("ShowModal", "#AddEditTaskModal");
 
             IsSelectedTaskModalVisible = false;
+            try
+            {
+                IsActiveTasksCreateComponent = true;
+                ForceRenderComponent = true;
+                TasksCreateComponent = task;
+
+                await JSRuntime.InvokeAsync<object>("ShowModal", "#AddEditTaskModal");
+
+                IsSelectedTaskModalVisible = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in StartOneTimeTask: {ex.Message}");
+                _toastService?.ShowError("An error occurred while starting the task. Please try again.");
+
+                IsActiveTasksCreateComponent = false;
+                ForceRenderComponent = false;
+            }
         }
+
+
+
 
         protected void SelectTaskByType(TasksTasksViewModel SelectedTask)
         {
