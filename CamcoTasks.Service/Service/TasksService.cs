@@ -256,6 +256,18 @@ namespace CamcoTasks.Service.Service
 
                 public async Task<IEnumerable<TasksTasksViewModel>> GetTasksByPerson(string personFullName)
                 {
+                        if (string.IsNullOrWhiteSpace(personFullName))
+                        {
+                                return Enumerable.Empty<TasksTasksViewModel>();
+                        }
+
+                        var normalized = personFullName.Trim().ToLower();
+
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == null || x.IsDeleted == false)
+                                                                                                     && x.ParentTaskId == null
+                                                                                                     && x.PersonResponsible != null
+                                                                                                     && x.PersonResponsible.ToLower() == normalized));
+
                         return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == null || x.IsDeleted == false)
                                                                                                       && x.ParentTaskId == null
                                                                                                       && x.PersonResponsible == personFullName));
