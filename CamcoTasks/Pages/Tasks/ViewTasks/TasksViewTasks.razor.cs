@@ -316,9 +316,30 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadData()
         {
-            mainTasksModel = (await taskService.GetAllTasks()).OrderByDescending(x => x.Id).ToList();
             employeeList = await EmployeeService.GetListAsync(true, false);
             Employees = employeeList.Where(a => a.FullName != null).ToList();
+
+            if (UserContextService.CurrentEmployeeId != 0)
+            {
+                var currentEmployee = employeeList.FirstOrDefault(a => a.Id == UserContextService.CurrentEmployeeId);
+                if (currentEmployee != null)
+                {
+                    var personName = currentEmployee.FullName?.Trim();
+                    var tasksByPerson = await taskService.GetTasksByPerson(personName);
+                    mainTasksModel = tasksByPerson
+                        .OrderByDescending(x => x.Id)
+                        .ToList();
+                }
+                else
+                {
+                    mainTasksModel = new();
+                }
+            }
+            else
+            {
+                mainTasksModel = new();
+            }
+
             await AssignLatestUpdates();
             Tasks = mainTasksModel.Where(a => !a.DateCompleted.HasValue).ToList();
             TaskTypes = mainTasksModel.Where(a => !a.DateCompleted.HasValue && !string.IsNullOrWhiteSpace(a.TaskType))

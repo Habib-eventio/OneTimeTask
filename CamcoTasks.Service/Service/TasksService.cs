@@ -248,16 +248,31 @@ namespace CamcoTasks.Service.Service
 				x.ParentTaskId == null));
 		}
 
-		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks3(string TaskId)
-		{
-			return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == false) &&
-				x.ParentTaskId == Convert.ToInt32(TaskId)));
-		}
+                public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks3(string TaskId)
+                {
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == false) &&
+                                x.ParentTaskId == Convert.ToInt32(TaskId)));
+                }
 
-		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue)
-		{
-			return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => x.TaskType == OldTypeValue));
-		}
+                public async Task<IEnumerable<TasksTasksViewModel>> GetTasksByPerson(string personFullName)
+                {
+                        if (string.IsNullOrWhiteSpace(personFullName))
+                        {
+                                return Enumerable.Empty<TasksTasksViewModel>();
+                        }
+
+                        var normalized = personFullName.Trim().ToLower();
+
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == null || x.IsDeleted == false)
+                                                                                                     && x.ParentTaskId == null
+                                                                                                     && x.PersonResponsible != null
+                                                                                                     && x.PersonResponsible.ToLower() == normalized));
+                }
+
+                public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue)
+                {
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => x.TaskType == OldTypeValue));
+                }
 
 		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasksSync()
 		{
