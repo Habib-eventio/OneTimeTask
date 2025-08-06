@@ -13,6 +13,7 @@ using CamcoTasks.ViewModels.TasksRecTasksDTO;
 using CamcoTasks.ViewModels.TasksTasksDTO;
 using CamcoTasks.ViewModels.TasksTasksTaskTypeDTO;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
 using Syncfusion.Blazor.Grids;
 using Syncfusion.Blazor.Inputs;
@@ -45,6 +46,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] ICommonDataService ICommonDataService { get; set; }
         [Inject] ICamcoProjectService CamcoProjectService { get; set; }
         [Inject] IUserContextService UserContextService { get; set; }
+        [Inject] protected IHttpContextAccessor HttpContextAccessor { get; set; }
         [Inject] private TaskStateService TaskStateService { get; set; }
         [Parameter]
         public TasksTasksViewModel OneTimeTask { get; set; }
@@ -136,10 +138,19 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadEmployees()
         {
-            EmployeeList = await employeeService.GetListAsync(true, false);
-            Employees = EmployeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            var employeesData = (await employeeService.GetListAsync(true, false)).ToList();
+            var loggedInName = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim();
 
-            EmployeeEmailsList = EmployeeList.Where(x => !string.IsNullOrEmpty(x.Email)).Select(x => new EmployeeEmail
+            if (!string.IsNullOrWhiteSpace(loggedInName) &&
+                !employeesData.Any(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase)))
+            {
+                employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
+            }
+
+            EmployeeList = employeesData;
+            Employees = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+
+            EmployeeEmailsList = employeesData.Where(x => !string.IsNullOrEmpty(x.Email)).Select(x => new EmployeeEmail
             {
                 Id = x.Id,
                 FullName = x.FullName,
@@ -176,9 +187,11 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         {
             await Task.Run(() => IsEditingTask = false);
             TaskTitle = "ADD NEW";
+            var currentUser = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim() ?? string.Empty;
             SelectedTaskViewModel = new TasksTasksViewModel
             {
-                Initiator = "",
+                Initiator = currentUser,
+                PersonResponsible = currentUser,
                 DateAdded = DateTime.Now,
                 IsReviewed = false
             };
