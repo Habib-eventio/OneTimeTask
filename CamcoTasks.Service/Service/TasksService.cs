@@ -248,16 +248,23 @@ namespace CamcoTasks.Service.Service
 				x.ParentTaskId == null));
 		}
 
-		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks3(string TaskId)
-		{
-			return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == false) &&
-				x.ParentTaskId == Convert.ToInt32(TaskId)));
-		}
+                public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks3(string TaskId)
+                {
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == false) &&
+                                x.ParentTaskId == Convert.ToInt32(TaskId)));
+                }
 
-		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue)
-		{
-			return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => x.TaskType == OldTypeValue));
-		}
+                public async Task<IEnumerable<TasksTasksViewModel>> GetTasksByPerson(string personFullName)
+                {
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => (x.IsDeleted == null || x.IsDeleted == false)
+                                                                                                      && x.ParentTaskId == null
+                                                                                                      && x.PersonResponsible == personFullName));
+                }
+
+                public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue)
+                {
+                        return TasksTasksDTONew.Map(await _unitOfWork.TaskTasks.FindAllAsync(x => x.TaskType == OldTypeValue));
+                }
 
 		public async Task<IEnumerable<TasksTasksViewModel>> GetAllTasksSync()
 		{
