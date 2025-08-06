@@ -306,7 +306,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 isValid = false;
                 return isValid;
             }
-            else if (!Employees.Contains(SelectedTask.Initiator))
+            else if (!Employees.Any(e => e.Equals(SelectedTask.Initiator, StringComparison.OrdinalIgnoreCase)))
             {
                 await jSRuntime.InvokeVoidAsync("AddRedBox", "InitiatorIdAddTask");
                 OneTimeTaskErrorMessage = "Please Enter Correct Task Initiator Field";
@@ -326,7 +326,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 isValid = false;
                 return isValid;
             }
-            else if (!Employees.Contains(SelectedTask.PersonResponsible))
+            else if (!Employees.Any(e => e.Equals(SelectedTask.PersonResponsible, StringComparison.OrdinalIgnoreCase)))
             {
                 await jSRuntime.InvokeVoidAsync("AddRedBox", "PersonResponsibleIdAddTask");
                 OneTimeTaskErrorMessage = "Please Enter Correct Task Person Resp Field";
@@ -512,20 +512,16 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     return;
                 }
                 var userId = UserContextService.CurrentEmployeeId;
-                if (userId <= 0)
+                if (userId > 0)
                 {
-                    _toastService.ShowError("No employee logged in; cannot log action.");
-                    return;
+                    var logEntry = new TaskChangeLogViewModel
+                    {
+                        TaskId = SelectedTaskViewModel.Id,
+                        Action = "Task has updated",
+                        ChangeDetails = $"Due: {SelectedTaskViewModel.UpcomingDate:yyyy-MM-dd}"
+                    };
+                    //Need to add service properly
                 }
-
-                var logEntry = new TaskChangeLogViewModel
-                {
-                    TaskId = SelectedTaskViewModel.Id,
-
-                    Action = "Task has updated",
-                    ChangeDetails = $"Due: {SelectedTaskViewModel.UpcomingDate:yyyy-MM-dd}"
-                };
-                //Need to add service properly
 
                 await ReloadParentComponent.InvokeAsync(true);
                 await TaskStateService.NotifyStateChangedAsync();
