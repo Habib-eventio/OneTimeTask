@@ -52,7 +52,6 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] protected IHttpContextAccessor HttpContextAccessor { get; set; }
         [Inject] protected IUserContextService UserContextService { get; set; }
         [Inject] private TaskStateService TaskStateService { get; set; }
-        public OnetimeTaskBorderModel BorderModel { get; set; } = new OnetimeTaskBorderModel();
         protected SfComboBox<string, EmployeeViewModel> SelectEmployeeDropDown { get; set; }
         protected string StatusDropdownVal { get; set; } = "2";
         protected string TaskImage { get; set; }
@@ -459,18 +458,6 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         {
             public string Text { get; set; }
             public string Value { get; set; }
-        }
-
-        public class OnetimeTaskBorderModel
-        {
-            public string TaskType { get; set; } = "7px solid white";
-            public string Initiator { get; set; } = "7px solid white";
-            public string DateAdded { get; set; } = "7px solid white";
-            public string CostingCode { get; set; } = "7px solid white";
-            public string Department { get; set; } = "7px solid white";
-            public string SelectFile { get; set; } = "7px solid white";
-            public string Description { get; set; } = "7px solid white";
-
         }
 
         public List<DDData> DLData { get; set; } = new List<DDData>()
