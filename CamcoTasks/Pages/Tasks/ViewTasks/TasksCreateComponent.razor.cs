@@ -157,6 +157,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
             EmployeeList = employeesData;
             employeeList = employeesData;
+            EmployeeList = employeesData;
             Employees = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
 
             EmployeeEmailsList = employeesData.Where(x => !string.IsNullOrEmpty(x.Email)).Select(x => new EmployeeEmail
