@@ -147,6 +147,16 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
             }
 
+            var user = HttpContextAccessor.HttpContext?.User;
+            if (user == null || !user.IsInRole("Admin"))
+            {
+                employeesData = employeesData
+                    .Where(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            EmployeeList = employeesData;
+            employeeList = employeesData;
             EmployeeList = employeesData;
             Employees = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
 

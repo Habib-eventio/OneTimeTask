@@ -317,6 +317,9 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadData()
         {
+            var user = HttpContextAccessor.HttpContext?.User;
+            var employeesData = (await EmployeeService.GetListAsync(true, false)).ToList();
+            var loggedInName = user?.Identity?.Name?.Trim();
             var employeesData = (await EmployeeService.GetListAsync(true, false)).ToList();
             var loggedInName = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim();
 
@@ -324,6 +327,13 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 !employeesData.Any(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase)))
             {
                 employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
+            }
+
+            if (user == null || !user.IsInRole("Admin"))
+            {
+                employeesData = employeesData
+                    .Where(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
             employeeList = employeesData;
@@ -341,6 +351,14 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 personName = loggedInName;
             }
 
+            if (user != null && user.IsInRole("Admin"))
+            {
+                var allTasks = await taskService.GetAllTasksSync();
+                mainTasksModel = allTasks
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
+            }
+            else if (!string.IsNullOrWhiteSpace(personName))
             if (!string.IsNullOrWhiteSpace(personName))
             {
                 var tasksByPerson = await taskService.GetTasksByPerson(personName);
