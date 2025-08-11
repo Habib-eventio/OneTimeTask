@@ -12,6 +12,7 @@ using CamcoTasks.Infrastructure.Common.Email;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using OfficeOpenXml;
@@ -51,7 +52,6 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] protected IHttpContextAccessor HttpContextAccessor { get; set; }
         [Inject] protected IUserContextService UserContextService { get; set; }
         [Inject] private TaskStateService TaskStateService { get; set; }
-        public OnetimeTaskBorderModel BorderModel { get; set; } = new OnetimeTaskBorderModel();
         protected SfComboBox<string, EmployeeViewModel> SelectEmployeeDropDown { get; set; }
         protected string StatusDropdownVal { get; set; } = "2";
         protected string TaskImage { get; set; }
@@ -316,17 +316,65 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadData()
         {
-            mainTasksModel = (await taskService.GetAllTasks()).OrderByDescending(x => x.Id).ToList();
-            employeeList = await EmployeeService.GetListAsync(true, false);
-            Employees = employeeList.Where(a => a.FullName != null).ToList();
+            var user = HttpContextAccessor.HttpContext?.User;
+            var employeesData = (await EmployeeService.GetListAsync(true, false)).ToList();
+            var loggedInName = user?.Identity?.Name?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(loggedInName) &&
+                !employeesData.Any(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase)))
+            {
+                employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
+            }
+
+            if (user == null || !user.IsInRole("Admin"))
+            {
+                employeesData = employeesData
+                    .Where(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            employeeList = employeesData;
+            Employees = employeesData.Where(a => a.FullName != null).ToList();
+
+            string personName = null;
+            if (UserContextService.CurrentEmployeeId != 0)
+            {
+                var currentEmployee = employeesData.FirstOrDefault(a => a.Id == UserContextService.CurrentEmployeeId);
+                personName = currentEmployee?.FullName?.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(personName))
+            {
+                personName = loggedInName;
+            }
+
+            if (user != null && user.IsInRole("Admin"))
+            {
+                var allTasks = await taskService.GetAllTasksSync();
+                mainTasksModel = allTasks
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
+            }
+            else if (!string.IsNullOrWhiteSpace(personName))
+            {
+                var tasksByPerson = await taskService.GetTasksByPerson(personName);
+                mainTasksModel = tasksByPerson
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
+            }
+            else
+            {
+                mainTasksModel = new();
+            }
+
             await AssignLatestUpdates();
             Tasks = mainTasksModel.Where(a => !a.DateCompleted.HasValue).ToList();
             TaskTypes = mainTasksModel.Where(a => !a.DateCompleted.HasValue && !string.IsNullOrWhiteSpace(a.TaskType))
                 .Select(a => a.TaskType.ToUpper()).Distinct().OrderBy(a => a).ToList();
-            ResponsiblePerson = employeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            ResponsiblePerson = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
             Initiator = mainTasksModel.Select(x => x.Initiator).Distinct().OrderBy(a => a).ToList();
             TaskTypeModelList = (await taskService.GetTaskTypes()).ToList();
-            EmployeeSelect = employeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            EmployeeSelect = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
             TaskCount = Tasks.Count;
             ResetPersonList();
             StateHasChanged();
@@ -368,18 +416,6 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         {
             public string Text { get; set; }
             public string Value { get; set; }
-        }
-
-        public class OnetimeTaskBorderModel
-        {
-            public string TaskType { get; set; } = "7px solid white";
-            public string Initiator { get; set; } = "7px solid white";
-            public string DateAdded { get; set; } = "7px solid white";
-            public string CostingCode { get; set; } = "7px solid white";
-            public string Department { get; set; } = "7px solid white";
-            public string SelectFile { get; set; } = "7px solid white";
-            public string Description { get; set; } = "7px solid white";
-
         }
 
         public List<DDData> DLData { get; set; } = new List<DDData>()
@@ -861,14 +897,20 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
             IsDoneReview = true;
         }
 
-        protected async void StartOneTimeTask(TasksTasksViewModel task)
+        protected async Task StartOneTimeTask(TasksTasksViewModel task)
         {
             IsActiveTasksCreateComponent = true;
             ForceRenderComponent = true;
             TasksCreateComponent = task;
+
+            // Ensure the create component is rendered before attempting to
+            // show the modal. Rendering first prevents the JavaScript call
+            // from targeting a missing DOM element when the component is
+            // initially activated.
+            await InvokeAsync(StateHasChanged);
             await JSRuntime.InvokeAsync<object>("ShowModal", "#AddEditTaskModal");
+
             IsSelectedTaskModalVisible = false;
-            StateHasChanged();
         }
 
         protected void SelectTaskByType(TasksTasksViewModel SelectedTask)

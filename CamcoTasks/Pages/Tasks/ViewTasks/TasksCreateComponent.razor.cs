@@ -13,6 +13,7 @@ using CamcoTasks.ViewModels.TasksRecTasksDTO;
 using CamcoTasks.ViewModels.TasksTasksDTO;
 using CamcoTasks.ViewModels.TasksTasksTaskTypeDTO;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
 using Syncfusion.Blazor.Grids;
 using Syncfusion.Blazor.Inputs;
@@ -45,6 +46,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         [Inject] ICommonDataService ICommonDataService { get; set; }
         [Inject] ICamcoProjectService CamcoProjectService { get; set; }
         [Inject] IUserContextService UserContextService { get; set; }
+        [Inject] protected IHttpContextAccessor HttpContextAccessor { get; set; }
         [Inject] private TaskStateService TaskStateService { get; set; }
         [Parameter]
         public TasksTasksViewModel OneTimeTask { get; set; }
@@ -136,10 +138,28 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
 
         protected async Task LoadEmployees()
         {
-            EmployeeList = await employeeService.GetListAsync(true, false);
-            Employees = EmployeeList.Select(a => a.FullName).OrderBy(a => a).ToList();
+            var employeesData = (await employeeService.GetListAsync(true, false)).ToList();
+            var loggedInName = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim();
 
-            EmployeeEmailsList = EmployeeList.Where(x => !string.IsNullOrEmpty(x.Email)).Select(x => new EmployeeEmail
+            if (!string.IsNullOrWhiteSpace(loggedInName) &&
+                !employeesData.Any(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase)))
+            {
+                employeesData.Add(new EmployeeViewModel { FullName = loggedInName });
+            }
+
+            var user = HttpContextAccessor.HttpContext?.User;
+            if (user == null || !user.IsInRole("Admin"))
+            {
+                employeesData = employeesData
+                    .Where(e => e.FullName.Equals(loggedInName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            EmployeeList = employeesData;
+            employeeList = employeesData;
+            Employees = employeesData.Select(a => a.FullName).OrderBy(a => a).ToList();
+
+            EmployeeEmailsList = employeesData.Where(x => !string.IsNullOrEmpty(x.Email)).Select(x => new EmployeeEmail
             {
                 Id = x.Id,
                 FullName = x.FullName,
@@ -176,9 +196,11 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
         {
             await Task.Run(() => IsEditingTask = false);
             TaskTitle = "ADD NEW";
+            var currentUser = HttpContextAccessor.HttpContext?.User?.Identity?.Name?.Trim() ?? string.Empty;
             SelectedTaskViewModel = new TasksTasksViewModel
             {
-                Initiator = "",
+                Initiator = currentUser,
+                PersonResponsible = currentUser,
                 DateAdded = DateTime.Now,
                 IsReviewed = false
             };
@@ -293,7 +315,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 isValid = false;
                 return isValid;
             }
-            else if (!Employees.Contains(SelectedTask.Initiator))
+            else if (!Employees.Any(e => e.Equals(SelectedTask.Initiator, StringComparison.OrdinalIgnoreCase)))
             {
                 await jSRuntime.InvokeVoidAsync("AddRedBox", "InitiatorIdAddTask");
                 OneTimeTaskErrorMessage = "Please Enter Correct Task Initiator Field";
@@ -313,7 +335,7 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                 isValid = false;
                 return isValid;
             }
-            else if (!Employees.Contains(SelectedTask.PersonResponsible))
+            else if (!Employees.Any(e => e.Equals(SelectedTask.PersonResponsible, StringComparison.OrdinalIgnoreCase)))
             {
                 await jSRuntime.InvokeVoidAsync("AddRedBox", "PersonResponsibleIdAddTask");
                 OneTimeTaskErrorMessage = "Please Enter Correct Task Person Resp Field";
@@ -499,20 +521,16 @@ namespace CamcoTasks.Pages.Tasks.ViewTasks
                     return;
                 }
                 var userId = UserContextService.CurrentEmployeeId;
-                if (userId <= 0)
+                if (userId > 0)
                 {
-                    _toastService.ShowError("No employee logged in; cannot log action.");
-                    return;
+                    var logEntry = new TaskChangeLogViewModel
+                    {
+                        TaskId = SelectedTaskViewModel.Id,
+                        Action = "Task has updated",
+                        ChangeDetails = $"Due: {SelectedTaskViewModel.UpcomingDate:yyyy-MM-dd}"
+                    };
+                    //Need to add service properly
                 }
-
-                var logEntry = new TaskChangeLogViewModel
-                {
-                    TaskId = SelectedTaskViewModel.Id,
-
-                    Action = "Task has updated",
-                    ChangeDetails = $"Due: {SelectedTaskViewModel.UpcomingDate:yyyy-MM-dd}"
-                };
-                //Need to add service properly
 
                 await ReloadParentComponent.InvokeAsync(true);
                 await TaskStateService.NotifyStateChangedAsync();

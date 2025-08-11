@@ -35,6 +35,8 @@ namespace CamcoTasks.Service.IService
         Task<IEnumerable<TasksTasksViewModel>> GetAllTasks2();
         Task<IEnumerable<TasksTasksViewModel>> GetAllTasks3(string taskId);
 
+        Task<IEnumerable<TasksTasksViewModel>> GetTasksByPerson(string personResponsible);
+
         Task<IEnumerable<TasksTasksViewModel>> GetAllTasks(string OldTypeValue);
 
         Task<IEnumerable<TasksTasksViewModel>> GetAllTasksSync();
